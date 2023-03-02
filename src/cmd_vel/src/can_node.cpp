@@ -97,10 +97,10 @@ void send_vel(WaveshareCAN &can) //0x030
     try
     {
         // Get integer velocities
-        // int right_vel = right_wheel_velocity;
-        // int left_vel = left_wheel_velocity;
-        int right_vel = 3000;
-        int left_vel = -3000;
+        int right_vel = right_wheel_velocity;
+        int left_vel = left_wheel_velocity;
+        // int right_vel = 3000;
+        // int left_vel = -3000;
      
         // Create 8-byte data array: first 4 bytes for left wheel, last 4 bytes for right wheel
         uint8_t data[8];
@@ -125,24 +125,24 @@ void send_vel(WaveshareCAN &can) //0x030
     }
 }
 
-// void CallBackVel(const utils::cmd_vel::ConstPtr &cmd_vel)
-// {
-//     float v_left = cmd_vel->v_left;
-//     float v_right = cmd_vel->v_right;
+void CallBackVel(const utils::cmd_vel::ConstPtr &cmd_vel)
+{
+    float v_left = cmd_vel->v_left;
+    float v_right = cmd_vel->v_right;
 
-//     // ROS_INFO("vel_left guidance = %f, vel_right guidance = %f", v_left, v_right);
+    // ROS_INFO("vel_left guidance = %f, vel_right guidance = %f", v_left, v_right);
 
-//     v_left *= 20;
-//     v_right *= 20;
+    v_left *= 20;
+    v_right *= 20;
 
-//     left_wheel_velocity = ConvertPulse(v_left);
-//     right_wheel_velocity = ConvertPulse(v_right);
+    left_wheel_velocity = ConvertPulse(v_left);
+    right_wheel_velocity = ConvertPulse(v_right);
 
-//     if (number==2) {
-//         send_vel(can);
-//     }
-//     // send_vel(can);
-// }
+    if (number==2) {
+        send_vel(can);
+    }
+    // send_vel(can);
+}
 
 
 // Convert two bytes to a signed 16-bit integer
@@ -552,7 +552,7 @@ int main(int argc, char **argv)
         std::cout << "send 2" << "\n";
     } 
 
-    // sub = nh.subscribe("Cmd_vel", 10, CallBackVel);
+    sub = nh.subscribe("Cmd_vel", 10, CallBackVel);
     // amcl_sub = nh.subscribe("amcl_pose", 10, CallBackAMCL);
     cnt_byte = nh.createTimer(ros::Duration(10), CntBytes);
     
