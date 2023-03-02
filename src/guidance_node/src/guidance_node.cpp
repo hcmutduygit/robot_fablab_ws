@@ -52,7 +52,6 @@ double limit(double value, double min_val, double max_val)
 }
 
 void control_los(float goal_x, float goal_y, float previous_x, float previous_y) {
-        ROS_INFO("[LOS] linear_x=%.4f, angular_z=%.4f, kappa=%.4f, v_limit=%.4f", linear_x, angular_z, kappa, v_limit);
     alpha_k = get_heading(previous_x, previous_y, goal_x, goal_y);
     s_k_1 = (goal_x - previous_x) * cos(alpha_k) + (goal_y - previous_y) * sin(alpha_k); 
 
@@ -101,6 +100,8 @@ void control_los(float goal_x, float goal_y, float previous_x, float previous_y)
         v = (v > 0) ? v_limit : -v_limit;
     }
     linear_x = v;
+    ROS_INFO("[LOS] linear_x=%.4f, angular_z=%.4f, kappa=%.4f, v_limit=%.4f", linear_x, angular_z, kappa, v_limit);
+
 }
 
 void tranfer_wp() {
@@ -173,82 +174,6 @@ void tranfer_wp() {
     }
 }
 
-void CallBackScan(const sensor_msgs::LaserScan::ConstPtr& msg){
-    State state_ = FREE;
-    double min_range = 999;
-    int danger_count = 0;
-    int warning_count = 0;
-
-    for (const auto &range : msg->ranges)
-    {
-        // if (!std::isinf(range) && range <= min_range){
-        //     min_range = range;
-        // }
-
-    //     if (!std::isinf(range) && 0.5 <= range && range <= warning_distance_)
-    //     {
-    //         warning_count++;
-    //         if (range <= danger_distance_)
-    //         {
-    //             danger_count++;
-    //         }
-    //     }
-    //     if (warning_count >= 10){
-    //             state_ = State::WARNING;
-    //         }
-    //     if (danger_count == 10){
-    //             state_ = State::DANGER;
-    //             break;
-    //     }
-        if (!std::isinf(range) && 0.5 <= range && range <= danger_distance_){
-            danger_count++;
-        }
-        if (danger_count == 30){
-            state_ = State::DANGER;
-            break;
-        }
-    }
-
-    // if (state_ != prev_state_)
-    // {
-    //     if (state_ == State::WARNING)
-    //     {
-    //         is_safety_stop.data = false;
-    //         is_safety_slow.data = true;
-
-    //     }
-    //     else if (state_ == State::DANGER)
-    //     {
-    //         is_safety_stop.data = true;
-    //         is_safety_slow.data = false;
-    //     }
-    //     else if (state_ == State::FREE)
-    //     {
-    //         is_safety_stop.data = false;
-    //         is_safety_slow.data = false;
-    //     }
-
-    //     prev_state_ = state_;
-    // }
-
-     if (state_ != prev_state_)
-    {      
-        if (state_ == State::DANGER)
-        {
-            is_safety_stop.data = true;
-        }
-        else if (state_ == State::FREE)
-        {
-            is_safety_stop.data = false;
-        }
-
-        prev_state_ = state_;
-    }
-
-    // if (state_ == State::FREE){std::cout << "yes" << "\n";}
-    // ROS_INFO("Current state: %d, min range: %f", state_, min_range);
-}
-
 void CallBackPose(const geometry_msgs::PoseWithCovarianceStamped::ConstPtr& msg){
     x = msg->pose.pose.position.x;
     y = msg->pose.pose.position.y;
@@ -307,20 +232,6 @@ void CallBackWp(const utils::waypoints::ConstPtr& msg) {
 void ControlVel(const ros::TimerEvent& event){
     utils::cmd_vel cmd;
     tranfer_wp();
-
-    // if (is_safety_stop.data == true && is_safety_slow.data == true){
-    //     cmd.v_left = 0;
-    //     cmd.v_right = 0;
-    // }
-    // else if (is_safety_stop.data == false && is_safety_slow.data == true){
-    //     cmd.v_left = -0.75 * (linear_x - (angular_z * 0.57/ 2)) * drive;
-    //     cmd.v_right = 0.75 * (linear_x + (angular_z * 0.57/ 2)) * drive;
-    // }
-    // else {
-    //     cmd.v_left = -(linear_x - (angular_z * 0.57/ 2)) * drive;
-    //     cmd.v_right = (linear_x + (angular_z * 0.57/ 2)) * drive;
-    // }
-
 
     // === RÀNG BUỘC VẬN TỐC TUYẾN TÍNH THEO ĐỘ CONG QUỸ ĐẠO ===
     // L là khoảng cách giữa 2 bánh xe, ở đây lấy L = 0.57 (giống hệ số trong công thức tính v_left/v_right)
@@ -381,7 +292,7 @@ int main(int argc, char **argv){
     ros::NodeHandle nh;
 
     pub = nh.advertise<utils::cmd_vel>("Cmd_vel", 10);
-    sub_scan = nh.subscribe("scan", 10, CallBackScan);
+    // sub_scan = nh.subscribe("scan", 10, CallBackScan);
     sub_amcl = nh.subscribe("amcl_pose", 10, CallBackPose); 
 
     // ========================================================================
