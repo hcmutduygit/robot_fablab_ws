@@ -1,6 +1,6 @@
 
     frequency: 30
-    sensor_timeout: 0.1
+    sensor_timeout: 0.2
     two_d_mode: true
     publish_tf: true
 
