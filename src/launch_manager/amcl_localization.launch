@@ -19,15 +19,16 @@
     <node name="rviz" pkg="rviz" type="rviz" args="-d $(arg rvizconfig)"/>
 
     <!-- Load map (yaml file, không dùng .pbstream) -->
-    <arg name="map_file" default="$(find robot_fablab)/maps/map_inside_fablab.yaml" />
-    <!-- <arg name="map_file" default="$(find robot_fablab)/maps/new_map2.yaml" /> -->
+    <!-- <arg name="map_file" default="$(find robot_fablab)/maps/map_inside_fablab.yaml" /> -->
+    <arg name="map_file" default="$(find robot_fablab)/maps/new_map2.yaml" />
+    <!-- <arg name="map_file" default="$(find robot_fablab)/maps/map.yaml" /> -->
     <node name="map_server" pkg="map_server" type="map_server" args="$(arg map_file)" />
 
     <group if="$(arg can_enabled)">
         <node pkg = "cmd_vel" type = "can_node" name = "Cmd_vel" output = "screen">
             <param name="mode" value="1"/> 
             <param name="calib" value="0"/>
-            <param name="cycle_transmit" value="0.025"/>
+            <param name="cycle_transmit" value="0.05"/>
         </node>
     </group>
 
@@ -118,6 +119,8 @@
             <param name="waypoints_y" value="1.74636434141,  12.4088992202, 14.4544250146, 20.8412712994, 26.2399740808, 26.0336352831, 24.3740114849, 24.5011076441, 20.84127129, 14.45442501, 12.4088992202, 1.746364341" />
             <!-- <param name="waypoints_x" value="0.215465042, 5.09272268852, 4.28954811917" />
             <param name="waypoints_y" value="0.495773281,  0.888337984803, -0.0972579290311" /> -->
+            <!-- <param name="waypoints_x" value="0.0839265684349, 11.063455044, 12.7462350141, 16.0562803583, 22.2976415284,  24.7464449317, 24.729907139,  23.0243540792, 22.4718292685, 18.2379016332, 12.7797560431, 11.4664644751, 0.083926568" />
+            <param name="waypoints_y" value="-0.101854491926, -0.023951564646, -2.21879094585,  -2.5126816757, -1.86494556111, -0.19952437696,  3.70779846032,  4.18944491958, -1.48177186042, -2.14574148894, -2.4399416164, 0.170298291153, -0.10185449" /> -->
         </node>
     </group>
 </launch>
