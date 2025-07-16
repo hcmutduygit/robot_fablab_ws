@@ -1,0 +1,151 @@
+<?xml version='1.0'?>
+
+<robot name="robot_fablab"
+  xmlns:xacro="http://www.ros.org/wiki/xacro">
+
+  <xacro:include filename="$(find robot_fablab)/urdf/robot_fablab.gazebo"/>
+  <link name="base_link">
+    <inertial>
+      <origin xyz="-0.0515854572028516 -0.000276126131789067 0.231920765641826" rpy="0 0 0" />
+      <mass value="6.09418598920086" />
+      <inertia ixx="0.108552021192883" ixy="-1.79528142341275E-06" ixz="-1.53088966310458E-06" iyy="0.08089844882398" iyz="-3.73213864653515E-07" izz="0.161058476654867" />
+    </inertial>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="package://robot_fablab/meshes/base_link.STL" />
+      </geometry>
+      <material name="slategreen">
+        <color rgba="0.396078431372549 0.5529411764705883 0.42745098039215684 1.0" />
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="package://robot_fablab/meshes/base_link.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <link name="link_left">
+    <inertial>
+      <origin xyz="-0.00033068 0.00034718 -0.011299" rpy="0 0 0" />
+      <mass value="1.0707" />
+      <inertia ixx="0.0032564" ixy="-2.9602E-08" ixz="-1.0029E-08" iyy="0.0032565" iyz="4.0974E-08" izz="0.0062145" />
+    </inertial>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <cylinder radius="0.1" length="0.05"/>
+      </geometry>
+      <!-- <geometry>
+        <mesh filename="package://robot_fablab/meshes/link_left.STL" />
+      </geometry> -->
+      <material name="black">
+        <color rgba="0.0 0.0 0.0 1.0" />
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <cylinder radius="0.1" length="0.05"/>
+      </geometry>
+    </collision>
+  </link>
+  <joint name="joint_left" type="continuous">
+    <origin xyz="-0.19955 0.34249 0.034349" rpy="-1.5708 0 0" />
+    <parent link="base_link" />
+    <child link="link_left" />
+    <axis xyz="0 0 1" />
+    <dynamics damping="0.1" friction="0.1" />
+  </joint>
+  <link name="link_right">
+    <inertial>
+      <origin xyz="-4.8407E-05 -0.0004779 0.0112" rpy="0 0 0" />
+      <mass value="1.0707" />
+      <inertia ixx="0.0032565" ixy="-4.2222E-08" ixz="-3.7763E-08" iyy="0.0032564" iyz="1.8799E-08" izz="0.0062145" />
+    </inertial>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <cylinder radius="0.1" length="0.05"/>
+      </geometry>
+      <!-- <geometry>
+        <mesh filename="package://robot_fablab/meshes/link_right.STL" />
+      </geometry> -->
+      <material name="black">
+        <color rgba="0.0 0.0 0.0 1.0" />
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <cylinder radius="0.1" length="0.05"/>
+      </geometry>
+    </collision>
+  </link>
+  <joint name="joint_right" type="continuous">
+    <origin xyz="-0.19983 -0.34296 0.031554" rpy="-1.5708 0 0" />
+    <parent link="base_link" />
+    <child link="link_right" />
+    <axis xyz="0 0 1" />
+    <dynamics damping="0.1" friction="0.1" />
+  </joint>
+  <link name="link_forward">
+    <inertial>
+      <origin xyz="-0.018729 -0.021844 -0.00089423" rpy="0 0 0" />
+      <mass value="0.37834" />
+      <inertia ixx="0.0004869" ixy="-8.4E-05" ixz="4.7177E-08" iyy="0.00045025" iyz="-4.7046E-07" izz="0.00064534" />
+    </inertial>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <sphere radius="0.038"/>
+      </geometry>
+      <!-- <geometry>
+        <cylinder radius="0.037" length="0.05"/>
+      </geometry> -->
+      <material name="black">
+        <color rgba="0.0 0.0 0.0 1.0" />
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <sphere radius="0.038"/>
+      </geometry>
+      <!-- <geometry>
+        <cylinder radius="0.038" length="0.05"/>
+      </geometry> -->
+    </collision>
+  </link>
+  <joint name="joint_forward" type="continuous">
+    <origin xyz="0.24913 0.001 -0.0285" rpy="-1.5708 0 0" />
+    <parent link="base_link" />
+    <child link="link_forward" />
+    <axis xyz="0 0 1" />
+    <dynamics damping="0.1" friction="0.1" />
+  </joint>
+
+  <!-- transmission -->
+  <transmission name="right_wheel_trans">
+    <type>transmission_interface/SimpleTransmission</type>
+    <actuator name="motor_right_wheel">
+      <hardwareInterface>EffortJointInterface</hardwareInterface>
+      <mechanicalReduction>1</mechanicalReduction>
+    </actuator>
+    <joint name="joint_right">
+      <hardwareInterface>VelocityJointInterface</hardwareInterface>
+    </joint>
+  </transmission>
+
+  <transmission name="left_wheel_trans">
+    <type>transmission_interface/SimpleTransmission</type>
+    <actuator name="motor_left_wheel">
+      <hardwareInterface>EffortJointInterface</hardwareInterface>
+      <mechanicalReduction>1</mechanicalReduction>
+    </actuator>
+    <joint name="joint_left">
+      <hardwareInterface>VelocityJointInterface</hardwareInterface>
+    </joint>
+  </transmission>
+</robot>

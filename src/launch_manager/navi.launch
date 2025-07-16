@@ -1,0 +1,5 @@
+<launch>
+<node pkg = "guidance_node" type = "guidance_node" name = "Guidance" output = "screen"></node>
+<node pkg = "cmd_vel" type = "can_node" name = "Cmd_vel" output = "screen"></node>
+
+</launch>

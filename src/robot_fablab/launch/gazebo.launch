@@ -1,0 +1,44 @@
+<?xml version="1.0"?>
+<launch>
+
+  <arg name="world" default="$(find robot_fablab)/worlds/empty_office.world" />
+
+  <include file="$(find gazebo_ros)/launch/empty_world.launch">
+    <arg name="world_name" value="$(arg world)"/>
+    <arg name="paused" value="false"/>
+    <arg name="use_sim_time" value="true"/>
+    <arg name="gui" value="true"/>
+    <arg name="headless" value="false"/>
+    <arg name="debug" value="false"/>
+  </include>
+
+  <!-- open rviz -->
+  <!-- <arg name="rvizconfig" default="$(find robot_fablab)/rviz/robot_fablab.rviz"/>
+  <node name="rviz" pkg="rviz" type="rviz" args="-d $(arg rvizconfig)"/> -->
+  
+  <!-- load controller -->
+  <rosparam file="$(find robot_fablab)/config/joint_states.yaml" command="load"/>
+  <rosparam file="$(find robot_fablab)/config/diff_drive.yaml" command="load"/>
+  
+  <node name="robot_arm_controller_spawner" pkg="controller_manager" type="spawner"
+    respawn="true" output="screen" 
+    args="/Diff_Drive/joint_state_controller
+          /Diff_Drive/diff_drive_controller
+          --shutdown-timeout 3"/>
+
+  <!-- load parameter model -->
+  <param name="robot_description" command="$(find xacro)/xacro '$(find robot_fablab)/urdf/robot_fablab.xacro'" />    
+
+  <node name="spawn_urdf" pkg="gazebo_ros" type="spawn_model" output="screen"
+    args="-param robot_description -urdf -model robot_fablab" />
+  
+  <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher" output="screen" />
+  
+  <node name="joint_state_publisher" pkg="joint_state_publisher" type="joint_state_publisher" />
+
+<!-- load panel control vel -->
+  <node name="rqt_robot_steering" pkg="rqt_robot_steering" type="rqt_robot_steering">
+    <param name="default_topic" value="/Diff_Drive/diff_drive_controller/cmd_vel"/>
+  </node>
+
+</launch>
