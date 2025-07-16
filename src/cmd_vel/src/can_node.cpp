@@ -1,17 +1,27 @@
 #include <can_node.h>
+#include <cmath>
 
+#define PI 3.14159265358979323846
+
+int ConvertPulse(float& velocity) {
+    // Convert m/s to rounds per second (assuming wheel radius is 0.1 m)
+    const float wheel_radius = 100; // in millimeters
+    const int pulse_per_revolution = 10000; // Assuming 360 pulses per revolution
+    int pulse = static_cast<int>(pulse_per_revolution*velocity * 1000 / (2 * PI * wheel_radius)); // Convert m/s to pulses
+    return pulse; // Pulse per second 
+}
 // Global variable to store the updated value
 float yaw_angle = 0;
-float right_wheel_velocity = 0;
-float left_wheel_velocity = 0;
+int right_wheel_velocity = 0;
+int left_wheel_velocity = 0;
 
 void CallBackVel(const utils::cmd_vel::ConstPtr& cmd_vel){
     float v_left = cmd_vel->v_left;
     float v_right = cmd_vel->v_right;
     //  ROS_INFO("v_left= %.2f", v_left);
     //  ROS_INFO("v_right= %.2f", v_right);
-    left_wheel_velocity = v_left;
-    right_wheel_velocity = v_right;
+    left_wheel_velocity = ConvertPulse(v_left);
+    right_wheel_velocity = ConvertPulse(v_right);
 }
 
 void ControlStm(const ros::TimerEvent& event){                                     
@@ -66,38 +76,29 @@ void process_frame(uint16_t can_id, const std::vector<uint8_t>& data) {
 }
 
 void send_vel(WaveshareCAN& can) {
-    // std::cout << "Enter right wheel velocity: ";
-    // std::string right_input;
-    // std::getline(std::cin, right_input);
-    
-    // std::cout << "Enter left wheel velocity: ";
-    // std::string left_input;
-    // std::getline(std::cin, left_input);
-    
     try {
-        float right_vel = right_wheel_velocity;
-        float left_vel = left_wheel_velocity;
-        
-        // std::cout << "Right velocity: " << right_vel << ", Left velocity: " << left_vel << std::endl;
-        
-        // Convert float to bytes for CAN transmission
-        uint8_t left_bytes[4];
-        uint8_t right_bytes[4];
-        std::memcpy(left_bytes, &left_vel, sizeof(float));
-        std::memcpy(right_bytes, &right_vel, sizeof(float));
-        
+        // Get integer velocities
+        int right_vel = right_wheel_velocity;
+        int left_vel = left_wheel_velocity;
+
+        // Convert integers to bytes for CAN transmission
+        uint8_t left_bytes[sizeof(int)];
+        uint8_t right_bytes[sizeof(int)];
+        std::memcpy(left_bytes, &left_vel, sizeof(int));
+        std::memcpy(right_bytes, &right_vel, sizeof(int));
+
         // Create data vectors
-        std::vector<uint8_t> left_data(left_bytes, left_bytes + 4);
-        std::vector<uint8_t> right_data(right_bytes, right_bytes + 4);
-        
+        std::vector<uint8_t> left_data(left_bytes, left_bytes + sizeof(int));
+        std::vector<uint8_t> right_data(right_bytes, right_bytes + sizeof(int));
+
         // Send left velocity to ID 0x013
         can.send(0x013, left_data);
-        std::cout << "Sent left velocity " << left_vel << " to ID 0x013" << std::endl;
-        
+        std::this_thread::sleep_for(std::chrono::milliseconds(50));
         // Send right velocity to ID 0x014
         can.send(0x014, right_data);
+        std::this_thread::sleep_for(std::chrono::milliseconds(50));
+        std::cout << "Sent left velocity " << left_vel << " to ID 0x013" << std::endl;
         std::cout << "Sent right velocity " << right_vel << " to ID 0x014" << std::endl;
-        
     } catch (const std::exception& e) {
         std::cerr << "Invalid velocity input: " << e.what() << std::endl;
     }

@@ -100,8 +100,8 @@ void ControlVel(const ros::TimerEvent& event){
     ROS_INFO("v_right = %.2f", v_right);
     // cmd.linear.x  = linear_x;        
     // cmd.angular.z = angular_z; 
-    cmd.v_left = 50000.15; 
-    cmd.v_right = -50000.1555; 
+    cmd.v_left = 5.15; 
+    cmd.v_right = -6.15; 
     pub.publish(cmd);
 }
 
