@@ -18,8 +18,8 @@ int left_wheel_velocity = 0;
 void CallBackVel(const utils::cmd_vel::ConstPtr& cmd_vel){
     float v_left = cmd_vel->v_left;
     float v_right = cmd_vel->v_right;
-    //  ROS_INFO("v_left= %.2f", v_left);
-    //  ROS_INFO("v_right= %.2f", v_right);
+    // ROS_INFO("v_left= %.2f", v_left);
+    // ROS_INFO("v_right= %.2f", v_right);
     left_wheel_velocity = ConvertPulse(v_left);
     right_wheel_velocity = ConvertPulse(v_right);
 }
@@ -73,6 +73,31 @@ void process_frame(uint16_t can_id, const std::vector<uint8_t>& data) {
         // std::cout << "Pitch: " << pitch << "\n";
         std::cout << "Yaw: " << yaw << "\n";
     }
+    if (can_id == 0x016) {
+        // Ensure the data has exactly 8 bytes
+        if (data.size() != 8) {
+            std::cerr << "❌ Error: Expected 8 bytes for ID 0x016, but received " << data.size() << " bytes.\n";
+            return;
+        }
+
+        // Split the 8 bytes into 4 groups of 2 bytes and convert to integers
+        int group1 = (data[0] << 8) | data[1]; // Combine bytes 0 and 1
+        int group2 = (data[2] << 8) | data[3]; // Combine bytes 2 and 3
+        int group3 = (data[4] << 8) | data[5]; // Combine bytes 4 and 5
+        int group4 = (data[6] << 8) | data[7]; // Combine bytes 6 and 7
+
+        // Print the results
+        std::cout << "ID 0x016 received: ";
+        for (uint8_t b : data) {
+            std::cout << std::hex << std::setw(2) << std::setfill('0') << (int)b << " ";
+        }
+        std::cout << std::dec << "\n";
+
+        std::cout << "Truoc: " << group1 << "\n";
+        std::cout << "Phai: " << group2 << "\n";
+        std::cout << "Trai: " << group3 << "\n";
+        std::cout << "Sau: " << group4 << "\n";
+    }   
 }
 
 void send_vel(WaveshareCAN& can) {
@@ -97,8 +122,8 @@ void send_vel(WaveshareCAN& can) {
         // Send right velocity to ID 0x014
         can.send(0x014, right_data);
         std::this_thread::sleep_for(std::chrono::milliseconds(50));
-        std::cout << "Sent left velocity " << left_vel << " to ID 0x013" << std::endl;
-        std::cout << "Sent right velocity " << right_vel << " to ID 0x014" << std::endl;
+        // std::cout << "Sent left velocity " << left_vel << " to ID 0x013" << std::endl;
+        // std::cout << "Sent right velocity " << right_vel << " to ID 0x014" << std::endl;
     } catch (const std::exception& e) {
         std::cerr << "Invalid velocity input: " << e.what() << std::endl;
     }

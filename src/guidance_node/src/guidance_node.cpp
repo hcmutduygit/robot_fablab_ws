@@ -96,8 +96,8 @@ void ControlVel(const ros::TimerEvent& event){
     linear_x, angular_z = tranfer_wp();
     double v_left = linear_x - (angular_z * 0.535 / 2);
     double v_right = linear_x + (angular_z * 0.535 / 2);
-    ROS_INFO("v_left = %.2f", v_left);
-    ROS_INFO("v_right = %.2f", v_right);
+    // ROS_INFO("v_left = %.2f", v_left);
+    // ROS_INFO("v_right = %.2f", v_right);
     // cmd.linear.x  = linear_x;        
     // cmd.angular.z = angular_z; 
     cmd.v_left = 5.15; 
