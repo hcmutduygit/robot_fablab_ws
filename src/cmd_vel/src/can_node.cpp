@@ -74,7 +74,7 @@ void process_frame(uint16_t can_id, const std::vector<uint8_t>& data) {
         // std::cout << "Pitch: " << pitch << "\n";
         std::cout << "Yaw: " << yaw << "\n";
     }
-    if (can_id == 0x016) {
+    else if (can_id == 0x016) {
         // Ensure the data has exactly 8 bytes
         if (data.size() != 8) {
             std::cerr << "Error: Expected 8 bytes for ID 0x016, but received " << data.size() << " bytes.\n";
@@ -99,6 +99,32 @@ void process_frame(uint16_t can_id, const std::vector<uint8_t>& data) {
         std::cout << "Trai: " << group3 << "\n";
         std::cout << "Sau: " << group4 << "\n";
     }   
+    else if (can_id == 0x017) {
+        // Ensure the data has exactly 8 bytes
+        if (data.size() != 8) {
+            std::cerr << "Error: Expected 8 bytes for ID 0x017, but received " << data.size() << " bytes.\n";
+            return;
+        }
+
+        // Extract left velocity from first 4 bytes
+        int received_left_vel;
+        std::memcpy(&received_left_vel, &data[0], sizeof(int));
+        
+        // Extract right velocity from last 4 bytes  
+        int received_right_vel;
+        std::memcpy(&received_right_vel, &data[4], sizeof(int));
+
+        // Print the received data in hex format
+        std::cout << "ID 0x017 received: ";
+        for (uint8_t b : data) {
+            std::cout << std::hex << std::setw(2) << std::setfill('0') << (int)b << " ";
+        }
+        std::cout << std::dec << "\n";
+
+        // Print the received velocities
+        std::cout << "Received Left Velocity: " << received_left_vel << "\n";
+        std::cout << "Received Right Velocity: " << received_right_vel << "\n";
+    }
 }
 
 void send_vel(WaveshareCAN& can) {
