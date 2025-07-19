@@ -129,6 +129,12 @@ void send_vel(WaveshareCAN& can) {
         std::cerr << "Invalid velocity input: " << e.what() << std::endl;
     }
 }
+
+void CntBytes (const ros::TimerEvent& event){
+    ROS_INFO("Yaw Packages = %d Pkg/s",cnt_yaw);
+    cnt_yaw = 0;
+}
+
 int main(int argc, char **argv){
 
     WaveshareCAN can("/dev/ttyUSB0", 2000000, 2.0);
@@ -139,6 +145,7 @@ int main(int argc, char **argv){
     ros::NodeHandle nh;
     pub = nh.advertise<utils::pose_robot>("pose_robot",10);
     sub = nh.subscribe("Cmd_vel",10,CallBackVel);
+    cnt_byte =nh.createTimer(ros::Duration(1),CntBytes);
     loopControl = nh.createTimer(ros::Duration(0.01), 
         [&](const ros::TimerEvent& event) {
             utils::pose_robot pose;

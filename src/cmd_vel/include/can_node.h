@@ -235,5 +235,6 @@ private:
  ros::Publisher pub;
  ros::Subscriber sub;
  ros::Timer loopControl;
+ ros::Timer cnt_byte;
  int cnt_yaw;
 #endif 
