@@ -93,7 +93,7 @@ public:
             throw std::runtime_error("Failed to write full frame");
         }
 
-        std::cout << "✅ Sent: ID=0x" << std::hex << can_id << " Data=";
+        std::cout << "Sent: ID=0x" << std::hex << can_id << " Data=";
         for (uint8_t b : padded_data) {
             std::cout << std::hex << (int)b << " ";
         }
@@ -203,7 +203,7 @@ private:
                 }
                 std::this_thread::sleep_for(std::chrono::milliseconds(1));
             } else {
-                std::cerr << "❌ Read error: " << std::strerror(errno) << "\n";
+                std::cerr << "Read error: " << std::strerror(errno) << "\n";
                 return false;
             }
         }
@@ -216,7 +216,7 @@ private:
                 auto [can_id, data] = receive();
                 callback(can_id, data);
             } catch (const std::exception& e) {
-                std::cerr << "❌ Error in receive loop: " << e.what() << ". Retrying...\n";
+                std::cerr << "Error in receive loop: " << e.what() << ". Retrying...\n";
                 // Clear input buffer to resynchronize
                 tcflush(fd_, TCIFLUSH);
                 std::this_thread::sleep_for(std::chrono::milliseconds(100));
@@ -235,4 +235,5 @@ private:
  ros::Publisher pub;
  ros::Subscriber sub;
  ros::Timer loopControl;
+ int cnt_yaw;
 #endif 

@@ -44,7 +44,7 @@ void process_frame(uint16_t can_id, const std::vector<uint8_t>& data) {
     if (can_id == 0x012) {
         // Ensure data has at least 6 bytes for roll, pitch, yaw (2 bytes each)
         if (data.size() < 6) {
-            std::cerr << "❌ Error: Insufficient data bytes for ID 0x012\n";
+            std::cerr << "Error: Insufficient data bytes for ID 0x012\n";
             return;
         }
 
@@ -59,16 +59,17 @@ void process_frame(uint16_t can_id, const std::vector<uint8_t>& data) {
             yaw += 360.0;
         }
         yaw_angle = yaw; // Update global yaw angle
+        cnt_yaw +=1;
         std::cout << "Updated yaw_angle: " << yaw_angle << " degrees\n";
         // Print data in hex format
         std::cout << "ID 0x012 received: ";
         for (uint8_t b : data) {
             std::cout << std::hex << std::setw(2) << std::setfill('0') << (int)b << " ";
         }
-        std::cout << std::dec << "\n";
+        // std::cout << std::dec << "\n";
 
         // Print roll, pitch, yaw with 2 decimal places
-        std::cout << std::fixed << std::setprecision(2);
+        // std::cout << std::fixed << std::setprecision(2);
         // std::cout << "Roll: " << roll << "\n";
         // std::cout << "Pitch: " << pitch << "\n";
         std::cout << "Yaw: " << yaw << "\n";
@@ -76,7 +77,7 @@ void process_frame(uint16_t can_id, const std::vector<uint8_t>& data) {
     if (can_id == 0x016) {
         // Ensure the data has exactly 8 bytes
         if (data.size() != 8) {
-            std::cerr << "❌ Error: Expected 8 bytes for ID 0x016, but received " << data.size() << " bytes.\n";
+            std::cerr << "Error: Expected 8 bytes for ID 0x016, but received " << data.size() << " bytes.\n";
             return;
         }
 
