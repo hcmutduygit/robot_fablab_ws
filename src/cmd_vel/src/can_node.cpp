@@ -138,7 +138,7 @@ int main(int argc, char **argv){
     ros::NodeHandle nh;
     pub = nh.advertise<utils::pose_robot>("pose_robot",10);
     sub = nh.subscribe("Cmd_vel",10,CallBackVel);
-    loopControl = nh.createTimer(ros::Duration(0.02), 
+    loopControl = nh.createTimer(ros::Duration(0.05), 
         [&](const ros::TimerEvent& event) {
             utils::pose_robot pose;
             pose.yaw = yaw_angle;
