@@ -106,24 +106,23 @@ void send_vel(WaveshareCAN& can) {
         int right_vel = right_wheel_velocity;
         int left_vel = left_wheel_velocity;
 
-        // Convert integers to bytes for CAN transmission
-        uint8_t left_bytes[sizeof(int)];
-        uint8_t right_bytes[sizeof(int)];
-        std::memcpy(left_bytes, &left_vel, sizeof(int));
-        std::memcpy(right_bytes, &right_vel, sizeof(int));
+        // Create 8-byte data array: first 4 bytes for left wheel, last 4 bytes for right wheel
+        uint8_t data[8];
+        
+        // Convert left velocity to bytes (first 4 bytes)
+        std::memcpy(data, &left_vel, sizeof(int));
+        
+        // Convert right velocity to bytes (last 4 bytes)
+        std::memcpy(data + 4, &right_vel, sizeof(int));
 
-        // Create data vectors
-        std::vector<uint8_t> left_data(left_bytes, left_bytes + sizeof(int));
-        std::vector<uint8_t> right_data(right_bytes, right_bytes + sizeof(int));
+        // Create data vector
+        std::vector<uint8_t> velocity_data(data, data + 8);
 
-        // Send left velocity to ID 0x013
-        can.send(0x013, left_data);
+        // Send both velocities to single ID 0x013
+        can.send(0x013, velocity_data);
         std::this_thread::sleep_for(std::chrono::milliseconds(50));
-        // Send right velocity to ID 0x014
-        can.send(0x014, right_data);
-        std::this_thread::sleep_for(std::chrono::milliseconds(50));
-        // std::cout << "Sent left velocity " << left_vel << " to ID 0x013" << std::endl;
-        // std::cout << "Sent right velocity " << right_vel << " to ID 0x014" << std::endl;
+        
+        // std::cout << "Sent left velocity " << left_vel << " and right velocity " << right_vel << " to ID 0x013" << std::endl;
     } catch (const std::exception& e) {
         std::cerr << "Invalid velocity input: " << e.what() << std::endl;
     }
