@@ -93,11 +93,11 @@ public:
             throw std::runtime_error("Failed to write full frame");
         }
 
-        std::cout << "Sent: ID=0x" << std::hex << can_id << " Data=";
-        for (uint8_t b : padded_data) {
-            std::cout << std::hex << (int)b << " ";
-        }
-        std::cout << std::dec << "\n";
+        // std::cout << "Sent: ID=0x" << std::hex << can_id << " Data=";
+        // for (uint8_t b : padded_data) {
+        //     std::cout << std::hex << (int)b << " ";
+        // }
+        // std::cout << std::dec << "\n";
     }
 
     std::pair<uint16_t, std::vector<uint8_t>> receive() {
