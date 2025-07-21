@@ -1,7 +1,15 @@
-#include "USB_CAN_A_Waveshare/waveshare_can.hpp"
+// Use this file for testing without ros
+
+#include "USB_CAN_A/waveshare_can.hpp"
 #include <thread>
 #include <chrono>
 #include <iomanip>
+
+// Convert two bytes to an unsigned 16-bit integer for angles
+uint16_t hex_to_unsigned(const std::vector<uint8_t>& data, size_t start_idx) {
+    // Combine two bytes into a 16-bit unsigned integer (big-endian)
+    return static_cast<uint16_t>((data[start_idx] << 8) | data[start_idx + 1]);
+}
 
 // Convert two bytes to a signed 16-bit integer (equivalent to Python's hex_to_signed)
 int16_t hex_to_signed(const std::vector<uint8_t>& data, size_t start_idx, size_t bits = 16) {
@@ -67,15 +75,14 @@ void process_frame(uint16_t can_id, const std::vector<uint8_t>& data) {
             return;
         }
 
-        // Extract roll, pitch, yaw as signed 16-bit integers and scale by 100.0
-        // double roll = hex_to_signed(data, 0) / 100.0;  // Bytes 0-1
-        // double pitch = hex_to_signed(data, 2) / 100.0; // Bytes 2-3
-        double yaw = hex_to_signed(data, 4) / 100.0;   // Bytes 4-5
+        // Extract roll, pitch, yaw as unsigned 16-bit integers and scale by 100.0
+        // double roll = hex_to_unsigned(data, 0) / 100.0;  // Bytes 0-1
+        // double pitch = hex_to_unsigned(data, 2) / 100.0; // Bytes 2-3
+        double yaw = hex_to_unsigned(data, 4) / 100.0;   // Bytes 4-5
+        
+        // Convert from 0-360 range to -180 to +180 range if needed
         if (yaw > 180.0) {
             yaw -= 360.0;
-        }
-        else if (yaw <= -180.0) {
-            yaw += 360.0;
         }
         // Print data in hex format
         std::cout << "ID 0x012 received: ";
