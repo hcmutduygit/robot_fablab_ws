@@ -51,23 +51,8 @@ uint16_t hex_to_unsigned(const std::vector<uint8_t> &data, size_t start_idx)
 }
 
 // Process CAN frame (equivalent to Python's process_frame)
-void process_frame(uint16_t can_id, const std::vector<uint8_t> &data)
-{
-    switch (can_id)
-    {
-    // Handle RFID
-    case 0x010:
-    {
-    cnt_yaw++;
-    }
-    // Handle CO2 sensor 
-    case 0x011:
-    {
-
-    }
-    // Handle IMU: Roll, Pitch, Yaw angle
-    case 0x012:
-    {
+void process_frame(uint16_t can_id, const std::vector<uint8_t>& data) {
+    if (can_id == 0x012) {
         // Ensure data has at least 6 bytes for roll, pitch, yaw (2 bytes each)
         if (data.size() < 6)
         {
@@ -101,25 +86,9 @@ void process_frame(uint16_t can_id, const std::vector<uint8_t> &data)
         // std::cout << std::fixed << std::setprecision(2);
         // std::cout << "Roll: " << roll << "\n";
         // std::cout << "Pitch: " << pitch << "\n";
-        // std::cout << "Yaw: " << yaw << "\n";
-        break;
+        std::cout << "Yaw: " << yaw << "\n";
     }
-    // Handle IMU: gyro data
-    case 0x013:
-    {
-
-    }
-    // Handle IMU: accelerometer data
-    case 0x014:
-    {
-
-    }
-    case 0x015:
-    {
-    
-    }
-    case 0x016:
-    {
+    else if (can_id == 0x016) {
         // Ensure the data has exactly 8 bytes
         if (data.size() != 8)
         {
@@ -144,13 +113,8 @@ void process_frame(uint16_t can_id, const std::vector<uint8_t> &data)
         std::cout << "Phai: " << group2 << "\n";
         std::cout << "Trai: " << group3 << "\n";
         std::cout << "Sau: " << group4 << "\n";
-        break;
-        cnt_yaw++;
-        break;
-    }
-
-    case 0x017:
-    {
+    }   
+    else if (can_id == 0x017) {
         // Ensure the data has exactly 8 bytes
         if (data.size() != 8)
         {
@@ -211,9 +175,8 @@ void send_vel(WaveshareCAN &can)
 
         // Send both velocities to single ID 0x013
         can.send(0x013, velocity_data);
-        can.send(0x014, velocity_data);
-        // std::this_thread::sleep_for(std::chrono::milliseconds(50));
-
+        std::this_thread::sleep_for(std::chrono::milliseconds(50));
+        
         // std::cout << "Sent left velocity " << left_vel << " and right velocity " << right_vel << " to ID 0x013" << std::endl;
     }
     catch (const std::exception &e)
