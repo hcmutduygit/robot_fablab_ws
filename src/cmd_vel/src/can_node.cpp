@@ -64,6 +64,22 @@ void process_frame(uint16_t can_id, const std::vector<uint8_t> &data)
             std::cout << std::hex << std::setw(2) << std::setfill('0') << (int)b << " ";
         }
         std::cout << std::dec << "\n";
+        if (data == std::vector<uint8_t>{0xB1, 0x0B, 0x32, 0x1D, 0x95})
+        {
+            std::cout << "RFID detected: HOAI PHU\n";
+        }
+        else if (data == std::vector<uint8_t>{0xD2, 0xB1, 0x3D, 0x05, 0x5B})
+        {
+            std::cout << "RFID detected: MINH KY\n";
+        }
+        else if (data == std::vector<uint8_t>{0xAB, 0x11, 0xA9, 0x00, 0x13})
+        {
+            std::cout << "RFID detected: QUANG DUY\n";
+        }
+        else
+        {
+            std::cout << "Unknown RFID data\n";
+        }
         cnt_receive++;
         break;
     }
