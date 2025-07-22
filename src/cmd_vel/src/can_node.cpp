@@ -68,7 +68,7 @@ void process_frame(uint16_t can_id, const std::vector<uint8_t> &data)
         {
             std::cout << "RFID detected: HOAI PHU\n";
         }
-        else if (data == std::vector<uint8_t>{0xD2, 0xB1, 0x3D, 0x05, 0x5B})
+        else if (data == std::vector<uint8_t>{0xd2, 0xb1, 0x3d, 0x05, 0x5b})
         {
             std::cout << "RFID detected: MINH KY\n";
         }
