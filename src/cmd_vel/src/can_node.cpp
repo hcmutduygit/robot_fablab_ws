@@ -9,9 +9,9 @@ WaveshareCAN can("/dev/ttyUSB0", 2000000, 2.0);
 std::string getRFIDName(const std::vector<uint8_t>& rfid_data) {
     // Define RFID to name mapping
     static const std::map<std::vector<uint8_t>, std::string> rfid_map = {
-        {{0xB1, 0x0B, 0x32, 0x1D, 0x95}, "HOAI PHU"},
-        {{0xD2, 0xB1, 0x3D, 0x05, 0x5B}, "MINH KY"},
-        {{0xAB, 0x11, 0xA9, 0x00, 0x13}, "QUANG DUY"}
+        {{b1, 0B, 32, 1d, 95}, "HOAI PHU"},
+        {{d2, b1, 3d, 05, 5b}, "MINH KY"},
+        {{ab, 11, a9, 00, 13}, "QUANG DUY"}
     };
     
     // Look up the RFID data in the map
