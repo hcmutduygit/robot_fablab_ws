@@ -1,9 +1,25 @@
 #include <cmath>
 #include "can_node.h"
-#include "../MQTT/name_publisher.h"
+#include <cstdlib>
+#include <string>
 #define PI 3.14159265358979323846
 
 WaveshareCAN can("/dev/ttyUSB0", 2000000, 2.0);
+
+// Simple function to publish MQTT message via Python script
+void publishMQTTMessage(const std::string& user_name, const std::string& mqtt_msg) {
+    std::string python_script = "/home/duybuntu/robot_fablab_ws/src/MQTT/name_publisher.py";
+    std::string command = "python3 " + python_script + " \"" + mqtt_msg + "\" \"" + user_name + "\"";
+    
+    std::cout << "Publishing MQTT message for " << user_name << ": " << mqtt_msg << std::endl;
+    int result = system(command.c_str());
+    
+    if (result == 0) {
+        std::cout << "MQTT message sent successfully!" << std::endl;
+    } else {
+        std::cout << "Failed to send MQTT message!" << std::endl;
+    }
+}
 
 int ConvertPulse(float &velocity)
 {
@@ -68,17 +84,17 @@ void process_frame(uint16_t can_id, const std::vector<uint8_t> &data)
         if (data == std::vector<uint8_t>{0xB1, 0x0B, 0x32, 0x1D, 0x95})
         {
             std::cout << "RFID detected: HOAI PHU\n";
-            MQTTPublisher::publishUserMessage("HOAI PHU", "Phu");
+            publishMQTTMessage("HOAI PHU", "Phu");
         }
         else if (data == std::vector<uint8_t>{0xd2, 0xb1, 0x3d, 0x05, 0x5b, 0x00, 0x00, 0x00})
         {
             std::cout << "RFID detected: MINH KY\n";
-            MQTTPublisher::publishUserMessage("Ky");
+            publishMQTTMessage("MINH KY", "Ky");
         }
         else if (data == std::vector<uint8_t>{0xAB, 0x11, 0xA9, 0x00, 0x13})
         {
             std::cout << "RFID detected: QUANG DUY\n";
-            MQTTPublisher::publishUserMessage("QUANG DUY", "Duy");
+            publishMQTTMessage("QUANG DUY", "Duy");
         }
         else
         {
