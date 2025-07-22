@@ -264,5 +264,6 @@ private:
  ros::Subscriber sub;
  ros::Timer loopControl;
  ros::Timer cnt_byte;
- int cnt_yaw;
+ int cnt_receive = 0;
+ int cnt_send = 0;
 #endif 
