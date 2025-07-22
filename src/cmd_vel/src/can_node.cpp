@@ -8,7 +8,7 @@ WaveshareCAN can("/dev/ttyUSB0", 2000000, 2.0);
 
 // Simple function to publish MQTT message via Python script
 void publishMQTTMessage(const std::string& user_name, const std::string& mqtt_msg) {
-    std::string python_script = "/home/duybuntu/robot_fablab_ws/src/MQTT/name_publisher.py";
+    std::string python_script = "/home/jetson/robot_fablab_ws/src/MQTT/name_publisher.py";
     std::string command = "python3 " + python_script + " \"" + mqtt_msg + "\" \"" + user_name + "\"";
     
     std::cout << "Publishing MQTT message for " << user_name << ": " << mqtt_msg << std::endl;
