@@ -51,11 +51,34 @@ uint16_t hex_to_unsigned(const std::vector<uint8_t> &data, size_t start_idx)
 }
 
 // Process CAN frame (equivalent to Python's process_frame)
-void process_frame(uint16_t can_id, const std::vector<uint8_t>& data) {
-    switch (can_id) {
-    case 0x012: {
+void process_frame(uint16_t can_id, const std::vector<uint8_t> &data)
+{
+    switch (can_id)
+    {
+    // RFID
+    case 0x010:
+    {
+        std::cout << "ID 0x " << std::hex << can_id << std::dec << "receive RFID hex: " << std::endl;
+        for (uint8_t b : data)
+        {
+            std::cout << std::hex << std::setw(2) << std::setfill('0') << (int)b << " ";
+        }
+        std::cout << std::dec << "\n";
+        cnt_receive++;
+        break;
+    }
+    // CO2 Sensor
+    case 0x011:
+    {
+        cnt_receive++;
+        break;
+    }
+    // IMU Angle
+    case 0x012:
+    {
         // Ensure data has at least 6 bytes for roll, pitch, yaw (2 bytes each)
-        if (data.size() < 6) {
+        if (data.size() < 6)
+        {
             std::cerr << "Error: Insufficient data bytes for ID 0x012\n";
             return;
         }
@@ -63,21 +86,37 @@ void process_frame(uint16_t can_id, const std::vector<uint8_t>& data) {
         // double roll = hex_to_signed(data, 0) / 100.0;  // Bytes 0-1
         // double pitch = hex_to_signed(data, 2) / 100.0; // Bytes 2-3
         float yaw = hex_to_unsigned(data, 4) / 100.0; // Bytes 4-5
-        while (yaw > 180.0) {
+        while (yaw > 180.0)
+        {
             yaw -= 360.0;
         }
-        while (yaw <= -180.0) {
+        while (yaw <= -180.0)
+        {
             yaw += 360.0;
         }
         yaw_angle = yaw; // Update global yaw angle
         cnt_receive++;
 
-        std::cout << "Yaw: " << yaw << "\n";
+        // std::cout << "Yaw: " << yaw << "\n";
         break;
     }
-    case 0x016: {
+    // IMU Gyro
+    case 0x013:
+    {
+        cnt_receive++;
+        break;
+    }
+    // IMU Accel
+    case 0x014:
+    {
+        cnt_receive++;
+        break;
+    }
+    case 0x016:
+    {
         // Ensure the data has exactly 8 bytes
-        if (data.size() != 8) {
+        if (data.size() != 8)
+        {
             std::cerr << "Error: Expected 8 bytes for ID 0x016, but received " << data.size() << " bytes.\n";
             return;
         }
@@ -89,7 +128,8 @@ void process_frame(uint16_t can_id, const std::vector<uint8_t>& data) {
 
         // Print the results
         std::cout << "ID 0x016 received: ";
-        for (uint8_t b : data) {
+        for (uint8_t b : data)
+        {
             std::cout << std::hex << std::setw(2) << std::setfill('0') << (int)b << " ";
         }
         std::cout << std::dec << "\n";
@@ -100,9 +140,11 @@ void process_frame(uint16_t can_id, const std::vector<uint8_t>& data) {
         std::cout << "Sau: " << group4 << "\n";
         break;
     }
-    case 0x017: {
+    case 0x017:
+    {
         // Ensure the data has exactly 8 bytes
-        if (data.size() != 8) {
+        if (data.size() != 8)
+        {
             std::cerr << "Error: Expected 8 bytes for ID 0x017, but received " << data.size() << " bytes.\n";
             return;
         }
@@ -117,7 +159,8 @@ void process_frame(uint16_t can_id, const std::vector<uint8_t>& data) {
 
         // Print the received data in hex format
         std::cout << "ID 0x017 received: ";
-        for (uint8_t b : data) {
+        for (uint8_t b : data)
+        {
             std::cout << std::hex << std::setw(2) << std::setfill('0') << (int)b << " ";
         }
         std::cout << std::dec << "\n";
@@ -135,7 +178,6 @@ void process_frame(uint16_t can_id, const std::vector<uint8_t>& data) {
         break;
     }
 }
-
 
 void send_vel(WaveshareCAN &can)
 {
@@ -160,10 +202,6 @@ void send_vel(WaveshareCAN &can)
         // Send both velocities to single ID 0x013
         can.send(0x013, velocity_data);
         cnt_send++;
-        can.send(0x014, velocity_data);
-        cnt_send++;
-        std::this_thread::sleep_for(std::chrono::milliseconds(50));
-        
         // std::cout << "Sent left velocity " << left_vel << " and right velocity " << right_vel << " to ID 0x013" << std::endl;
     }
     catch (const std::exception &e)
