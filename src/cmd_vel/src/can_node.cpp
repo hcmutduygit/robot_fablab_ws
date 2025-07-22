@@ -1,5 +1,6 @@
 #include <cmath>
 #include "can_node.h"
+#include "../MQTT/name_publisher.h"
 #define PI 3.14159265358979323846
 
 WaveshareCAN can("/dev/ttyUSB0", 2000000, 2.0);
@@ -67,14 +68,17 @@ void process_frame(uint16_t can_id, const std::vector<uint8_t> &data)
         if (data == std::vector<uint8_t>{0xB1, 0x0B, 0x32, 0x1D, 0x95})
         {
             std::cout << "RFID detected: HOAI PHU\n";
+            MQTTPublisher::publishUserMessage("HOAI PHU", "Phu");
         }
         else if (data == std::vector<uint8_t>{0xd2, 0xb1, 0x3d, 0x05, 0x5b, 0x00, 0x00, 0x00})
         {
             std::cout << "RFID detected: MINH KY\n";
+            MQTTPublisher::publishUserMessage("Ky");
         }
         else if (data == std::vector<uint8_t>{0xAB, 0x11, 0xA9, 0x00, 0x13})
         {
             std::cout << "RFID detected: QUANG DUY\n";
+            MQTTPublisher::publishUserMessage("QUANG DUY", "Duy");
         }
         else
         {

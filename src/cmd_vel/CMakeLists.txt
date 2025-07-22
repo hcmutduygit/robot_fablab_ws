@@ -135,6 +135,10 @@ include_directories(
 ## Declare a C++ executable
 ## With catkin_make all packages are built within a single CMake context
 ## The recommended prefix ensures that target names across packages don't collide
+
+# Build MQTT library first
+add_subdirectory(../MQTT mqtt_build)
+
 add_executable(can_node 
   src/can_node.cpp)
 
@@ -151,6 +155,7 @@ add_dependencies(can_node ${can_node_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS
 ## Specify libraries to link a library or executable target against
 target_link_libraries(can_node
   ${catkin_LIBRARIES}
+  mqtt_publisher
 )
 
 #############
