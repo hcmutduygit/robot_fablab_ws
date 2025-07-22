@@ -1,27 +1,8 @@
 #include <cmath>
 #include "can_node.h"
-#include <map>
 #define PI 3.14159265358979323846
 
 WaveshareCAN can("/dev/ttyUSB0", 2000000, 2.0);
-
-// Function to get name from RFID data
-std::string getRFIDName(const std::vector<uint8_t>& rfid_data) {
-    // Define RFID to name mapping
-    static const std::map<std::vector<uint8_t>, std::string> rfid_map = {
-        {{b1, 0B, 32, 1d, 95}, "HOAI PHU"},
-        {{d2, b1, 3d, 05, 5b}, "MINH KY"},
-        {{ab, 11, a9, 00, 13}, "QUANG DUY"}
-    };
-    
-    // Look up the RFID data in the map
-    auto it = rfid_map.find(rfid_data);
-    if (it != rfid_map.end()) {
-        return it->second;
-    }
-    
-    return "UNKNOWN USER";
-}
 
 int ConvertPulse(float &velocity)
 {
@@ -77,9 +58,7 @@ void process_frame(uint16_t can_id, const std::vector<uint8_t> &data)
     // RFID
     case 0x010:
     {
-        std::string user_name = getRFIDName(data);
-        std::cout << "ID 0x" << std::hex << can_id << std::dec << " RFID detected: " << user_name << std::endl;
-        std::cout << "RFID hex data: ";
+        std::cout << "ID 0x " << std::hex << can_id << std::dec << "receive RFID hex: " << std::endl;
         for (uint8_t b : data)
         {
             std::cout << std::hex << std::setw(2) << std::setfill('0') << (int)b << " ";
