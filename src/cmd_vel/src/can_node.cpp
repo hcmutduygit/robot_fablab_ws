@@ -58,17 +58,18 @@ void process_frame(uint16_t can_id, const std::vector<uint8_t> &data)
     // RFID
     case 0x010:
     {
-        std::cout << "ID 0x " << std::hex << can_id << std::dec << "receive RFID hex: " << std::endl;
-        for (uint8_t b : data)
-        {
-            std::cout << std::hex << std::setw(2) << std::setfill('0') << (int)b << " ";
-        }
+        std::cout << "ID 0x " << std::hex << can_id << std::dec << " receive RFID hex: " << std::endl;
+        // for (uint8_t b : data)
+        // {
+        //     std::cout << std::hex << std::setw(2) << std::setfill('0') << (int)b << " ";
+        // };
+        std::cout << data[2] << std::endl;
         std::cout << std::dec << "\n";
         if (data == std::vector<uint8_t>{0xB1, 0x0B, 0x32, 0x1D, 0x95})
         {
             std::cout << "RFID detected: HOAI PHU\n";
         }
-        else if (data == std::vector<uint8_t>{d2, b1, 3d, 05, 5b, 00, 00})
+        else if (data == std::vector<uint8_t>{0xd2, 0xb1, 0x3d, 0x05, 0x5b, 0x00, 0x00})
         {
             std::cout << "RFID detected: MINH KY\n";
         }
