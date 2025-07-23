@@ -2,9 +2,21 @@
 #include "can_node.h"
 #include <cstdlib>
 #include <string>
+#include <map>
+#include <vector>
 #define PI 3.14159265358979323846
 
 WaveshareCAN can("/dev/ttyUSB0", 2000000, 2.0);
+
+// RFID database - mapping RFID data to user info
+static const std::map<std::vector<uint8_t>, std::pair<std::string, std::string>> rfid_database = {
+    {{0xd2, 0x0f, 0x49, 0x2e, 0xba, 0x00, 0x00, 0x00}, {"HOAI PHU", "Phu"}},
+    {{0xd2, 0xb1, 0x3d, 0x05, 0x5b, 0x00, 0x00, 0x00}, {"MINH KY", "Ky"}},
+    {{0xfa, 0xdc, 0x02, 0xcd, 0xe9, 0x00, 0x00, 0x00}, {"QUANG DUY", "Duy"}},
+    {{0xef, 0xa8, 0x98, 0x1e, 0xc1, 0x00, 0x00, 0x00}, {"CHI THIEN", "Thien"}},
+    {{0xb6, 0x87, 0x13, 0x2b, 0x09, 0x00, 0x00, 0x00}, {"VAN LOI", "Loi"}},
+    {{0xc2, 0xbf, 0xb0, 0x2e, 0xe3, 0x00, 0x00, 0x00}, {"BACH THU", "Thu"}}
+};
 
 // Simple function to publish MQTT message via Python script
 void publishMQTTMessage(const std::string& user_name, const std::string& mqtt_msg) {
@@ -75,31 +87,24 @@ void process_frame(uint16_t can_id, const std::vector<uint8_t> &data)
     // RFID
     case 0x010:
     {
-        std::cout << "ID 0x " << std::hex << can_id << std::dec << " receive RFID hex: " << std::endl;
-        for (uint8_t b : data)
-        {
+        std::cout << "ID 0x" << std::hex << can_id << std::dec << " receive RFID hex: ";
+        for (uint8_t b : data) {
             std::cout << std::hex << std::setw(2) << std::setfill('0') << (int)b << " ";
-        };
-        std::cout << std::dec << "\n";
-        if (data == std::vector<uint8_t>{0xB1, 0x0B, 0x32, 0x1D, 0x95})
-        {
-            std::cout << "RFID detected: HOAI PHU\n";
-            publishMQTTMessage("HOAI PHU", "Phu");
         }
-        else if (data == std::vector<uint8_t>{0xd2, 0xb1, 0x3d, 0x05, 0x5b, 0x00, 0x00, 0x00})
-        {
-            std::cout << "RFID detected: MINH KY\n";
-            publishMQTTMessage("MINH KY", "Ky");
+        std::cout << std::dec << std::endl;
+        
+        // Lookup RFID in database
+        auto it = rfid_database.find(data);
+        if (it != rfid_database.end()) {
+            const std::string& full_name = it->second.first;
+            const std::string& short_name = it->second.second;
+            
+            std::cout << "RFID detected: " << full_name << std::endl;
+            publishMQTTMessage(full_name, short_name);
+        } else {
+            std::cout << "Unknown RFID data" << std::endl;
         }
-        else if (data == std::vector<uint8_t>{0xAB, 0x11, 0xA9, 0x00, 0x13})
-        {
-            std::cout << "RFID detected: QUANG DUY\n";
-            publishMQTTMessage("QUANG DUY", "Duy");
-        }
-        else
-        {
-            std::cout << "Unknown RFID data\n";
-        }
+        
         cnt_receive++;
         break;
     }
