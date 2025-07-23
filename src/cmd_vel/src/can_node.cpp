@@ -20,16 +20,17 @@ static const std::map<std::vector<uint8_t>, std::pair<std::string, std::string>>
 
 // Simple function to publish MQTT message via Python script
 void publishMQTTMessage(const std::string& user_name, const std::string& mqtt_msg) {
-    std::string python_script = "/home/jetson/robot_fablab_ws/src/MQTT/name_publisher.py";
+    std::string python_script = "/home/duybuntu/robot_fablab_ws/src/MQTT/name_publisher.py";
     std::string command = "python3 " + python_script + " \"" + mqtt_msg + "\" \"" + user_name + "\"";
     
     std::cout << "Publishing MQTT message for " << user_name << ": " << mqtt_msg << std::endl;
+    std::cout << "Command: " << command << std::endl;  // Debug: show command
     int result = system(command.c_str());
     
     if (result == 0) {
         std::cout << "MQTT message sent successfully!" << std::endl;
     } else {
-        std::cout << "Failed to send MQTT message!" << std::endl;
+        std::cout << "Failed to send MQTT message! Exit code: " << result << std::endl;
     }
 }
 
