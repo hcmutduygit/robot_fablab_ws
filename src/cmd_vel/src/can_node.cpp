@@ -24,7 +24,7 @@ static const std::map<std::vector<uint8_t>, std::pair<std::string, std::string>>
 // Simple function to publish MQTT message via Python script
 void publishMQTTMessage(const std::string& user_name, const std::string& mqtt_msg, const std::string& timestamp) {
     std::string python_script = "/home/jetson/robot_fablab_ws/src/MQTT/name_publisher.py";
-    std::string command = "python3 " + python_script + " \"" + mqtt_msg + "\" \"" + user_name + "\"" + timestamp + "\"";
+    std::string command = "python3 " + python_script + " \"" + mqtt_msg + "\" \"" + user_name + "\" \"" + timestamp + "\"";
     
     std::cout << "Publishing MQTT message for " << user_name << " at " << timestamp <<  ": " << mqtt_msg << std::endl;
     int result = system(command.c_str());
@@ -103,7 +103,7 @@ void process_frame(uint16_t can_id, const std::vector<uint8_t> &data)
             const std::string& short_name = it->second.second;
 
             auto now = std::chrono::system_clock::now(); 
-            std::time_t now_c = std::chrono::system_clock::to_time_t(now);0
+            std::time_t now_time = std::chrono::system_clock::to_time_t(now);
 
             std::stringstream ss;
             ss << std::put_time(std::localtime(&now_time), "%H:%M:%S");
