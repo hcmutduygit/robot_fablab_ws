@@ -1,8 +1,40 @@
 #include <cmath>
 #include "can_node.h"
+#include <cstdlib>
+#include <string>
+#include <map>
+#include <vector>
+#include <chrono> // For time measurement
+#include <ctime> 
+#include <iomanip>
 #define PI 3.14159265358979323846
 
 WaveshareCAN can("/dev/ttyUSB0", 2000000, 2.0);
+
+// RFID database - mapping RFID data to user info
+static const std::map<std::vector<uint8_t>, std::pair<std::string, std::string>> rfid_database = {
+    {{0xd2, 0x0f, 0x49, 0x2e, 0xba, 0x00, 0x00, 0x00}, {"HOAI PHU", "Phu"}},
+    {{0xd2, 0xb1, 0x3d, 0x05, 0x5b, 0x00, 0x00, 0x00}, {"MINH KY", "Ky"}},
+    {{0xfa, 0xdc, 0x02, 0xcd, 0xe9, 0x00, 0x00, 0x00}, {"QUANG DUY", "Duy"}},
+    {{0xef, 0xa8, 0x98, 0x1e, 0xc1, 0x00, 0x00, 0x00}, {"CHI THIEN", "Thien"}},
+    {{0xb6, 0x87, 0x13, 0x2b, 0x09, 0x00, 0x00, 0x00}, {"VAN LOI", "Loi"}},
+    {{0xc2, 0xbf, 0xb0, 0x2e, 0xe3, 0x00, 0x00, 0x00}, {"BACH THU", "Thu"}}
+};
+
+// Simple function to publish MQTT message via Python script
+void publishMQTTMessage(const std::string& user_name, const std::string& mqtt_msg, const std::string& timestamp) {
+    std::string python_script = "/home/jetson/robot_fablab_ws/src/MQTT/name_publisher.py";
+    std::string command = "python3 " + python_script + " \"" + mqtt_msg + "\" \"" + user_name + "\" \"" + timestamp + "\"";
+    
+    std::cout << "Publishing MQTT message for " << user_name << " at " << timestamp <<  ": " << mqtt_msg << std::endl;
+    int result = system(command.c_str());
+    
+    if (result == 0) {
+        std::cout << "MQTT message sent successfully!" << std::endl;
+    } else {
+        std::cout << "Failed to send MQTT message!" << std::endl;
+    }
+}
 
 int ConvertPulse(float &velocity)
 {
@@ -51,8 +83,50 @@ uint16_t hex_to_unsigned(const std::vector<uint8_t> &data, size_t start_idx)
 }
 
 // Process CAN frame (equivalent to Python's process_frame)
-void process_frame(uint16_t can_id, const std::vector<uint8_t>& data) {
-    if (can_id == 0x012) {
+void process_frame(uint16_t can_id, const std::vector<uint8_t> &data)
+{
+    switch (can_id)
+    {
+    // RFID
+    case 0x010:
+    {
+        std::cout << "ID 0x" << std::hex << can_id << std::dec << " receive RFID hex: ";
+        for (uint8_t b : data) {
+            std::cout << std::hex << std::setw(2) << std::setfill('0') << (int)b << " ";
+        }
+        std::cout << std::dec << std::endl;
+        
+        // Lookup RFID in database
+        auto it = rfid_database.find(data);
+        if (it != rfid_database.end()) {
+            const std::string& full_name = it->second.first;
+            const std::string& short_name = it->second.second;
+
+            auto now = std::chrono::system_clock::now(); 
+            std::time_t now_time = std::chrono::system_clock::to_time_t(now);
+
+            std::stringstream ss;
+            ss << std::put_time(std::localtime(&now_time), "%H:%M:%S");
+            std::string timestamp = ss.str();
+        
+            std::cout << "RFID detected: " << full_name << std::endl;
+            publishMQTTMessage(full_name, short_name, timestamp);
+        } else {
+            std::cout << "Unknown RFID data" << std::endl;
+        }
+        
+        cnt_receive++;
+        break;
+    }
+    // CO2 Sensor
+    case 0x011:
+    {
+        cnt_receive++;
+        break;
+    }
+    // IMU Angle
+    case 0x012:
+    {
         // Ensure data has at least 6 bytes for roll, pitch, yaw (2 bytes each)
         if (data.size() < 6)
         {
@@ -72,23 +146,25 @@ void process_frame(uint16_t can_id, const std::vector<uint8_t>& data) {
             yaw += 360.0;
         }
         yaw_angle = yaw; // Update global yaw angle
-        cnt_yaw++;
+        cnt_receive++;
 
-        // std::cout << "Updated yaw_angle: " << yaw_angle << " degrees\n";
-        // Print data in hex format
-        // std::cout << "ID 0x012 received: ";
-        // for (uint8_t b : data) {
-        //     std::cout << std::hex << std::setw(2) << std::setfill('0') << (int)b << " ";
-        // }
-        // std::cout << std::dec << "\n";
-
-        // Print roll, pitch, yaw with 2 decimal places
-        // std::cout << std::fixed << std::setprecision(2);
-        // std::cout << "Roll: " << roll << "\n";
-        // std::cout << "Pitch: " << pitch << "\n";
-        std::cout << "Yaw: " << yaw << "\n";
+        // std::cout << "Yaw: " << yaw << "\n";
+        break;
     }
-    else if (can_id == 0x016) {
+    // IMU Gyro
+    case 0x013:
+    {
+        cnt_receive++;
+        break;
+    }
+    // IMU Accel
+    case 0x014:
+    {
+        cnt_receive++;
+        break;
+    }
+    case 0x016:
+    {
         // Ensure the data has exactly 8 bytes
         if (data.size() != 8)
         {
@@ -113,8 +189,10 @@ void process_frame(uint16_t can_id, const std::vector<uint8_t>& data) {
         std::cout << "Phai: " << group2 << "\n";
         std::cout << "Trai: " << group3 << "\n";
         std::cout << "Sau: " << group4 << "\n";
-    }   
-    else if (can_id == 0x017) {
+        break;
+    }
+    case 0x017:
+    {
         // Ensure the data has exactly 8 bytes
         if (data.size() != 8)
         {
@@ -141,14 +219,13 @@ void process_frame(uint16_t can_id, const std::vector<uint8_t>& data) {
         // Print the received velocities
         std::cout << "Received Left Velocity: " << received_left_vel << "\n";
         std::cout << "Received Right Velocity: " << received_right_vel << "\n";
-        cnt_yaw++;
+        cnt_receive++;
         break;
     }
-
     default:
         // Handle unknown CAN IDs
         std::cout << "Unknown CAN ID: 0x" << std::hex << can_id << std::dec << std::endl;
-        cnt_yaw++;
+        cnt_receive++;
         break;
     }
 }
@@ -175,8 +252,7 @@ void send_vel(WaveshareCAN &can)
 
         // Send both velocities to single ID 0x013
         can.send(0x013, velocity_data);
-        std::this_thread::sleep_for(std::chrono::milliseconds(50));
-        
+        cnt_send++;
         // std::cout << "Sent left velocity " << left_vel << " and right velocity " << right_vel << " to ID 0x013" << std::endl;
     }
     catch (const std::exception &e)
@@ -187,8 +263,10 @@ void send_vel(WaveshareCAN &can)
 
 void CntBytes(const ros::TimerEvent &event)
 {
-    ROS_INFO("Yaw Packages = %d Pkg/s", cnt_yaw);
-    cnt_yaw = 0;
+    ROS_INFO("Receive Packages = %d Pkg/s", cnt_receive);
+    cnt_receive = 0;
+    ROS_INFO("Send Packages = %d Pkg/s", cnt_send);
+    cnt_send = 0;
 }
 
 void TransmitSTM(const ros::TimerEvent &event)
@@ -204,6 +282,7 @@ int main(int argc, char **argv)
     can.open();
     can.start_receive_loop(process_frame);
     ros::init(argc, argv, "Cmd_vel");
+    // send_vel(can);
     ros::NodeHandle nh;
     pub = nh.advertise<utils::pose_robot>("pose_robot", 10);
     sub = nh.subscribe("Cmd_vel", 10, CallBackVel);

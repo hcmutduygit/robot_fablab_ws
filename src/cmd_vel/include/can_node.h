@@ -163,45 +163,28 @@ public:
 
         uint16_t can_id = idl | (idh[0] << 8);
 
-        std::cout << "📥 Received: ID=0x" << std::hex << can_id << " Data=";
-        for (uint8_t b : data) {
-            std::cout << std::hex << (int)b << " ";
-        }
-        std::cout << std::dec << "\n";
+        // std::cout << "📥 Received: ID=0x" << std::hex << can_id << " Data=";
+        // for (uint8_t b : data) {
+        //     std::cout << std::hex << (int)b << " ";
+        // }
+        // std::cout << std::dec << "\n";
 
         return {can_id, data};
     }
 
-    // void start_receive_loop(Callback callback) {
-    //     if (rx_thread_ && rx_thread_->joinable()) {
-    //         std::cout << "Receive loop already running.\n";
-    //         return;
-    //     }
-    //     rx_running_ = true;
-    //     rx_thread_ = std::make_unique<std::thread>(
-    //         &WaveshareCAN::receive, this, callback
-    //     );
-    //     std::cout << "Receive loop started (thread)\n";
-    // }
     void start_receive_loop(Callback callback) {
-    if (rx_thread_ && rx_thread_->joinable()) {
-        std::cout << "Receive thread already running.\n";
-        return;
+        if (rx_thread_ && rx_thread_->joinable()) {
+            std::cout << "🔄 Receive loop already running.\n";
+            return;
+        }
+
+        rx_running_ = true;
+        rx_thread_ = std::make_unique<std::thread>(
+            &WaveshareCAN::receive_worker, this, callback
+        );
+        std::cout << "🔄 Receive loop started (thread)\n";
     }
 
-    rx_thread_ = std::make_unique<std::thread>([this, callback]() {
-        try {
-            auto [can_id, data] = receive();
-            callback(can_id, data);
-        } catch (const std::exception& e) {
-            std::cerr << "Receive error: " << e.what() << std::endl;
-            tcflush(fd_, TCIFLUSH);
-        }
-    });
-
-    rx_thread_->detach();  
-    std::cout << "Receive thread started (single receive)\n";
-}
 
 
 private:
@@ -229,28 +212,19 @@ private:
         return true;
     }
 
-    // void receive_worker(Callback callback) {
-    //     while (rx_running_) {
-    //         try {
-    //             auto [can_id, data] = receive();
-    //             callback(can_id, data);
-    //         } catch (const std::exception& e) {
-    //             std::cerr << "Error in receive loop: " << e.what() << ". Retrying...\n";
-    //             // Clear input buffer to resynchronize
-    //             tcflush(fd_, TCIFLUSH);
-    //             std::this_thread::sleep_for(std::chrono::milliseconds(100));
-    //         }
-    //     }
-    // }
-    void receive(Callback callback) {
-    try {
-        auto [can_id, data] = receive();
-        callback(can_id, data);
-    } catch (const std::exception& e) {
-        std::cerr << "Receive error: " << e.what() << std::endl;
-        tcflush(fd_, TCIFLUSH);
+    void receive_worker(Callback callback) {
+        while (rx_running_) {
+            try {
+                auto [can_id, data] = receive();
+                callback(can_id, data);
+            } catch (const std::exception& e) {
+                std::cerr << "Error in receive loop: " << e.what() << ". Retrying...\n";
+                // Clear input buffer to resynchronize
+                tcflush(fd_, TCIFLUSH);
+                std::this_thread::sleep_for(std::chrono::milliseconds(100));
+            }
+        }
     }
-}
 
     std::string port_;
     uint32_t baudrate_;
@@ -264,5 +238,6 @@ private:
  ros::Subscriber sub;
  ros::Timer loopControl;
  ros::Timer cnt_byte;
- int cnt_yaw;
+ int cnt_receive = 0;
+ int cnt_send = 0;
 #endif 
