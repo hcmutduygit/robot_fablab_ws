@@ -1,3 +1,5 @@
+#! /usr/bin/env python3
+
 from flask import Flask, Response
 import cv2
 import os
