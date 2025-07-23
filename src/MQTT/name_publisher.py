@@ -20,24 +20,38 @@ else:
 
 print(f"Received arguments: MSG='{MQTT_MSG}', USER='{user_name}'")
 
-# Define on_connect event Handler
-def on_connect(client, userdata, flags, reason_code, properties=None):
-    print(f"Connected with result code {reason_code}")
-    # Publish message after connecting
+# Define callback functions for both old and new versions
+def on_connect_old(client, userdata, flags, rc):
+    print(f"Connected with result code {rc}")
     client.publish(MQTT_TOPIC, json.dumps({"message": MQTT_MSG, "user": user_name}))
     print(f"Published: {MQTT_MSG} for user: {user_name}")
     client.disconnect()
 
-# Define on_publish event Handler
-def on_publish(client, userdata, mid, reason_code=None, properties=None):
+def on_connect_new(client, userdata, flags, reason_code, properties=None):
+    print(f"Connected with result code {reason_code}")
+    client.publish(MQTT_TOPIC, json.dumps({"message": MQTT_MSG, "user": user_name}))
+    print(f"Published: {MQTT_MSG} for user: {user_name}")
+    client.disconnect()
+
+def on_publish_old(client, userdata, mid):
     print(f"Message published with mid: {mid}")
 
-# Initiate MQTT Client (fix deprecation warning)
-mqttc = mqtt.Client(mqtt.CallbackAPIVersion.VERSION2)
+def on_publish_new(client, userdata, mid, reason_code=None, properties=None):
+    print(f"Message published with mid: {mid}")
 
-# Register Event Handlers
-mqttc.on_publish = on_publish
-mqttc.on_connect = on_connect
+# Create MQTT client with version compatibility
+try:
+    # Try new version API
+    mqttc = mqtt.Client(mqtt.CallbackAPIVersion.VERSION2)
+    mqttc.on_connect = on_connect_new
+    mqttc.on_publish = on_publish_new
+    print("Using paho-mqtt v2 API")
+except AttributeError:
+    # Use old version API
+    mqttc = mqtt.Client()
+    mqttc.on_connect = on_connect_old
+    mqttc.on_publish = on_publish_old
+    print("Using paho-mqtt v1 API")
 
 try:
     # Connect with MQTT Broker
