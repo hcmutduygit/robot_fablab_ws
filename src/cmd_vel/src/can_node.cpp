@@ -277,7 +277,7 @@ int main(int argc, char **argv)
     pub = nh.advertise<utils::pose_robot>("pose_robot", 10);
     sub = nh.subscribe("Cmd_vel", 10, CallBackVel);
     cnt_byte = nh.createTimer(ros::Duration(1), CntBytes);
-    loopControl = nh.createTimer(ros::Duration(0.1), TransmitSTM);
+    loopControl = nh.createTimer(ros::Duration(0.01), TransmitSTM);
     ros::spin();
     return 0;
 }
