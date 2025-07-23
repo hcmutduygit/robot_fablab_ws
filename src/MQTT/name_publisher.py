@@ -13,24 +13,26 @@ MQTT_TOPIC = "robot/attendance"
 # Get message from command line argument
 if len(sys.argv) > 1:
     MQTT_MSG = sys.argv[1]
-    user_name = sys.argv[2] if len(sys.argv) > 2 else "Unknown"
+    user_name = sys.argv[2] 
+    timestamp = sys.argv[3] if len(sys.argv) > 3 else "Unknown"
 else:
     MQTT_MSG = "Default"
     user_name = "Unknown"
+    timestamp = "Unknown"
 
-print(f"Received arguments: MSG='{MQTT_MSG}', USER='{user_name}'")
+print(f"Received arguments: MSG='{MQTT_MSG}', USER='{user_name}', TIMESTAMP='{timestamp}'")
 
 # Define callback functions for both old and new versions
 def on_connect_old(client, userdata, flags, rc):
     print(f"Connected with result code {rc}")
-    client.publish(MQTT_TOPIC, json.dumps({"message": MQTT_MSG, "user": user_name}))
-    print(f"Published: {MQTT_MSG} for user: {user_name}")
+    client.publish(MQTT_TOPIC, json.dumps({"message": MQTT_MSG, "user": user_name, "time": timestamp}))
+    print(f"Published: {MQTT_MSG} for user: {user_name} at {timestamp}")
     client.disconnect()
 
 def on_connect_new(client, userdata, flags, reason_code, properties=None):
     print(f"Connected with result code {reason_code}")
-    client.publish(MQTT_TOPIC, json.dumps({"message": MQTT_MSG, "user": user_name}))
-    print(f"Published: {MQTT_MSG} for user: {user_name}")
+    client.publish(MQTT_TOPIC, json.dumps({"message": MQTT_MSG, "user": user_name, "time": timestamp}))
+    print(f"Published: {MQTT_MSG} for user: {user_name} at {timestamp}")
     client.disconnect()
 
 def on_publish_old(client, userdata, mid):
@@ -59,7 +61,7 @@ try:
     
     # Publish message to MQTT Topic 
     mqttc.publish(MQTT_TOPIC, MQTT_MSG)
-    print(f"Published: {MQTT_MSG} for user: {user_name}")
+    print(f"Published: {MQTT_MSG} for user: {user_name} at {timestamp}")
     
     # Wait for message to be sent
     mqttc.loop_start()
