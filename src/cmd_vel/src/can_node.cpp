@@ -36,6 +36,21 @@ void publishMQTTMessage(const std::string& user_name, const std::string& mqtt_ms
     }
 }
 
+// Function to publish velocity data via MQTT
+void publishVelocityMQTT(int left_vel, int right_vel) {
+    std::string python_script = "/home/jetson/robot_fablab_ws/src/MQTT/velocity_publisher.py";
+    std::string command = "python3 " + python_script + " " + std::to_string(left_vel) + " " + std::to_string(right_vel);
+    
+    std::cout << "Publishing velocity MQTT: left=" << left_vel << ", right=" << right_vel << std::endl;
+    int result = system(command.c_str());
+    
+    if (result == 0) {
+        std::cout << "Velocity MQTT sent successfully!" << std::endl;
+    } else {
+        std::cout << "Failed to send velocity MQTT!" << std::endl;
+    }
+}
+
 int ConvertPulse(float &velocity)
 {
     // Convert m/s to rounds per second (assuming wheel radius is 0.1 m)
@@ -219,6 +234,10 @@ void process_frame(uint16_t can_id, const std::vector<uint8_t> &data)
         // Print the received velocities
         std::cout << "Received Left Velocity: " << received_left_vel << "\n";
         std::cout << "Received Right Velocity: " << received_right_vel << "\n";
+        
+        // Publish velocity data to MQTT
+        publishVelocityMQTT(received_left_vel, received_right_vel);
+        
         cnt_receive++;
         break;
     }
