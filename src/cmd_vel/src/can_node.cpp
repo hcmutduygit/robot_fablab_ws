@@ -223,9 +223,9 @@ void process_frame(uint16_t can_id, const std::vector<uint8_t> &data)
         break;
     }
     default:
-        // Handle unknown CAN IDs
-        std::cout << "Unknown CAN ID: 0x" << std::hex << can_id << std::dec << std::endl;
-        cnt_receive++;
+        // // Handle unknown CAN IDs
+        // std::cout << "Unknown CAN ID: 0x" << std::hex << can_id << std::dec << std::endl;
+        // cnt_receive++;
         break;
     }
 }

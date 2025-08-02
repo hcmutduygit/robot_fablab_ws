@@ -16,4 +16,4 @@ client.subscribe(TOPIC)
 client.on_message = on_message
 
 print("🔄 Waiting for message on topic:", TOPIC)
-client.loop_forever()
+client.loop_forever()                                                                                                       
