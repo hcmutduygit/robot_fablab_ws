@@ -1,7 +1,7 @@
 import paho.mqtt.client as mqtt
 
 # --- Cấu hình broker (IP của laptop bạn) ---
-BROKER_ADDRESS = " 10.128.73.236"  # 👉 sửa lại thành IP của laptop
+BROKER_ADDRESS = "10.128.73.236"  # 👉 sửa lại thành IP của laptop
 BROKER_PORT = 1883
 TOPIC = "robot/move"
 
