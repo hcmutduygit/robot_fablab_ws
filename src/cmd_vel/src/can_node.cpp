@@ -235,8 +235,8 @@ void process_frame(uint16_t can_id, const std::vector<uint8_t> &data)
         std::cout << "Received Left Velocity: " << received_left_vel << "\n";
         std::cout << "Received Right Velocity: " << received_right_vel << "\n";
         
-        // Publish velocity data to MQTT
-        publishVelocityMQTT(received_left_vel, received_right_vel);
+        // TEMPORARILY COMMENTED FOR DEBUG
+        // publishVelocityMQTT(received_left_vel, received_right_vel);
         
         cnt_receive++;
         break;
