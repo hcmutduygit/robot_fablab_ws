@@ -16,8 +16,8 @@ class VelocityPublisher(MQTTTemplate):
     
     def publish_velocity(self, v_left, v_right):
         velocity_data = {
-            "v_left": v_left,
-            "v_right": v_right
+            "v_left": int(v_left),    # Convert to int for CAN pulse data
+            "v_right": int(v_right)   # Convert to int for CAN pulse data
         }
         self.message = self.format_message(velocity_data)
         self.publish_and_exit(self.topic, velocity_data)
@@ -29,13 +29,19 @@ class VelocityPublisher(MQTTTemplate):
 if __name__ == "__main__":
     # Get v_left and v_right from command line arguments
     if len(sys.argv) >= 3:
-        v_left = float(sys.argv[1])
-        v_right = float(sys.argv[2])
+        try:
+            # Try to parse as int first (for CAN pulse data), then float
+            v_left = int(sys.argv[1])
+            v_right = int(sys.argv[2])
+        except ValueError:
+            # If int parsing fails, try float
+            v_left = float(sys.argv[1])
+            v_right = float(sys.argv[2])
     else:
-        v_left = 0.0
-        v_right = 0.0
+        v_left = 0
+        v_right = 0
     
-    print(f"Received velocity: v_left={v_left}, v_right={v_right}")
+    print(f"Received velocity from CAN (ID 0x017): v_left={v_left}, v_right={v_right}")
     
     # Create and use publisher
     publisher = VelocityPublisher()
