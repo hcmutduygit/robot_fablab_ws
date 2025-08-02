@@ -19,12 +19,11 @@ options = {
   map_builder = MAP_BUILDER,
   trajectory_builder = TRAJECTORY_BUILDER,
   map_frame = "map",
-  tracking_frame = "base_footprint",
-  published_frame = "base_footprint",
+  tracking_frame = "os1_imu",
+  published_frame = "odom",
   odom_frame = "odom",
-  provide_odom_frame = true,
-  publish_frame_projected_to_2d = true,
-  -- use_pose_extrapolator = true,
+  provide_odom_frame = false,
+  publish_frame_projected_to_2d = false,
   use_odometry = false,
   use_nav_sat = false,
   use_landmarks = false,
@@ -45,18 +44,16 @@ options = {
 
 MAP_BUILDER.use_trajectory_builder_2d = true
 
-TRAJECTORY_BUILDER_2D.min_range = 0.05
-TRAJECTORY_BUILDER_2D.max_range = 10
-TRAJECTORY_BUILDER_2D.missing_data_ray_length = 6
-TRAJECTORY_BUILDER_2D.use_imu_data = false
-TRAJECTORY_BUILDER_2D.use_online_correlative_scan_matching = true 
-TRAJECTORY_BUILDER_2D.motion_filter.max_angle_radians = math.rad(0.1)
-TRAJECTORY_BUILDER_2D.motion_filter.max_distance_meters = 0.1
-TRAJECTORY_BUILDER_2D.motion_filter.max_time_seconds = 0.5
+TRAJECTORY_BUILDER_2D.use_online_correlative_scan_matching = true
+TRAJECTORY_BUILDER_2D.use_imu_data = true
+TRAJECTORY_BUILDER_2D.real_time_correlative_scan_matcher.linear_search_window = 0.15
+TRAJECTORY_BUILDER_2D.real_time_correlative_scan_matcher.angular_search_window = math.rad(35.)
+TRAJECTORY_BUILDER_2D.min_range = 1
+TRAJECTORY_BUILDER_2D.imu_gravity_time_constant = 1
 
-POSE_GRAPH.constraint_builder.min_score = 0.7
-POSE_GRAPH.constraint_builder.global_localization_min_score = 0.75
-
-
+POSE_GRAPH.optimization_problem.huber_scale = 1e2
 
 return options
+
+--TRAJECTORY_BUILDER_2D.num_accumulated_range_data = 1
+--TRAJECTORY_BUILDER_2D.imu_gravity_time_constant = .1

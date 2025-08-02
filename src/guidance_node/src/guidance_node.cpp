@@ -88,7 +88,7 @@ void CallBackPosition (const utils::pose_robot::ConstPtr& msg){
     // tf::Quaternion quat(q.x, q.y, q.z, q.w);
     // tf::Matrix3x3(quat).getRPY(roll, pitch, theta);
     float theta = msg->yaw;
-    ROS_INFO("theta=%.2f",theta);
+    // ROS_INFO("theta=%.2f",theta);
 }
 
 void ControlVel(const ros::TimerEvent& event){

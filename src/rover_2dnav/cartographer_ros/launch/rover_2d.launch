@@ -1,3 +1,4 @@
+<?xml version="1.0"?>
 <!--
   Copyright 2016 The Cartographer Authors
 
@@ -15,20 +16,18 @@
 -->
 
 <launch>
+  <param name="/use_sim_time" value="true" />
+
   <node name="cartographer_node" pkg="cartographer_ros"
       type="cartographer_node" args="
-          -configuration_directory $(find slam)/lua
-          -configuration_basename my_robot.lua"
+          -configuration_directory $(find rover_2dnav)/cartographer_ros/configuration_files
+          -configuration_basename rover_2d.lua"
       output="screen">
-    <remap from="scan" to="scan" />
+    <!-- <remap from="points2" to="/points" /> -->
+    <remap from="scan" to="/scan_sim" />
+    <remap from="imu" to="/imu/data_raw" />
   </node>
-  <node pkg="tf" type="static_transform_publisher" name="base_to_laser_broadcaster"
-        args="0 0 0 0 0 0 base_footprint laser 100" />
 
-  <arg name="publish_period_sec" default="1.0" />
-  <arg name="use_sim_time" default="true" />
-  <arg name="use_rviz" default="true" />
-  
   <node name="cartographer_occupancy_grid_node" pkg="cartographer_ros"
       type="cartographer_occupancy_grid_node" args="-resolution 0.05" />
 </launch>
