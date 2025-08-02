@@ -4,6 +4,8 @@
 #include <tf/tf.h>
 #include <algorithm> 
 #include <math.h>
+#include <string>
+#include <cstdlib>
 
 PID pid_controller;
 
@@ -98,10 +100,19 @@ void ControlVel(const ros::TimerEvent& event){
     double v_right = linear_x + (angular_z * 0.535 / 2);
     // ROS_INFO("v_left = %.2f", v_left);
     // ROS_INFO("v_right = %.2f", v_right);
+    
+    // Publish to MQTT
+    std::string velocity_script = "cd ~/robot_fablab_ws/src/MQTT && python3 velocity_publisher.py " 
+                                + std::to_string(v_left) + " " + std::to_string(v_right);
+    int result = system(velocity_script.c_str());
+    if (result != 0) {
+        ROS_WARN("Failed to publish velocity to MQTT");
+    }
+    
     // cmd.linear.x  = linear_x;        
     // cmd.angular.z = angular_z; 
-    cmd.v_left = 5.15; 
-    cmd.v_right = -6.15; 
+    cmd.v_left = v_left; 
+    cmd.v_right = v_right; 
     pub.publish(cmd);
 }
 

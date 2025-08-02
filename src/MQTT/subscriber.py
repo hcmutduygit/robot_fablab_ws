@@ -1,36 +1,49 @@
-# Import package
-import paho.mqtt.client as mqtt
+#!/usr/bin/env python3
+# Import packages
+import sys
+from mqtt_base import MQTTTemplate, get_topic
 
-# Define Variables
-MQTT_HOST = "10.128.75.114"
-MQTT_PORT = 1883
-MQTT_KEEPALIVE_INTERVAL = 5
-MQTT_TOPIC = "hello/world"
-MQTT_MSG = "Hello MQTT"
+class MQTTSubscriber(MQTTTemplate):
+    def __init__(self, topic_name="status"):
+        super().__init__()  # Uses config from mqtt_base
+        self.topic = get_topic(topic_name) if topic_name in ["battery", "velocity", "attendance", "status", "sensors"] else topic_name
+    
+    def on_connect_callback(self, client, userdata, flags, rc):
+        # Subscribe to topic when connected
+        client.subscribe(self.topic, 0)
+        print(f"Subscribed to topic: {self.topic}")
+    
+    def on_message_callback(self, client, userdata, msg):
+        try:
+            # Try to decode as JSON first
+            import json
+            data = json.loads(msg.payload.decode())
+            print(f"Received JSON: {data}")
+        except:
+            # If not JSON, print as string
+            print(f"Received message: {msg.payload.decode()}")
+    
+    def start_listening(self):
+        """Start listening for messages"""
+        if self.connect():
+            print(f"Listening for messages on topic: {self.topic}")
+            self.loop_forever()
+        else:
+            print("Failed to connect to MQTT broker")
 
-# Define on_connect event Handler
-def on_connect(mosq, obj, flags, rc):
-	#Subscribe to a the Topic
-	mqttc.subscribe(MQTT_TOPIC, 0)
-
-# Define on_subscribe event Handler
-def on_subscribe(mosq, obj, mid, granted_qos):
-    print ("Subscribed to MQTT Topic")
-
-# Define on_message event Handler
-def on_message(mosq, obj, msg):
-	print (msg.payload.decode())
-
-# Initiate MQTT Client
-mqttc = mqtt.Client()
-
-# Register Event Handlers
-mqttc.on_message = on_message
-mqttc.on_connect = on_connect
-mqttc.on_subscribe = on_subscribe
-
-# Connect with MQTT Broker
-mqttc.connect(MQTT_HOST, MQTT_PORT, MQTT_KEEPALIVE_INTERVAL )
-
-# Continue the network loop
-mqttc.loop_forever()
+if __name__ == "__main__":
+    # Get topic from command line argument
+    if len(sys.argv) > 1:
+        topic_name = sys.argv[1]
+    else:
+        topic_name = "status"
+    
+    print(f"Starting subscriber for topic: {topic_name}")
+    
+    # Create and use subscriber
+    subscriber = MQTTSubscriber(topic_name=topic_name)
+    try:
+        subscriber.start_listening()
+    except KeyboardInterrupt:
+        print("\nStopping subscriber...")
+        subscriber.disconnect()
