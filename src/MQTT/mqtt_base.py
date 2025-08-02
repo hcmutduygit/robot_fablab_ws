@@ -2,7 +2,6 @@
 """
 MQTT Base Module - All-in-one MQTT solution
 Includes configuration and template base class
-Supports both paho-mqtt v1 and v2 API versions
 """
 import paho.mqtt.client as mqtt
 import json
@@ -15,7 +14,7 @@ import time
 
 # MQTT Broker Configuration
 MQTT_CONFIG = {
-    "host": "192.168.0.130",
+    "host": "10.189.8.76",
     "port": 1883,
     "keepalive": 5,
     "timeout": 60
