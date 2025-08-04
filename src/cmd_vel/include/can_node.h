@@ -106,48 +106,32 @@ public:
         }
 
         uint8_t b;
-        // Wait for start byte (0xAA)
+        // Look for start byte (0xAA)
         while (true) {
-            if (read_exact(&b, 1) && b == 0xAA) {
+            if (read_exact(&b, 1) && (b == 0xAA)) {
                 break;
             }
         }
 
-        // Read header (3 bytes)
-        std::vector<uint8_t> header(3);
-        if (!read_exact(header.data(), 3)) {
-            throw std::runtime_error("Failed to read header");
-        }
-
-        // Read CMD byte
-        uint8_t cmd;
-        if (!read_exact(&cmd, 1)) {
+        // Read CMD byte (can be any value, not necessarily 0xC8)
+        if (!read_exact(&b, 1)) {
             throw std::runtime_error("Failed to read CMD byte");
         }
-        // if (cmd != 0xC8) {
-        //     throw std::runtime_error("Invalid CMD byte");
-        // }
 
-        // Read IDL (1 byte)
-        uint8_t idl;
-        if (!read_exact(&idl, 1)) {
-            throw std::runtime_error("Failed to read IDL");
+        // Read CAN ID (2 bytes: IDL, IDH)
+        uint8_t idl, idh;
+        if (!read_exact(&idl, 1) || !read_exact(&idh, 1)) {
+            throw std::runtime_error("Failed to read CAN ID");
         }
 
-        // Read IDH (3 bytes)
-        std::vector<uint8_t> idh(3);
-        if (!read_exact(idh.data(), 3)) {
-            throw std::runtime_error("Failed to read IDH");
-        }
-
-        // Read length (1 byte)
-        uint8_t length;
-        if (!read_exact(&length, 1)) {
-            throw std::runtime_error("Failed to read length");
+        // Read 8 data bytes (or whatever length is available)
+        std::vector<uint8_t> data(8);
+        if (!read_exact(data.data(), 8)) {
+            throw std::runtime_error("Failed to read data bytes");
         }
 
         // Read 8 data bytes
-        std::vector<uint8_t> data(8);
+        std::vector<uint8_t> data();
         if (!read_exact(data.data(), 8)) {
             throw std::runtime_error("Failed to read data bytes");
         }
@@ -162,7 +146,6 @@ public:
         // }
 
         uint16_t can_id = idl | (idh[0] << 8);
-
         // std::cout << "📥 Received: ID=0x" << std::hex << can_id << " Data=";
         // for (uint8_t b : data) {
         //     std::cout << std::hex << (int)b << " ";
