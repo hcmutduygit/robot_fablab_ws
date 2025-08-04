@@ -106,6 +106,7 @@ public:
         }
 
         uint8_t b;
+        
         // Look for start byte (0xAA)
         while (true) {
             if (read_exact(&b, 1) && (b == 0xAA)) {
@@ -130,12 +131,6 @@ public:
             throw std::runtime_error("Failed to read data bytes");
         }
 
-        // Read 8 data bytes
-        std::vector<uint8_t> data();
-        if (!read_exact(data.data(), 8)) {
-            throw std::runtime_error("Failed to read data bytes");
-        }
-
         // Read tail byte
         uint8_t tail;
         if (!read_exact(&tail, 1)) {
@@ -145,10 +140,11 @@ public:
         //     throw std::runtime_error("Invalid tail byte");
         // }
 
-        uint16_t can_id = idl | (idh[0] << 8);
+        uint16_t can_id = idl | (idh << 8);
+
         // std::cout << "📥 Received: ID=0x" << std::hex << can_id << " Data=";
         // for (uint8_t b : data) {
-        //     std::cout << std::hex << (int)b << " ";
+        //     std::cout << std::hex << std::setw(2) << std::setfill('0') << (int)b << " ";
         // }
         // std::cout << std::dec << "\n";
 
@@ -167,8 +163,6 @@ public:
         );
         std::cout << "🔄 Receive loop started (thread)\n";
     }
-
-
 
 private:
     bool read_exact(uint8_t* buffer, size_t len) {
