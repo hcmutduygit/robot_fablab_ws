@@ -56,6 +56,15 @@ float yaw_angle = 0;
 int right_wheel_velocity = 0;
 int left_wheel_velocity = 0;
 
+// void CallBackVel(const utils::cmd_vel::ConstPtr& cmd_vel){
+//     float v_left = cmd_vel->v_left;
+//     float v_right = cmd_vel->v_right;
+//     // ROS_INFO("v_left= %.2f", v_left);
+//     // ROS_INFO("v_right= %.2f", v_right);
+//     left_wheel_velocity = ConvertPulse(v_left);
+//     right_wheel_velocity = ConvertPulse(v_right);
+// }
+
 // Convert two bytes to a signed 16-bit integer
 int16_t hex_to_signed(const std::vector<uint8_t> &data, size_t start_idx, size_t bits = 16)
 {

@@ -18,36 +18,24 @@ static const std::map<std::vector<uint8_t>, std::pair<std::string, std::string>>
     {{0xfa, 0xdc, 0x02, 0xcd, 0xe9, 0x00, 0x00, 0x00}, {"QUANG DUY", "Duy"}},
     {{0xef, 0xa8, 0x98, 0x1e, 0xc1, 0x00, 0x00, 0x00}, {"CHI THIEN", "Thien"}},
     {{0xb6, 0x87, 0x13, 0x2b, 0x09, 0x00, 0x00, 0x00}, {"VAN LOI", "Loi"}},
-    {{0xc2, 0xbf, 0xb0, 0x2e, 0xe3, 0x00, 0x00, 0x00}, {"BACH THU", "Thu"}}
-};
+    {{0xc2, 0xbf, 0xb0, 0x2e, 0xe3, 0x00, 0x00, 0x00}, {"BACH THU", "Thu"}}};
 
 // Simple function to publish MQTT message via Python script
-void publishMQTTMessage(const std::string& user_name, const std::string& mqtt_msg, const std::string& timestamp) {
+void publishMQTTMessage(const std::string &user_name, const std::string &mqtt_msg, const std::string &timestamp)
+{
     std::string python_script = "/home/jetson/robot_fablab_ws/src/MQTT/name_publisher.py";
     std::string command = "python3 " + python_script + " \"" + mqtt_msg + "\" \"" + user_name + "\" \"" + timestamp + "\"";
-    
-    std::cout << "Publishing MQTT message for " << user_name << " at " << timestamp <<  ": " << mqtt_msg << std::endl;
-    int result = system(command.c_str());
-    
-    if (result == 0) {
-        std::cout << "MQTT message sent successfully!" << std::endl;
-    } else {
-        std::cout << "Failed to send MQTT message!" << std::endl;
-    }
-}
 
-// Function to publish velocity data via MQTT
-void publishVelocityMQTT(int left_vel, int right_vel) {
-    std::string python_script = "/home/jetson/robot_fablab_ws/src/MQTT/velocity_publisher.py";
-    std::string command = "python3 " + python_script + " " + std::to_string(left_vel) + " " + std::to_string(right_vel);
-    
-    std::cout << "Publishing velocity MQTT: left=" << left_vel << ", right=" << right_vel << std::endl;
+    std::cout << "Publishing MQTT message for " << user_name << " at " << timestamp << ": " << mqtt_msg << std::endl;
     int result = system(command.c_str());
-    
-    if (result == 0) {
-        std::cout << "Velocity MQTT sent successfully!" << std::endl;
-    } else {
-        std::cout << "Failed to send velocity MQTT!" << std::endl;
+
+    if (result == 0)
+    {
+        std::cout << "MQTT message sent successfully!" << std::endl;
+    }
+    else
+    {
+        std::cout << "Failed to send MQTT message!" << std::endl;
     }
 }
 
@@ -61,24 +49,15 @@ int ConvertPulse(float &velocity)
 }
 // Global variable to store the updated value
 float yaw_angle = 0;
-int right_wheel_velocity = 0;
 int left_wheel_velocity = 0;
 
-void CallBackVel(const utils::cmd_vel::ConstPtr &cmd_vel)
-{
+void CallBackVel(const utils::cmd_vel::ConstPtr& cmd_vel){
     float v_left = cmd_vel->v_left;
     float v_right = cmd_vel->v_right;
     // ROS_INFO("v_left= %.2f", v_left);
     // ROS_INFO("v_right= %.2f", v_right);
     left_wheel_velocity = ConvertPulse(v_left);
     right_wheel_velocity = ConvertPulse(v_right);
-}
-
-void ControlStm(const ros::TimerEvent &event)
-{
-    utils::pose_robot pose;
-    pose.yaw = yaw_angle; // cập nhật yaw
-    pub.publish(pose);
 }
 
 // Convert two bytes to a signed 16-bit integer
@@ -106,37 +85,39 @@ void process_frame(uint16_t can_id, const std::vector<uint8_t> &data)
     case 0x010:
     {
         std::cout << "ID 0x" << std::hex << can_id << std::dec << " receive RFID hex: ";
-        for (uint8_t b : data) {
+        for (uint8_t b : data)
+        {
             std::cout << std::hex << std::setw(2) << std::setfill('0') << (int)b << " ";
         }
         std::cout << std::dec << std::endl;
-        
+
         // Lookup RFID in database
         auto it = rfid_database.find(data);
-        if (it != rfid_database.end()) {
-            const std::string& full_name = it->second.first;
-            const std::string& short_name = it->second.second;
+        if (it != rfid_database.end())
+        {
+            const std::string &full_name = it->second.first;
+            const std::string &short_name = it->second.second;
 
-            auto now = std::chrono::system_clock::now(); 
+            auto now = std::chrono::system_clock::now();
             std::time_t now_time = std::chrono::system_clock::to_time_t(now);
 
             std::stringstream ss;
             ss << std::put_time(std::localtime(&now_time), "%H:%M:%S");
             std::string timestamp = ss.str();
-        
+
             std::cout << "RFID detected: " << full_name << std::endl;
             publishMQTTMessage(full_name, short_name, timestamp);
-        } else {
+        }
+        else
+        {
             std::cout << "Unknown RFID data" << std::endl;
         }
-        
-        cnt_receive++;
+
         break;
     }
     // CO2 Sensor
     case 0x011:
     {
-        cnt_receive++;
         break;
     }
     // IMU Angle
@@ -148,6 +129,12 @@ void process_frame(uint16_t can_id, const std::vector<uint8_t> &data)
             std::cerr << "Error: Insufficient data bytes for ID 0x012\n";
             return;
         }
+        std::cout << "ID 0x" << std::hex << can_id << std::dec << " receive IMU hex: ";
+        for (uint8_t b : data)
+        {
+            std::cout << std::hex << std::setw(2) << std::setfill('0') << (int)b << " ";
+        }
+        std::cout << std::dec << std::endl;
         // Extract roll, pitch, yaw as signed 16-bit integers and scale by 100.0
         // double roll = hex_to_signed(data, 0) / 100.0;  // Bytes 0-1
         // double pitch = hex_to_signed(data, 2) / 100.0; // Bytes 2-3
@@ -161,21 +148,18 @@ void process_frame(uint16_t can_id, const std::vector<uint8_t> &data)
             yaw += 360.0;
         }
         yaw_angle = yaw; // Update global yaw angle
-        cnt_receive++;
 
-        // std::cout << "Yaw: " << yaw << "\n";
+        std::cout << "Yaw: " << yaw << "\n";
         break;
     }
     // IMU Gyro
     case 0x013:
     {
-        cnt_receive++;
         break;
     }
     // IMU Accel
     case 0x014:
     {
-        cnt_receive++;
         break;
     }
     case 0x016:
@@ -214,13 +198,12 @@ void process_frame(uint16_t can_id, const std::vector<uint8_t> &data)
             std::cerr << "Error: Expected 8 bytes for ID 0x017, but received " << data.size() << " bytes.\n";
             return;
         }
-
+            
         // Extract left velocity from first 4 bytes
         int received_left_vel;
         std::memcpy(&received_left_vel, &data[0], sizeof(int));
 
         // Extract right velocity from last 4 bytes
-        int received_right_vel;
         std::memcpy(&received_right_vel, &data[4], sizeof(int));
 
         // Print the received data in hex format
@@ -231,20 +214,16 @@ void process_frame(uint16_t can_id, const std::vector<uint8_t> &data)
         }
         std::cout << std::dec << "\n";
 
+
+
         // Print the received velocities
         std::cout << "Received Left Velocity: " << received_left_vel << "\n";
         std::cout << "Received Right Velocity: " << received_right_vel << "\n";
-        
-        // TEMPORARILY COMMENTED FOR DEBUG
-        // publishVelocityMQTT(received_left_vel, received_right_vel);
-        
-        cnt_receive++;
         break;
     }
     default:
-        // // Handle unknown CAN IDs
-        // std::cout << "Unknown CAN ID: 0x" << std::hex << can_id << std::dec << std::endl;
-        // cnt_receive++;
+        // Handle unknown CAN IDs
+        std::cout << "Unknown CAN ID: 0x" << std::hex << can_id << std::dec << std::endl;
         break;
     }
 }
@@ -271,7 +250,6 @@ void send_vel(WaveshareCAN &can)
 
         // Send both velocities to single ID 0x013
         can.send(0x013, velocity_data);
-        cnt_send++;
         // std::cout << "Sent left velocity " << left_vel << " and right velocity " << right_vel << " to ID 0x013" << std::endl;
     }
     catch (const std::exception &e)
@@ -281,11 +259,12 @@ void send_vel(WaveshareCAN &can)
 }
 
 void CntBytes(const ros::TimerEvent &event)
-{
-    ROS_INFO("Receive Packages = %d Pkg/s", cnt_receive);
-    cnt_receive = 0;
-    ROS_INFO("Send Packages = %d Pkg/s", cnt_send);
-    cnt_send = 0;
+{    
+    ROS_INFO("Vel_right ");
+    // ROS_INFO("Receive Packages = %d Pkg/s", cnt_receive);
+    // cnt_receive = 0;
+    // ROS_INFO("Send Packages = %d Pkg/s", cnt_send);
+    // cnt_send = 0;
 }
 
 void TransmitSTM(const ros::TimerEvent &event)
