@@ -2,6 +2,7 @@
 /.vscode
 /build
 /devel
+/log
 
 # Python cache files
 __pycache__/
