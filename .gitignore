@@ -1,0 +1,15 @@
+/.catkin_workspace
+/.vscode
+/build
+/devel
+
+# Python cache files
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+*.egg-info/
+dist/
+build/
+*.egg

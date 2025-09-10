@@ -1,0 +1,14 @@
+<launch>
+    <!-- <arg name="rvizconfig" default="$(find robot_fablab)/rviz/robot_fablab.rviz"/>
+    <node name="rviz" pkg="rviz" type="rviz" args="-d $(arg rvizconfig)"/> -->
+    <!-- Map server -->
+    <node pkg="tf2_ros" type="static_transform_publisher" name="base_footprint_to_base_link" args="0 0 0.098 0 0 0  /base_footprint /base_link"/>
+
+    <arg name="map_file" default="$(find robot_fablab)/maps/box.yaml"/>
+    <node pkg="map_server" name="map_server" type="map_server" args="$(arg map_file)" />
+
+    <!-- AMCL used for localization -->
+    <include file="$(find robot_fablab)/launch/include/amcl.launch"/>
+
+</launch>
+

@@ -1,0 +1,4 @@
+<launch>
+    <arg name="map_name" default="my_map" />
+    <node pkg="map_server" type="map_saver" name="map_saver" args="-f $(arg map_name)" />
+</launch>
