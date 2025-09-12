@@ -35,7 +35,7 @@
    <!-- <remap from="imu" to="/os1_cloud_node/imu" /> -->
   </node>
   <node pkg="tf" type="static_transform_publisher" name="base_to_laser_broadcaster"
-        args="0 0 0 0 0 0 base_footprint laser 1000" />
+        args="0 0 0 0 0 0 base_footprint laser 50" />
   <!-- Publish Map -->
   <node name="cartographer_occupancy_grid_node" pkg="cartographer_ros"
       type="cartographer_occupancy_grid_node" args="-resolution 0.05" />
