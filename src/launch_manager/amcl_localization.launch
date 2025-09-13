@@ -15,7 +15,7 @@
     <!-- Laser scan -->
     <remap from="scan" to="scan"/>
     
-    <!-- Một số tham số cơ bản -->
+    <!-- Parameters -->
     <param name="odom_model_type" value="diff"/>
     <param name="use_map_topic" value="true"/>
     <param name="update_min_d" value="0.2"/>
@@ -30,4 +30,8 @@
   <!-- Static TF: laser -> base_footprint -->
   <node pkg="tf" type="static_transform_publisher" name="base_to_laser_broadcaster"
         args="0 0 0 0 0 0 base_footprint laser 50" />
+
+  <!-- Static TF: odom -> base_footprint (fake nếu chưa có odometry) -->
+  <node pkg="tf" type="static_transform_publisher" name="odom_to_basefootprint"
+        args="0 0 0 0 0 0 odom base_footprint 50" />
 </launch>
