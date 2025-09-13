@@ -31,11 +31,10 @@
           -load_state_filename $(arg map_file)"
       output="screen">
     <remap from="scan" to="scan" />
-    <remap from="odom" to="odom" />
    <!-- <remap from="imu" to="/os1_cloud_node/imu" /> -->
   </node>
   <node pkg="tf" type="static_transform_publisher" name="base_to_laser_broadcaster"
-        args="0 0 0 0 0 0 base_footprint laser 50" />
+        args="0 0 0 0 0 0 base_footprint laser 100" />
   <!-- Publish Map -->
   <node name="cartographer_occupancy_grid_node" pkg="cartographer_ros"
       type="cartographer_occupancy_grid_node" args="-resolution 0.05" />
