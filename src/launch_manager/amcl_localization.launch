@@ -27,11 +27,11 @@
     <param name="gui_publish_rate" value="10.0"/>
   </node>
 
-  <!-- Static TF: laser -> base_footprint -->
-  <node pkg="tf" type="static_transform_publisher" name="base_to_laser_broadcaster"
-        args="0 0 0 0 0 0 base_footprint laser 50" />
-
   <!-- Static TF: odom -> base_footprint (fake nếu chưa có odometry) -->
   <node pkg="tf" type="static_transform_publisher" name="odom_to_basefootprint"
         args="0 0 0 0 0 0 odom base_footprint 50" />
+
+  <!-- Static TF: base_footprint -> laser -->
+  <node pkg="tf" type="static_transform_publisher" name="base_to_laser_broadcaster"
+        args="0 0 0 0 0 0 base_footprint laser 50" />
 </launch>
