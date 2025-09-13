@@ -1,0 +1,33 @@
+<launch>
+  <!-- Lidar driver -->
+  <include file="$(find rplidar_ros)/launch/rplidar_s2.launch" />
+
+  <!-- RViz -->
+  <arg name="rvizconfig" default="$(find rviz)/rviz.rviz"/>
+  <node name="rviz" pkg="rviz" type="rviz" args="-d $(arg rvizconfig)"/>
+
+  <!-- Load map (yaml file, không dùng .pbstream) -->
+  <arg name="map_file" default="$(find robot_fablab)/maps/map_fablab.yaml" />
+  <node name="map_server" pkg="map_server" type="map_server" args="$(arg map_file)" />
+
+  <!-- AMCL for localization -->
+  <node pkg="amcl" type="amcl" name="amcl" output="screen">
+    <!-- Laser scan -->
+    <remap from="scan" to="scan"/>
+    
+    <!-- Một số tham số cơ bản -->
+    <param name="odom_model_type" value="diff"/>
+    <param name="use_map_topic" value="true"/>
+    <param name="update_min_d" value="0.2"/>
+    <param name="update_min_a" value="0.2"/>
+    <param name="min_particles" value="100"/>
+    <param name="max_particles" value="5000"/>
+    <param name="laser_max_range" value="12.0"/>
+    <param name="laser_min_range" value="0.1"/>
+    <param name="gui_publish_rate" value="10.0"/>
+  </node>
+
+  <!-- Static TF: laser -> base_footprint -->
+  <node pkg="tf" type="static_transform_publisher" name="base_to_laser_broadcaster"
+        args="0 0 0 0 0 0 base_footprint laser 50" />
+</launch>
