@@ -300,7 +300,7 @@ private:
  ros::Timer loopControl;
  ros::Timer cnt_byte;
  int number, calib ;
- float cycle_transmit;
+ float cycle_transmit = 0.2; // seconds;
  int cnt_receive = 0;
  int cnt_send = 0;
  float right_mps = 0.0;
