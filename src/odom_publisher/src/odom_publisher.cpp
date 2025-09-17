@@ -1,7 +1,8 @@
 #include <ros/ros.h>
-#include <geometry_msgs/Pose.h>
 #include <nav_msgs/Odometry.h>
 #include <tf/transform_broadcaster.h>
+#include <utils/pose_robot.h>   
+#include <tf/transform_datatypes.h> 
 
 class OdomPublisher
 {
@@ -17,16 +18,22 @@ public:
         odom_pub_ = nh.advertise<nav_msgs::Odometry>("/odom", 10);
     }
 
-    void poseCallback(const geometry_msgs::Pose::ConstPtr& msg)
+    void poseCallback(const utils::pose_robot::ConstPtr& msg)
     {
         nav_msgs::Odometry odom;
 
         odom.header.stamp = ros::Time::now();
-        odom.header.frame_id = "odom";      // khung gốc
-        odom.child_frame_id = "base_link";  // khung robot
+        odom.header.frame_id = "odom";
+        odom.child_frame_id = "base_link";
 
-        // Gán position & orientation từ pose_robot
-        odom.pose.pose = *msg;
+        // Mapping dữ liệu từ custom msg sang Odometry
+        odom.pose.pose.position.x = msg->x;
+        odom.pose.pose.position.y = msg->y;
+        odom.pose.pose.position.z = 0.0;   // không có trong msg, gán 0
+
+        // Chuyển yaw -> quaternion
+        geometry_msgs::Quaternion q = tf::createQuaternionMsgFromYaw(msg->yaw);
+        odom.pose.pose.orientation = q;
 
         // Nếu chưa có dữ liệu vận tốc từ CAN thì gán = 0
         odom.twist.twist.linear.x = 0.0;
@@ -38,21 +45,13 @@ public:
         // Broadcast TF (odom -> base_link)
         static tf::TransformBroadcaster br;
         tf::Transform transform;
-        transform.setOrigin(tf::Vector3(
-            msg->position.x,
-            msg->position.y,
-            msg->position.z
-        ));
-        tf::Quaternion q(
-            msg->orientation.x,
-            msg->orientation.y,
-            msg->orientation.z,
-            msg->orientation.w
-        );
-        transform.setRotation(q);
+        transform.setOrigin(tf::Vector3(msg->x, msg->y, 0.0));
+        tf::Quaternion q_tf;
+        q_tf.setRPY(0, 0, msg->yaw);
+        transform.setRotation(q_tf);
         br.sendTransform(tf::StampedTransform(transform, ros::Time::now(), "odom", "base_link"));
     }
-
+    
 private:
     ros::Subscriber pose_sub_;
     ros::Publisher odom_pub_;

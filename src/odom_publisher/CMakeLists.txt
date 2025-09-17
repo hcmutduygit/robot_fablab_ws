@@ -12,6 +12,7 @@ find_package(catkin REQUIRED COMPONENTS
   nav_msgs
   roscpp
   tf
+  utils
 )
 
 ## System dependencies are found with CMake's conventions
@@ -106,7 +107,7 @@ find_package(catkin REQUIRED COMPONENTS
 catkin_package(
 #  INCLUDE_DIRS include
 #  LIBRARIES odom_publisher
-#  CATKIN_DEPENDS geometry_msgs nav_msgs roscpp tf
+  CATKIN_DEPENDS geometry_msgs nav_msgs std_msgs roscpp tf utils
 #  DEPENDS system_lib
 )
 
