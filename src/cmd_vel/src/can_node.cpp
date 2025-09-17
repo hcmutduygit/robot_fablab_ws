@@ -230,7 +230,7 @@ void process_frame(uint16_t can_id, const std::vector<uint8_t> &data)
         cnt_receive++;
         break;
     }
-    case 0x017:
+    case 0x030:
     {
         // Ensure the data has exactly 8 bytes
         if (data.size() != 8)
@@ -262,9 +262,9 @@ void process_frame(uint16_t can_id, const std::vector<uint8_t> &data)
         // Convert pulses to linear velocity (m/s)
         left_mps = ConvertVelocityFromPulse(received_left_vel);
         right_mps = ConvertVelocityFromPulse(received_right_vel);
-        // std::cout << std::fixed << std::setprecision(3);
-        // std::cout << "Converted Left Velocity (m/s): " << left_mps << "\n";
-        // std::cout << "Converted Right Velocity (m/s): " << right_mps << "\n";
+        std::cout << std::fixed << std::setprecision(3);
+        std::cout << "Converted Left Velocity (m/s): " << left_mps << "\n";
+        std::cout << "Converted Right Velocity (m/s): " << right_mps << "\n";
         cnt_receive++;
         break;
     }
@@ -327,6 +327,7 @@ void TransmitSTM(const ros::TimerEvent &event)
     pub.publish(pose);
     vel.v_left_stm = left_mps;
     vel.v_right_stm = right_mps;
+    // ROS_INFO("lef = %f", left_mps);
     pub_vel_stm.publish(vel);
     can.send(0x050, {1, 0, 0, 0, 0, 0, 0, 0}); 
 }
