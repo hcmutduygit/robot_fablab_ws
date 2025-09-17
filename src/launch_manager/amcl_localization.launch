@@ -10,10 +10,14 @@
   <arg name="map_file" default="$(find robot_fablab)/maps/map_fablab.yaml" />
   <node name="map_server" pkg="map_server" type="map_server" args="$(arg map_file)" />
 
+  <!-- CAN node: đọc dữ liệu từ CAN/IMU -->
+  <node pkg="cmd_vel" type="can_node" name="can_node" output="screen"/>
+
+  <!-- Odom publisher: chuyển /pose_robot thành /odom -->
+  <node pkg="odom_publisher" type="odom_publisher" name="odom_publisher" output="screen"/>
+
   <!-- AMCL for localization -->
   <node pkg="amcl" type="amcl" name="amcl" output="screen">
-    <!-- Laser scan -->
-    <remap from="scan" to="scan"/>
     
     <!-- Parameters -->
     <param name="odom_model_type" value="diff"/>
@@ -32,12 +36,7 @@
     <param name="global_frame_id" value="map"/>
   </node>
 
-  <!-- Static TF: odom -> base_footprint -->
-  <node pkg="tf" type="static_transform_publisher" name="odom_to_basefootprint"
-        args="0 0 0 0 0 0 odom base_footprint 50" />
-
   <!-- Static TF: base_footprint -> laser -->
   <node pkg="tf" type="static_transform_publisher" name="basefootprint_to_laser"
         args="0 0 0 0 0 0 base_footprint laser 50" />
-      
 </launch>
