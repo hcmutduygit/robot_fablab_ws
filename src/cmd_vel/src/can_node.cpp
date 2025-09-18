@@ -230,7 +230,7 @@ void process_frame(uint16_t can_id, const std::vector<uint8_t> &data)
         cnt_receive++;
         break;
     }
-    case 0x017:
+    case 0x030:
     {
         // Ensure the data has exactly 8 bytes
         if (data.size() != 8)
@@ -256,8 +256,8 @@ void process_frame(uint16_t can_id, const std::vector<uint8_t> &data)
         // std::cout << std::dec << "\n";
 
         // Print the received velocities (pulses per second)
-        // std::cout << "Received Left Velocity (pulses/s): " << received_left_vel << "\n";
-        // std::cout << "Received Right Velocity (pulses/s): " << received_right_vel << "\n";
+        std::cout << "Received Left Velocity (pulses/s): " << received_left_vel << "\n";
+        std::cout << "Received Right Velocity (pulses/s): " << received_right_vel << "\n";
 
         // Convert pulses to linear velocity (m/s)
         left_mps = ConvertVelocityFromPulse(received_left_vel);
