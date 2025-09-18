@@ -24,7 +24,7 @@ public:
 
         odom.header.stamp = ros::Time::now();
         odom.header.frame_id = "odom";
-        odom.child_frame_id = "base_link";
+        odom.child_frame_id = "base_footprint";
 
         // Mapping dữ liệu từ custom msg sang Odometry
         odom.pose.pose.position.x = msg->x;
@@ -49,7 +49,7 @@ public:
         tf::Quaternion q_tf;
         q_tf.setRPY(0, 0, msg->yaw);
         transform.setRotation(q_tf);
-        br.sendTransform(tf::StampedTransform(transform, ros::Time::now(), "odom", "base_link"));
+        br.sendTransform(tf::StampedTransform(transform, ros::Time::now(), "odom", "base_footprint"));
     }
     
 private:
