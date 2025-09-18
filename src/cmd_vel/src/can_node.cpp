@@ -185,7 +185,7 @@ void process_frame(uint16_t can_id, const std::vector<uint8_t> &data)
         }
         yaw_angle = yaw; // Update global yaw angle
 
-        // std::cout << "Yaw: " << yaw << "\n";
+        std::cout << "Yaw: " << yaw << "\n";
         cnt_receive++;
         break;
     }
@@ -256,15 +256,15 @@ void process_frame(uint16_t can_id, const std::vector<uint8_t> &data)
         // std::cout << std::dec << "\n";
 
         // Print the received velocities (pulses per second)
-        // std::cout << "Received Left Velocity (pulses/s): " << received_left_vel << "\n";
-        // std::cout << "Received Right Velocity (pulses/s): " << received_right_vel << "\n";
+        std::cout << "Received Left Velocity (pulses/s): " << received_left_vel << "\n";
+        std::cout << "Received Right Velocity (pulses/s): " << received_right_vel << "\n";
 
         // Convert pulses to linear velocity (m/s)
         left_mps = ConvertVelocityFromPulse(received_left_vel);
         right_mps = ConvertVelocityFromPulse(received_right_vel);
-        std::cout << std::fixed << std::setprecision(3);
-        std::cout << "Converted Left Velocity (m/s): " << left_mps << "\n";
-        std::cout << "Converted Right Velocity (m/s): " << right_mps << "\n";
+        // std::cout << std::fixed << std::setprecision(3);
+        // std::cout << "Converted Left Velocity (m/s): " << left_mps << "\n";
+        // std::cout << "Converted Right Velocity (m/s): " << right_mps << "\n";
         cnt_receive++;
         break;
     }
