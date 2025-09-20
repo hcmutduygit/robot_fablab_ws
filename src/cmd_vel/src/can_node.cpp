@@ -384,7 +384,6 @@ void TransmitSTM(const ros::TimerEvent &event)
     // ROS_INFO("lef = %f", left_mps);
     pub_vel_stm.publish(vel);
     can.send(0x050, {1, 0, 0, 0, 0, 0, 0, 0}); 
-    publish_mqtt()
 }
 
 int main(int argc, char **argv)
