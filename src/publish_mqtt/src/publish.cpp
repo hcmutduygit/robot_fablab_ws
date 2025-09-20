@@ -41,18 +41,14 @@ void publishMQTTVelocity(double v_left_mps, double v_right_mps)
 void publishMQTTLocation(double x, double y, double theta) {
     if (g_should_exit) return;
     
-    const std::string python_script = "/home/nvidia/robot_fablab_ws/src/MQTT/location_publisher.py";
+    const std::string python_script = "/home/nvdia/robot_fablab_ws/src/MQTT/location_publisher.py";
+    std::string command = std::string("setsid timeout 2 python2 \"") + python_script + "\" " +
+                         std::to_string(x) + " " + std::to_string(y) + " " + std::to_string(theta) + " &";
     
-    std::ostringstream cmd;
-    cmd.setf(std::ios::fixed);
-    cmd << std::setprecision(6)
-        << "timeout 1 python2 \"" << python_script << "\" "
-        << x << " " << y << " " << theta << " 2>/dev/null";
+    // std::cout << "Publishing MQTT location: x=" << x << ", y=" << y << ", theta=" << theta << std::endl;
     
-    FILE* pipe = popen(cmd.str().c_str(), "r");
-    if (pipe) {
-        pclose(pipe);
-    }
+    int result = std::system(command.c_str());
+    
 }
 
 void CallBackYaw (const utils::pose_robot::ConstPtr& msg){
