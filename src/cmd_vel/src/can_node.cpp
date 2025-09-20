@@ -217,7 +217,7 @@ void process_frame(uint16_t can_id, const std::vector<uint8_t> &data)
             yaw += 360.0;
         }
         yaw_angle = yaw; // Update global yaw angle
-        publishMQTTLocation(1.0, 2.0, yaw_angle);
+        // publishMQTTLocation(1.0, 2.0, yaw_angle);
         std::cout << "Yaw: " << yaw << "\n";
         cnt_receive++;
         break;
@@ -384,6 +384,7 @@ void TransmitSTM(const ros::TimerEvent &event)
     // ROS_INFO("lef = %f", left_mps);
     pub_vel_stm.publish(vel);
     can.send(0x050, {1, 0, 0, 0, 0, 0, 0, 0}); 
+    publish_mqtt()
 }
 
 int main(int argc, char **argv)
