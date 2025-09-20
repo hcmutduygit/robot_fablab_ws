@@ -1,8 +1,10 @@
 #include <mqtt.h>
 #include <signal.h>
 #include <sys/wait.h>
+#include <vector>
 
 static volatile int g_should_exit = 0;
+static std::vector<pid_t> child_processes;
 
 // Cleanup function
 void cleanup_processes() {
