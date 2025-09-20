@@ -15,7 +15,7 @@ import time
 
 # MQTT Broker Configuration
 MQTT_CONFIG = {
-    "host": "10.180.81.156",  # Use localhost since mosquitto is running locally
+    "host": "10.91.148.156",  # Use localhost since mosquitto is running locally
     "port": 1883,
     "keepalive": 60,  # Increase keepalive to 60 seconds
     "timeout": 0      # 0 = no timeout (infinite)

@@ -17,7 +17,7 @@ int left_wheel_velocity = 0;
 
 static volatile int g_should_exit = 0;
 
-WaveshareCAN can("/dev/ttyUSB1", 2000000, 2.0);
+WaveshareCAN can("/dev/ttyUSB0", 2000000, 2.0);
 
 // RFID database - mapping RFID data to user info
 static const std::map<std::vector<uint8_t>, std::pair<std::string, std::string>> rfid_database = {
@@ -36,7 +36,7 @@ void publishMQTTMessage(const std::string &user_name, const std::string &mqtt_ms
         return;
     }
     
-    std::string python_script = "/home/robot_fablab_ws/src/MQTT/name_publisher.py";
+    std::string python_script = "/home/nvidia/robot_fablab_ws/src/MQTT/name_publisher.py";
     std::string command = "setsid timeout 2 python2 " + python_script + " \"" + mqtt_msg + "\" \"" + user_name + "\" \"" + timestamp + "\" &";
 
     // std::cout << "Publishing MQTT message for " << user_name << " at " << timestamp << ": " << mqtt_msg << std::endl;
@@ -56,7 +56,7 @@ void publishMQTTMessage(const std::string &user_name, const std::string &mqtt_ms
 void publishMQTTVelocity(double v_left_mps, double v_right_mps)
 {
     // Path to the Python velocity publisher (kept as-is)
-    const std::string python_script = "/home/robot_fablab_ws/src/MQTT/velocity_publisher.py";
+    const std::string python_script = "/home/nvidia/robot_fablab_ws/src/MQTT/velocity_publisher.py";
 
     // Build command with fixed precision (no '--' sentinel)
     std::ostringstream cmd;
@@ -80,7 +80,7 @@ void publishMQTTVelocity(double v_left_mps, double v_right_mps)
 }
 
 void publishMQTTLocation(double x, double y, double theta) {
-    const std::string python_script = "/home/robot_fablab_ws/src/MQTT/location_publisher.py";
+    const std::string python_script = "/home/nvidia/robot_fablab_ws/src/MQTT/location_publisher.py";
     std::string command = std::string("python2 \"") + python_script + "\" " +
                          std::to_string(x) + " " + std::to_string(y) + " " + std::to_string(theta);
     
@@ -217,7 +217,7 @@ void process_frame(uint16_t can_id, const std::vector<uint8_t> &data)
             yaw += 360.0;
         }
         yaw_angle = yaw; // Update global yaw angle
-
+        publishMQTTLocation(1.0, 2.0, yaw_angle);
         std::cout << "Yaw: " << yaw << "\n";
         cnt_receive++;
         break;
