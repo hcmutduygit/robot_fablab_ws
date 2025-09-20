@@ -3,7 +3,6 @@
 #include <sys/wait.h>
 
 static volatile int g_should_exit = 0;
-static std::vector<pid_t> child_processes;
 
 // Cleanup function
 void cleanup_processes() {
@@ -42,13 +41,18 @@ void publishMQTTLocation(double x, double y, double theta) {
     if (g_should_exit) return;
     
     const std::string python_script = "/home/nvidia/robot_fablab_ws/src/MQTT/location_publisher.py";
-    std::string command = std::string("setsid timeout 2 python2 \"") + python_script + "\" " +
-                         std::to_string(x) + " " + std::to_string(y) + " " + std::to_string(theta) + " &";
     
-    // std::cout << "Publishing MQTT location: x=" << x << ", y=" << y << ", theta=" << theta << std::endl;
+    // Sử dụng popen thống nhất như velocity function
+    std::ostringstream cmd;
+    cmd.setf(std::ios::fixed);
+    cmd << std::setprecision(6)
+        << "timeout 1 python2 \"" << python_script << "\" "
+        << x << " " << y << " " << theta << " 2>/dev/null";
     
-    int result = std::system(command.c_str());
-    
+    FILE* pipe = popen(cmd.str().c_str(), "r");
+    if (pipe) {
+        pclose(pipe);
+    }
 }
 
 void CallBackYaw (const utils::pose_robot::ConstPtr& msg){
@@ -66,7 +70,8 @@ void CallBackVel_stm (const utils::cmd_vel::ConstPtr& vel){
 }
 
 void publishMqtt(const ros::TimerEvent &event){
-    publishMQTTLocation( pos_x, pos_y, theta);
+    // ROS timer đã quản lý tần suất, không cần rate limiting thêm
+    publishMQTTLocation(pos_x, pos_y, theta);
     publishMQTTVelocity(static_cast<double>(vel_left), static_cast<double>(vel_right));
 }
 

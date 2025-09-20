@@ -42,7 +42,7 @@ class LocationPublisherOnce(MQTTTemplate):
         }
         
         # Use publish_and_exit for quick publishing
-        self.publish_and_exit(self.topic, location_data, delay=0.05)  # Reduce delay to 50ms
+        self.publish_and_exit(self.topic, location_data, delay=0.01)  # Giảm delay xuống 10ms
         # print("Published location: x={:.2f}, y={:.2f}, theta={:.2f}".format(x, y, theta))
 
 

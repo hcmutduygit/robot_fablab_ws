@@ -33,7 +33,7 @@ TOPICS = {
 MESSAGE_CONFIG = {
     "qos": 0,
     "retain": False,
-    "delay": 0.05  # Reduce to 50ms for very fast publishing
+    "delay": 0.01  # Giảm xuống 10ms
 }
 
 def get_mqtt_config():
@@ -150,8 +150,6 @@ class MQTTTemplate(object):  # Inherit from object for new-style class
         if self.connect():
             self.publish(topic, message)
             self.loop_start()
-            time.sleep(delay)
+            time.sleep(0.01)  # Giảm delay xuống 10ms
             self.loop_stop()
             self.disconnect()
-        else:
-            print("Failed to connect to MQTT broker")

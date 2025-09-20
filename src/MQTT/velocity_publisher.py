@@ -18,7 +18,7 @@ class VelocityPublisherOnce(MQTTTemplate):
 
     def publish_velocity(self, left, right):
         msg = {"left": left, "right": right}
-        self.publish_and_exit(self.topic, msg, delay=0.05)  # Reduce delay for very fast publishing
+        self.publish_and_exit(self.topic, msg, delay=0.01)  # Giảm delay xuống 10ms
 
 
 def main():
