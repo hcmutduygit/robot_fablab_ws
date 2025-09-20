@@ -41,7 +41,7 @@ void publishMQTTVelocity(double v_left_mps, double v_right_mps)
 void publishMQTTLocation(double x, double y, double theta) {
     if (g_should_exit) return;
     
-    const std::string python_script = "/home/nvdia/robot_fablab_ws/src/MQTT/location_publisher.py";
+    const std::string python_script = "/home/nvidia/robot_fablab_ws/src/MQTT/location_publisher.py";
     std::string command = std::string("setsid timeout 2 python2 \"") + python_script + "\" " +
                          std::to_string(x) + " " + std::to_string(y) + " " + std::to_string(theta) + " &";
     
