@@ -36,6 +36,8 @@
 
 <group if="$(arg mqtt_enabled)">
     <node pkg = "publish_mqtt" type = "publish_mqtt_node" name = "Mqtt" output = "screen">
+        <param name="publish_rate" value="1.0"/>  <!-- Giảm tần suất publish -->
+        <param name="queue_size" value="1"/>      <!-- Giảm queue size -->
     </node>
 </group>
 

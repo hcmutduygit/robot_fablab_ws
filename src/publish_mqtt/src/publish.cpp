@@ -1,52 +1,58 @@
 #include <mqtt.h>
+#include <signal.h>
+#include <sys/wait.h>
 
 static volatile int g_should_exit = 0;
+static std::vector<pid_t> child_processes;
+
+// Cleanup function
+void cleanup_processes() {
+    for (pid_t pid : child_processes) {
+        kill(pid, SIGTERM);
+        waitpid(pid, nullptr, WNOHANG);
+    }
+    child_processes.clear();
+}
+
+void signal_handler(int sig) {
+    g_should_exit = 1;
+    cleanup_processes();
+}
 
 void publishMQTTVelocity(double v_left_mps, double v_right_mps)
 {
-    // Don't publish if we're shutting down
-    if (g_should_exit) {
-        return;
-    }
+    if (g_should_exit) return;
     
-    // Path to the Python velocity publisher (kept as-is)
+    // Sử dụng popen thay vì system để kiểm soát tốt hơn
     const std::string python_script = "/home/nvidia/robot_fablab_ws/src/MQTT/velocity_publisher.py";
-
-    // Build command with fixed precision and timeout, run in background with process group
+    
     std::ostringstream cmd;
     cmd.setf(std::ios::fixed);
     cmd << std::setprecision(6)
-        << "setsid timeout 2 python2 \"" << python_script << "\" "
-        << v_left_mps << ' ' << v_right_mps << " &";
+        << "timeout 1 python2 \"" << python_script << "\" "
+        << v_left_mps << ' ' << v_right_mps << " 2>/dev/null";
 
-    // std::cout << "Publishing MQTT velocity (m/s): v_left=" << std::fixed << std::setprecision(3)
-    //           << v_left_mps << ", v_right=" << v_right_mps << std::endl;
-
-    int result = std::system(cmd.str().c_str());
-    if (result == 0)
-    {
-        // std::cout << "MQTT velocity sent successfully!" << std::endl;
-    }
-    else if (!g_should_exit) // Only show error if not shutting down
-    {
-        // std::cout << "Failed to send MQTT velocity!" << std::endl;
+    FILE* pipe = popen(cmd.str().c_str(), "r");
+    if (pipe) {
+        pclose(pipe);
     }
 }
 
 void publishMQTTLocation(double x, double y, double theta) {
-    // Don't publish if we're shutting down
-    if (g_should_exit) {
-        return;
+    if (g_should_exit) return;
+    
+    const std::string python_script = "/home/nvidia/robot_fablab_ws/src/MQTT/location_publisher.py";
+    
+    std::ostringstream cmd;
+    cmd.setf(std::ios::fixed);
+    cmd << std::setprecision(6)
+        << "timeout 1 python2 \"" << python_script << "\" "
+        << x << " " << y << " " << theta << " 2>/dev/null";
+    
+    FILE* pipe = popen(cmd.str().c_str(), "r");
+    if (pipe) {
+        pclose(pipe);
     }
-    
-    const std::string python_script = "/home/nvdia/robot_fablab_ws/src/MQTT/location_publisher.py";
-    std::string command = std::string("setsid timeout 2 python2 \"") + python_script + "\" " +
-                         std::to_string(x) + " " + std::to_string(y) + " " + std::to_string(theta) + " &";
-    
-    // std::cout << "Publishing MQTT location: x=" << x << ", y=" << y << ", theta=" << theta << std::endl;
-    
-    int result = std::system(command.c_str());
-    
 }
 
 void CallBackYaw (const utils::pose_robot::ConstPtr& msg){
@@ -71,10 +77,22 @@ void publishMqtt(const ros::TimerEvent &event){
 int main(int argc, char **argv){
     ros::init(argc,argv,"Mqtt");
     ros::NodeHandle nh;
-    sub_yaw = nh.subscribe("pose_robot",10, CallBackYaw);
-    sub_pose = nh.subscribe("pose_robot1",10, CallBackPose);
-    sub_vel = nh.subscribe("Guidance",10, CallBackVel_stm);
-    loopMqtt = nh.createTimer(ros::Duration(0.1), publishMqtt);
+    
+    // Setup signal handlers
+    signal(SIGINT, signal_handler);
+    signal(SIGTERM, signal_handler);
+    
+    // Tăng timer lên 1.0s để giảm tải
+    double publish_rate = 1.0;
+    nh.getParam("publish_rate", publish_rate);
+    
+    sub_yaw = nh.subscribe("pose_robot", 1, CallBackYaw);
+    sub_pose = nh.subscribe("pose_robot1", 1, CallBackPose);
+    sub_vel = nh.subscribe("Guidance", 1, CallBackVel_stm);
+    loopMqtt = nh.createTimer(ros::Duration(publish_rate), publishMqtt);
+    
     ros::spin();
+    
+    cleanup_processes();
     return 0;
 }
