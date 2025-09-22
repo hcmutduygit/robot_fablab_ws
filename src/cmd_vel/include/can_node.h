@@ -275,7 +275,9 @@ private:
     void receive_worker(Callback callback) {
         while (rx_running_) {
             try {
-                auto [can_id, data] = receive();
+                auto result = receive();
+                auto can_id = result.first;
+                auto data   = result.second;
                 callback(can_id, data);
             } catch (const std::exception& e) {
                 std::cerr << "Error in receive loop: " << e.what() << ". Retrying...\n";

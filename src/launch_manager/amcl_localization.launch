@@ -21,7 +21,7 @@
     
     <!-- Parameters -->
     <param name="odom_model_type" value="diff"/>
-    <param name="use_map_topic" value="true"/>
+    <param name="use_map_topic" value="false"/>
     <param name="update_min_d" value="0.2"/>
     <param name="update_min_a" value="0.2"/>
     <param name="min_particles" value="100"/>
