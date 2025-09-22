@@ -121,7 +121,7 @@ int main(int argc, char **argv){
 
 
 
-    ROS_INFO("Linear_speed_max = %.2f, Angular_speed_max= %.2f, goal_radius= %.2f. KP = %.2f",MAX_LINEAR_SPEED,MAX_ANGULAR_SPEED,GOAL_RADIUS,KP);
+    // ROS_INFO("Linear_speed_max = %.2f, Angular_speed_max= %.2f, goal_radius= %.2f. KP = %.2f",MAX_LINEAR_SPEED,MAX_ANGULAR_SPEED,GOAL_RADIUS,KP);
     ros::NodeHandle nh;
 
     pub = nh.advertise<utils::cmd_vel >("Cmd_vel", 1);
