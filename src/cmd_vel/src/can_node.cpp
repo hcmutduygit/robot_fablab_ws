@@ -36,7 +36,7 @@ void publishMQTTMessage(const std::string &user_name, const std::string &mqtt_ms
         return;
     }
     
-    std::string python_script = "/home/bach/robot_fablab_ws/src/MQTT/name_publisher.py";
+    std::string python_script = "/home/nvidia/robot_fablab_ws/src/MQTT/name_publisher.py";
     std::string command = "setsid timeout 2 python2 " + python_script + " \"" + mqtt_msg + "\" \"" + user_name + "\" \"" + timestamp + "\" &";
 
     // std::cout << "Publishing MQTT message for " << user_name << " at " << timestamp << ": " << mqtt_msg << std::endl;
@@ -53,8 +53,41 @@ void publishMQTTMessage(const std::string &user_name, const std::string &mqtt_ms
 }
 
 // New: publish velocity (v_left, v_right) via MQTT using the Python publisher
+void publishMQTTVelocity(double v_left_mps, double v_right_mps)
+{
+    // Path to the Python velocity publisher (kept as-is)
+    const std::string python_script = "/home/nvidia/robot_fablab_ws/src/MQTT/velocity_publisher.py";
 
+    // Build command with fixed precision (no '--' sentinel)
+    std::ostringstream cmd;
+    cmd.setf(std::ios::fixed);
+    cmd << std::setprecision(6)
+        << "python2 \"" << python_script << "\" "
+        << v_left_mps << ' ' << v_right_mps;
 
+    std::cout << "Publishing MQTT velocity (m/s): v_left=" << std::fixed << std::setprecision(3)
+              << v_left_mps << ", v_right=" << v_right_mps << std::endl;
+
+    int result = std::system(cmd.str().c_str());
+    if (result == 0)
+    {
+        std::cout << "MQTT velocity sent successfully!" << std::endl;
+    }
+    else
+    {
+        std::cout << "Failed to send MQTT velocity!" << std::endl;
+    }
+}
+
+void publishMQTTLocation(double x, double y, double theta) {
+    const std::string python_script = "/home/nvidia/robot_fablab_ws/src/MQTT/location_publisher.py";
+    std::string command = std::string("python2 \"") + python_script + "\" " +
+                         std::to_string(x) + " " + std::to_string(y) + " " + std::to_string(theta);
+    
+    std::cout << "Publishing MQTT location: x=" << x << ", y=" << y << ", theta=" << theta << std::endl;
+    
+    int result = std::system(command.c_str());
+}
 
 
 int ConvertPulse(float &velocity)
@@ -184,7 +217,7 @@ void process_frame(uint16_t can_id, const std::vector<uint8_t> &data)
             yaw += 360.0;
         }
         yaw_angle = yaw; // Update global yaw angle
-
+        // publishMQTTLocation(1.0, 2.0, yaw_angle);
         std::cout << "Yaw: " << yaw << "\n";
         cnt_receive++;
         break;
@@ -267,7 +300,6 @@ void process_frame(uint16_t can_id, const std::vector<uint8_t> &data)
         // std::cout << "Converted Right Velocity (m/s): " << right_mps << "\n";
         cnt_receive++;
         break;
-
     }
     default:
         // Handle unknown CAN IDs
@@ -318,6 +350,27 @@ void send_vel(WaveshareCAN &can)
 //     // ROS_INFO("Send Packages = %d Pkg/s", cnt_send);
 //     cnt_send = 0;
 // }
+// Signal handling for graceful shutdown
+static void handle_signal(int)
+{
+    g_should_exit = 1;
+    
+    // Kill any remaining Python MQTT processes
+    std::system("pkill -f 'python2.*mqtt' > /dev/null 2>&1");
+    std::system("pkill -f 'location_publisher.py' > /dev/null 2>&1");
+    std::system("pkill -f 'velocity_publisher.py' > /dev/null 2>&1");
+    std::system("pkill -f 'name_publisher.py' > /dev/null 2>&1");
+}
+
+void publish_mqtt() 
+{
+    // Don't publish if we're shutting down
+    if (g_should_exit) {
+        return;
+    }
+    publishMQTTLocation(1.0, 2.0, yaw_angle);
+    publishMQTTVelocity(static_cast<double>(left_mps), static_cast<double>(right_mps));
+}
 
 void TransmitSTM(const ros::TimerEvent &event)
 {
@@ -328,7 +381,9 @@ void TransmitSTM(const ros::TimerEvent &event)
     pub.publish(pose);
     vel.v_left_stm = left_mps;
     vel.v_right_stm = right_mps;
+    // ROS_INFO("lef = %f", left_mps);
     pub_vel_stm.publish(vel);
+    can.send(0x050, {1, 0, 0, 0, 0, 0, 0, 0}); 
 }
 
 int main(int argc, char **argv)
@@ -357,4 +412,3 @@ int main(int argc, char **argv)
     ros::spin();
     return 0;
 }
-        
