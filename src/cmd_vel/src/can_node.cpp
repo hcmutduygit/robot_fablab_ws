@@ -17,7 +17,7 @@ int left_wheel_velocity = 0;
 
 static volatile int g_should_exit = 0;
 
-WaveshareCAN can("/dev/ttyUSB1", 2000000, 2.0);
+WaveshareCAN can("/dev/ttyUSB0", 2000000, 2.0);
 
 // RFID database - mapping RFID data to user info
 static const std::map<std::vector<uint8_t>, std::pair<std::string, std::string>> rfid_database = {
@@ -185,7 +185,7 @@ void process_frame(uint16_t can_id, const std::vector<uint8_t> &data)
         }
         yaw_angle = yaw; // Update global yaw angle
 
-        // std::cout << "Yaw: " << yaw << "\n";
+        std::cout << "Yaw: " << yaw << "\n";
         cnt_receive++;
         break;
     }
@@ -267,6 +267,7 @@ void process_frame(uint16_t can_id, const std::vector<uint8_t> &data)
         // std::cout << "Converted Right Velocity (m/s): " << right_mps << "\n";
         cnt_receive++;
         break;
+
     }
     default:
         // Handle unknown CAN IDs
@@ -356,3 +357,4 @@ int main(int argc, char **argv)
     ros::spin();
     return 0;
 }
+        
