@@ -1,6 +1,6 @@
 <launch>
   <!-- Lidar driver -->
-  <include file="$(find rplidar_ros)/launch/rplidar_s2.launch" />
+  <include file="$(find rplidar_ros)/launch/rplidar_s2.launch"/>
 
   <!-- RViz -->
   <arg name="rvizconfig" default="$(find rviz)/rviz.rviz"/>
