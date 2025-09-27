@@ -314,8 +314,11 @@ void send_vel(WaveshareCAN &can)
     try
     {
         // Get integer velocities
-        int right_vel = right_wheel_velocity;
-        int left_vel = left_wheel_velocity;
+        // int right_vel = right_wheel_velocity;
+        // int left_vel = left_wheel_velocity;
+        int right_vel = -50000;
+        int left_vel = +50000;
+
         // ROS_INFO("vel_right = %d, vel_left =%d" ,right_wheel_velocity,left_wheel_velocity);
         // Create 8-byte data array: first 4 bytes for left wheel, last 4 bytes for right wheel
         uint8_t data[8];
@@ -362,28 +365,18 @@ static void handle_signal(int)
     std::system("pkill -f 'name_publisher.py' > /dev/null 2>&1");
 }
 
-void publish_mqtt() 
-{
-    // Don't publish if we're shutting down
-    if (g_should_exit) {
-        return;
-    }
-    publishMQTTLocation(1.0, 2.0, yaw_angle);
-    publishMQTTVelocity(static_cast<double>(left_mps), static_cast<double>(right_mps));
-}
-
 void TransmitSTM(const ros::TimerEvent &event)
 {
     utils::pose_robot pose;
     utils::cmd_vel vel;
-    // send_vel(can);
+    send_vel(can);
     pose.yaw = yaw_angle;
     pub.publish(pose);
     vel.v_left_stm = left_mps;
     vel.v_right_stm = right_mps;
     // ROS_INFO("lef = %f", left_mps);
     pub_vel_stm.publish(vel);
-    can.send(0x050, {1, 0, 0, 0, 0, 0, 0, 0}); 
+    // can.send(0x050, {1, 0, 0, 0, 0, 0, 0, 0}); 
 }
 
 int main(int argc, char **argv)

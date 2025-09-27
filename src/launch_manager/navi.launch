@@ -1,5 +1,5 @@
 <launch>
-  <arg name="guidance_enabled" default="true" />
+  <arg name="guidance_enabled" default="false" />
   <arg name="can_enabled" default="true" />
   <arg name="camera_enabled" default="false" />
   <arg name="mqtt_enabled" default="false" />
@@ -25,7 +25,7 @@
     <node pkg = "cmd_vel" type = "can_node" name = "Cmd_vel" output = "screen">
       <param name="mode" value="1"/>
       <param name="calib" value="0"/>
-      <param name="cycle" value="0.1"/>
+      <param name="cycle_transmit" value="0.1"/>
     </node>
 </group>
 
