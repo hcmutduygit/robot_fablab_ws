@@ -298,6 +298,7 @@ private:
 
  ros::Publisher pub;
  ros::Publisher pub_vel_stm;
+ ros::Publisher odom_pub;
  ros::Subscriber sub;
  ros::Timer loopControl;
  ros::Timer cnt_byte;

@@ -12,6 +12,7 @@ find_package(catkin REQUIRED COMPONENTS
   std_msgs
   utils
   message_runtime
+  tf
 )
 include_directories(include {$catkin_INCLUDE_DIRS})
 
@@ -107,7 +108,7 @@ include_directories(include {$catkin_INCLUDE_DIRS})
 catkin_package(
  INCLUDE_DIRS include
  LIBRARIES can_node
- CATKIN_DEPENDS roscpp utils message_runtime
+ CATKIN_DEPENDS roscpp utils message_runtime tf
 #  DEPENDS system_lib
 )
 

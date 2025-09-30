@@ -1,5 +1,6 @@
 #include <cmath>
 #include "can_node.h"
+#include "odom_publisher.hpp"
 #include <cstdlib>
 #include <string>
 #include <map>
@@ -13,6 +14,12 @@
 float yaw_angle = 0;
 int right_wheel_velocity = 0;
 int left_wheel_velocity = 0;
+float x = 0;
+float y = 0;
+float yaw = 0;
+std::mutex odom_mutex; 
+ros::Time last_time = ros::Time::now();
+tf::TransformBroadcaster odom_broadcaster;
 
 
 static volatile int g_should_exit = 0;
@@ -145,7 +152,7 @@ uint16_t hex_to_unsigned(const std::vector<uint8_t> &data, size_t start_idx)
 }
 
 // Process CAN frame (equivalent to Python's process_frame)
-void process_frame(uint16_t can_id, const std::vector<uint8_t> &data)
+void process_frame(uint16_t can_id, const std::vector<uint8_t> &data, ros::Publisher& odom_pub)
 {
     switch (can_id)
     {
@@ -298,6 +305,7 @@ void process_frame(uint16_t can_id, const std::vector<uint8_t> &data)
         // std::cout << std::fixed << std::setprecision(3);
         // std::cout << "Converted Left Velocity (m/s): " << left_mps << "\n";
         // std::cout << "Converted Right Velocity (m/s): " << right_mps << "\n";
+        updateOdometry(left_mps, right_mps, x, y, odom_pub, last_time, yaw_angle);
         cnt_receive++;
         break;
     }
@@ -388,9 +396,14 @@ void TransmitSTM(const ros::TimerEvent &event)
 
 int main(int argc, char **argv)
 {
-    can.open();
-    can.start_receive_loop(process_frame);
     ros::init(argc, argv, "Cmd_vel");
+    ros::NodeHandle nh;
+    odom_pub = nh.advertise<nav_msgs::Odometry>("odom", 10);
+
+    can.open();
+    can.start_receive_loop([&](uint16_t can_id, const std::vector<uint8_t>& data) {
+        process_frame(can_id, data, odom_pub);
+    });
     ros::NodeHandle arg_nh("~");
     arg_nh.getParam("mode", number);
     arg_nh.getParam("calib", calib);
@@ -402,7 +415,6 @@ int main(int argc, char **argv)
     std::vector<uint8_t> velocity_data(data, data + 8);
     can.send(0x020, velocity_data);
 
-    ros::NodeHandle nh;
     pub = nh.advertise<utils::pose_robot>("pose_robot", 10);
     pub_vel_stm = nh.advertise<utils::cmd_vel>("Guidance", 10);
     sub = nh.subscribe("Cmd_vel", 10, CallBackVel);
