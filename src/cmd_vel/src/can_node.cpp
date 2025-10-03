@@ -18,13 +18,12 @@ float x = 0;
 float y = 0;
 float yaw = 0;
 std::mutex odom_mutex; 
-ros::Time last_time = ros::Time::now();
 tf::TransformBroadcaster odom_broadcaster;
 
 
 static volatile int g_should_exit = 0;
 
-WaveshareCAN can("/dev/ttyUSB0", 2000000, 2.0);
+WaveshareCAN can("/dev/canusb", 2000000, 2.0);
 
 // RFID database - mapping RFID data to user info
 static const std::map<std::vector<uint8_t>, std::pair<std::string, std::string>> rfid_database = {
@@ -152,7 +151,7 @@ uint16_t hex_to_unsigned(const std::vector<uint8_t> &data, size_t start_idx)
 }
 
 // Process CAN frame (equivalent to Python's process_frame)
-void process_frame(uint16_t can_id, const std::vector<uint8_t> &data, ros::Publisher& odom_pub)
+void process_frame(uint16_t can_id, const std::vector<uint8_t> &data, ros::Publisher& odom_pub, ros::Time& last_time)
 {
     switch (can_id)
     {
@@ -399,10 +398,11 @@ int main(int argc, char **argv)
     ros::init(argc, argv, "Cmd_vel");
     ros::NodeHandle nh;
     odom_pub = nh.advertise<nav_msgs::Odometry>("odom", 10);
+    ros::Time last_time = ros::Time::now();
 
     can.open();
     can.start_receive_loop([&](uint16_t can_id, const std::vector<uint8_t>& data) {
-        process_frame(can_id, data, odom_pub);
+        process_frame(can_id, data, odom_pub, last_time);
     });
     ros::NodeHandle arg_nh("~");
     arg_nh.getParam("mode", number);
