@@ -1,3 +1,4 @@
+file can_node.cpp:
 #include <cmath>
 #include "can_node.h"
 #include "odom_publisher.hpp"
@@ -18,11 +19,12 @@ float x = 0;
 float y = 0;
 float yaw = 0;
 std::mutex odom_mutex; 
+tf::TransformBroadcaster odom_broadcaster;
 
 
 static volatile int g_should_exit = 0;
 
-WaveshareCAN can("/dev/ttyUSB0", 2000000, 2.0);
+WaveshareCAN can("/dev/canusb", 2000000, 2.0);
 
 // RFID database - mapping RFID data to user info
 static const std::map<std::vector<uint8_t>, std::pair<std::string, std::string>> rfid_database = {
@@ -32,122 +34,6 @@ static const std::map<std::vector<uint8_t>, std::pair<std::string, std::string>>
     {{0xef, 0xa8, 0x98, 0x1e, 0xc1, 0x55, 0xaa, 0xc8}, {"CHI THIEN", "Thien"}},
     {{0xb6, 0x87, 0x13, 0x2b, 0x09, 0x55, 0xaa, 0xc8}, {"VAN LOI", "Loi"}},
     {{0xc2, 0xbf, 0xb0, 0x2e, 0xe3, 0x55, 0xaa, 0xc8}, {"BACH THU", "Thu"}}};
-
-// Simple function to publish MQTT message via Python script
-void publishMQTTMessage(const std::string &user_name, const std::string &mqtt_msg, const std::string &timestamp)
-{
-    // Don't publish if we're shutting down
-    if (g_should_exit) {
-        return;
-    }
-    
-    std::string python_script = "/home/nvidia/robot_fablab_ws/src/MQTT/name_publisher.py";
-    std::string command = "setsid timeout 2 python2 " + python_script + " \"" + mqtt_msg + "\" \"" + user_name + "\" \"" + timestamp + "\" &";
-
-    // std::cout << "Publishing MQTT message for " << user_name << " at " << timestamp << ": " << mqtt_msg << std::endl;
-    int result = system(command.c_str());
-
-    if (result == 0)
-    {
-        // std::cout << "MQTT message sent successfully!" << std::endl;
-    }
-    else if (!g_should_exit)
-    {
-        // std::cout << "Failed to send MQTT message!" << std::endl;
-    }
-}
-
-// New: publish velocity (v_left, v_right) via MQTT using the Python publisher
-void publishMQTTVelocity(double v_left_mps, double v_right_mps)
-{
-    // Path to the Python velocity publisher (kept as-is)
-    const std::string python_script = "/home/nvidia/robot_fablab_ws/src/MQTT/velocity_publisher.py";
-
-    // Build command with fixed precision (no '--' sentinel)
-    std::ostringstream cmd;
-    cmd.setf(std::ios::fixed);
-    cmd << std::setprecision(6)
-        << "python2 \"" << python_script << "\" "
-        << v_left_mps << ' ' << v_right_mps;
-
-    std::cout << "Publishing MQTT velocity (m/s): v_left=" << std::fixed << std::setprecision(3)
-              << v_left_mps << ", v_right=" << v_right_mps << std::endl;
-
-    int result = std::system(cmd.str().c_str());
-    if (result == 0)
-    {
-        std::cout << "MQTT velocity sent successfully!" << std::endl;
-    }
-    else
-    {
-        std::cout << "Failed to send MQTT velocity!" << std::endl;
-    }
-}
-
-void publishMQTTLocation(double x, double y, double theta) {
-    const std::string python_script = "/home/nvidia/robot_fablab_ws/src/MQTT/location_publisher.py";
-    std::string command = std::string("python2 \"") + python_script + "\" " +
-                         std::to_string(x) + " " + std::to_string(y) + " " + std::to_string(theta);
-    
-    std::cout << "Publishing MQTT location: x=" << x << ", y=" << y << ", theta=" << theta << std::endl;
-    
-    int result = std::system(command.c_str());
-}
-
-
-int ConvertPulse(float &velocity)
-{
-    // Convert m/s to rounds per second (assuming wheel radius is 0.1 m)
-    const float wheel_radius = 100;                                                                 // in millimeters
-    const int pulse_per_revolution = 10000;                                                         // Assuming 360 pulses per revolution
-    int pulse = static_cast<int>(pulse_per_revolution * velocity * 1000 / (2 * PI * wheel_radius)); // Convert m/s to pulses
-    return pulse;                                                                                   // Pulse per second
-}
-
-// Inverse: convert pulses per second back to linear velocity (m/s)
-float ConvertVelocityFromPulse(int pulse)
-{
-    // v (m/s) = (pulse / PPR) * circumference(mm) / 1000
-    const float wheel_radius = 100.0f;      // in millimeters
-    const int pulse_per_revolution = 10000; // pulses per wheel revolution
-    const float circumference_mm = 2.0f * PI * wheel_radius;
-
-    float velocity_mps = (static_cast<float>(pulse) * circumference_mm) /
-                         (static_cast<float>(pulse_per_revolution) * 1000);
-    return velocity_mps;
-}
-
-void CallBackVel(const utils::cmd_vel::ConstPtr &cmd_vel)
-{
-    float v_left = cmd_vel->v_left;
-    float v_right = cmd_vel->v_right;
-
-    left_wheel_velocity = ConvertPulse(v_left);
-    right_wheel_velocity = ConvertPulse(v_right);
-}
-
-void ControlStm(const ros::TimerEvent &event)
-{
-    utils::pose_robot pose;
-    pose.yaw = yaw_angle; // cập nhật yaw
-    pub.publish(pose);
-}
-
-// Convert two bytes to a signed 16-bit integer
-int16_t hex_to_signed(const std::vector<uint8_t> &data, size_t start_idx, size_t bits = 16)
-{
-    uint16_t value = (data[start_idx] << 8) | data[start_idx + 1];
-    // Convert unsigned to signed using proper casting
-    int16_t signed_value = static_cast<int16_t>(value);
-    return signed_value;
-}
-
-// Convert two bytes to an unsigned 16-bit integer for angles
-uint16_t hex_to_unsigned(const std::vector<uint8_t> &data, size_t start_idx)
-{
-    // Combine two bytes into a 16-bit unsigned integer (big-endian)
-    return static_cast<uint16_t>((data[start_idx] << 8) | data[start_idx + 1]);
-}
 
 // Process CAN frame (equivalent to Python's process_frame)
 void process_frame(uint16_t can_id, const std::vector<uint8_t> &data, ros::Publisher& odom_pub, ros::Time& last_time)
@@ -315,68 +201,6 @@ void process_frame(uint16_t can_id, const std::vector<uint8_t> &data, ros::Publi
     }
 }
 
-void send_vel(WaveshareCAN &can)
-{
-    try
-    {
-        // Get integer velocities
-        int right_vel = right_wheel_velocity;
-        int left_vel = left_wheel_velocity;
-        // ROS_INFO("vel_right = %d, vel_left =%d" ,right_wheel_velocity,left_wheel_velocity);
-        // Create 8-byte data array: first 4 bytes for left wheel, last 4 bytes for right wheel
-        uint8_t data[8];
-
-        // Convert left velocity to bytes (first 4 bytes)
-        std::memcpy(data, &left_vel, sizeof(int));
-
-        // Convert right velocity to bytes (last 4 bytes)
-        std::memcpy(data + 4, &right_vel, sizeof(int));
-
-        // Create data vector
-        std::vector<uint8_t> velocity_data(data, data + 8);
-
-        // Send both velocities to single ID 0x013
-        can.send(0x013, velocity_data);
-        cnt_send++;
-        // std::cout << "Sent left velocity " << left_vel << " and right velocity " << right_vel << " to ID 0x013" << std::endl;
-    }
-    catch (const std::exception &e)
-    {
-        std::cerr << "Invalid velocity input: " << e.what() << std::endl;
-    }
-}
-
-
-
-// void CntBytes(const ros::TimerEvent &event)
-// {
-
-//     // ROS_INFO("Receive Packages = %d Pkg/s", cnt_receive);
-//     cnt_receive = 0;
-//     // ROS_INFO("Send Packages = %d Pkg/s", cnt_send);
-//     cnt_send = 0;
-// }
-// Signal handling for graceful shutdown
-static void handle_signal(int)
-{
-    g_should_exit = 1;
-    
-    // Kill any remaining Python MQTT processes
-    std::system("pkill -f 'python2.*mqtt' > /dev/null 2>&1");
-    std::system("pkill -f 'location_publisher.py' > /dev/null 2>&1");
-    std::system("pkill -f 'velocity_publisher.py' > /dev/null 2>&1");
-    std::system("pkill -f 'name_publisher.py' > /dev/null 2>&1");
-}
-
-void publish_mqtt() 
-{
-    // Don't publish if we're shutting down
-    if (g_should_exit) {
-        return;
-    }
-    publishMQTTLocation(1.0, 2.0, yaw_angle);
-    publishMQTTVelocity(static_cast<double>(left_mps), static_cast<double>(right_mps));
-}
 
 void TransmitSTM(const ros::TimerEvent &event)
 {
@@ -389,7 +213,7 @@ void TransmitSTM(const ros::TimerEvent &event)
     vel.v_right_stm = right_mps;
     // ROS_INFO("lef = %f", left_mps);
     pub_vel_stm.publish(vel);
-    // can.send(0x050, {1, 0, 0, 0, 0, 0, 0, 0}); 
+    can.send(0x050, {1, 0, 0, 0, 0, 0, 0, 0}); 
 }
 
 int main(int argc, char **argv)
@@ -422,4 +246,84 @@ int main(int argc, char **argv)
 
     ros::spin();
     return 0;
+}
+
+file odom_publisher.hpp:
+
+#pragma once
+#include "ros/ros.h"
+#include <nav_msgs/Odometry.h>
+#include <tf/transform_broadcaster.h>
+#include <geometry_msgs/TransformStamped.h>
+#include <tf/transform_datatypes.h>
+#include <cmath>
+#include <mutex>
+
+extern tf::TransformBroadcaster odom_broadcaster;
+extern float x, y, yaw;
+extern std::mutex odom_mutex;
+
+inline void updateOdometry(float v_left, float v_right, float& x, float& y, ros::Publisher& odom_pub, ros::Time& last_time, float imu_yaw = NAN) {
+    std::lock_guard<std::mutex> lock(odom_mutex);
+
+    ros::Time cur_time = ros::Time::now();
+    double dt = (cur_time - last_time).toSec();
+    if (dt <= 0.0) return;
+    if (dt > 0.2) dt = 0.2; // clamp to avoid huge jumps
+    last_time = cur_time;
+
+    // Robot velocities
+    double v = (v_right + v_left) / 2.0;
+    double omega = (v_right - v_left) / 0.72;
+
+    // Fuse IMU yaw if available
+    if (!std::isnan(imu_yaw)) {
+        double alpha = 0.9;
+        double yaw_pred = yaw + omega * dt;
+        yaw = alpha * yaw_pred + (1.0 - alpha) * imu_yaw;
+    } else {
+        yaw += omega * dt;
+    }
+
+    // Integrate position
+    const double eps = 1e-6;
+    if (std::abs(omega) < eps) {
+        x += v * cos(yaw) * dt;
+        y += v * sin(yaw) * dt;
+    } else {
+        double r = v / omega;
+        double dyaw = omega * dt;
+        x += r * (sin(yaw + dyaw) - sin(yaw));
+        y += -r * (cos(yaw + dyaw) - cos(yaw));
+    }
+
+    // Publish odom
+    nav_msgs::Odometry odom;
+    odom.header.stamp = cur_time;
+    odom.header.frame_id = "odom";
+    odom.child_frame_id = "base_footprint";
+    odom.pose.pose.position.x = x;
+    odom.pose.pose.position.y = y;
+    odom.pose.pose.position.z = 0.0;
+    odom.pose.pose.orientation = tf::createQuaternionMsgFromYaw(yaw);
+    odom.twist.twist.linear.x = v;
+    odom.twist.twist.angular.z = omega;
+
+    // covariance (optional but useful for AMCL)
+    for (int i = 0; i < 36; i++) odom.pose.covariance[i] = 0.0;
+    odom.pose.covariance[0]  = 0.01;
+    odom.pose.covariance[7]  = 0.01;
+    odom.pose.covariance[35] = 0.02;
+    odom_pub.publish(odom);
+
+    // Broadcast TF
+    geometry_msgs::TransformStamped odom_tf;
+    odom_tf.header.stamp = cur_time;
+    odom_tf.header.frame_id = "odom";
+    odom_tf.child_frame_id = "base_footprint";
+    odom_tf.transform.translation.x = x;
+    odom_tf.transform.translation.y = y;
+    odom_tf.transform.translation.z = 0.0;
+    odom_tf.transform.rotation = tf::createQuaternionMsgFromYaw(yaw);
+    odom_broadcaster.sendTransform(odom_tf);
 }

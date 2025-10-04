@@ -7,7 +7,6 @@
 #include <cmath>
 #include <mutex>
 
-extern tf::TransformBroadcaster odom_broadcaster;
 extern float x, y, yaw;
 extern std::mutex odom_mutex;
 
@@ -60,11 +59,12 @@ inline void updateOdometry(float v_left, float v_right, float& x, float& y, ros:
     // covariance (optional but useful for AMCL)
     for (int i = 0; i < 36; i++) odom.pose.covariance[i] = 0.0;
     odom.pose.covariance[0]  = 0.01;
-    odom.pose.covariance[7]  = 0.01;
+    odom.pose.covariance[7]  = 0.01; 
     odom.pose.covariance[35] = 0.02;
     odom_pub.publish(odom);
 
     // Broadcast TF
+    static tf::TransformBroadcaster odom_broadcaster;
     geometry_msgs::TransformStamped odom_tf;
     odom_tf.header.stamp = cur_time;
     odom_tf.header.frame_id = "odom";
