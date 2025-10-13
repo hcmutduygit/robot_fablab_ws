@@ -99,51 +99,135 @@ public:
         // std::cout << std::dec << "\n";
     }
 
-    std::pair<uint16_t, std::vector<uint8_t>> receive() {
-        if (fd_ == -1) {
+    // std::pair<uint16_t, std::vector<uint8_t>> receive() {
+    //     if (fd_ == -1) {
+    //         throw std::runtime_error("Serial port is not open. Call open() first.");
+    //     }
+
+    //     uint8_t b;
+        
+    //     // Look for start byte (0xAA)
+    //     while (true) {
+    //         if (read_exact(&b, 1) && (b == 0xAA)) {
+    //             break;
+    //         }
+    //     }
+
+    //     // Read CMD byte (can be any value, not necessarily 0xC8)
+    //     if (!read_exact(&b, 1)) {
+    //         throw std::runtime_error("Failed to read CMD byte");
+    //     }
+
+    //     // Read CAN ID (2 bytes: IDL, IDH)
+    //     uint8_t idl, idh;
+    //     if (!read_exact(&idl, 1) || !read_exact(&idh, 1)) {
+    //         throw std::runtime_error("Failed to read CAN ID");
+    //     }
+
+    //     // Read 8 data bytes (or whatever length is available)
+    //     std::vector<uint8_t> data(8);
+    //     if (!read_exact(data.data(), 8)) {
+    //         throw std::runtime_error("Failed to read data bytes");
+    //     }
+
+    //     // Read tail byte
+    //     uint8_t tail;
+    //     if (!read_exact(&tail, 1)) {
+    //         throw std::runtime_error("Failed to read tail byte");
+    //     }
+    //     // if (tail != 0x55) {
+    //     //     throw std::runtime_error("Invalid tail byte");
+    //     // }
+
+    //     uint16_t can_id = idl | (idh << 8);
+
+    //     // std::cout << "Received: ID=0x" << std::hex << can_id << " Data=";
+    //     // for (uint8_t b : data) {
+    //     //     std::cout << std::hex << std::setw(2) << std::setfill('0') << (int)b << " ";
+    //     // }
+    //     // std::cout << std::dec << "\n";
+
+    //     return {can_id, data};
+    // }
+
+    std::pair<uint16_t, std::vector<uint8_t>> receive()
+    {
+        if (fd_ == -1)
+        {
             throw std::runtime_error("Serial port is not open. Call open() first.");
         }
 
         uint8_t b;
-        
-        // Look for start byte (0xAA)
-        while (true) {
-            if (read_exact(&b, 1) && (b == 0xAA)) {
+        // Wait for start byte (0xAA)
+        while (true)
+        {
+            if (read_exact(&b, 1) && b == 0xAA)
+            {
                 break;
             }
         }
 
-        // Read CMD byte (can be any value, not necessarily 0xC8)
-        if (!read_exact(&b, 1)) {
+        // Read header (3 bytes)
+        std::vector<uint8_t> header(3);
+        if (!read_exact(header.data(), 3))
+        {
+            throw std::runtime_error("Failed to read header");
+        }
+
+        // Read CMD byte
+        uint8_t cmd;
+        if (!read_exact(&cmd, 1))
+        {
             throw std::runtime_error("Failed to read CMD byte");
         }
+        // if (cmd != 0xC8) {
+        //     throw std::runtime_error("Invalid CMD byte");
+        // }
 
-        // Read CAN ID (2 bytes: IDL, IDH)
-        uint8_t idl, idh;
-        if (!read_exact(&idl, 1) || !read_exact(&idh, 1)) {
-            throw std::runtime_error("Failed to read CAN ID");
+        // Read IDL (1 byte)
+        uint8_t idl;
+        if (!read_exact(&idl, 1))
+        {
+            throw std::runtime_error("Failed to read IDL");
         }
 
-        // Read 8 data bytes (or whatever length is available)
+        // Read IDH (3 bytes)
+        std::vector<uint8_t> idh(3);
+        if (!read_exact(idh.data(), 3))
+        {
+            throw std::runtime_error("Failed to read IDH");
+        }
+
+        // Read length (1 byte)
+        uint8_t length;
+        if (!read_exact(&length, 1))
+        {
+            throw std::runtime_error("Failed to read length");
+        }
+
+        // Read 8 data bytes
         std::vector<uint8_t> data(8);
-        if (!read_exact(data.data(), 8)) {
+        if (!read_exact(data.data(), 8))
+        {
             throw std::runtime_error("Failed to read data bytes");
         }
 
         // Read tail byte
         uint8_t tail;
-        if (!read_exact(&tail, 1)) {
+        if (!read_exact(&tail, 1))
+        {
             throw std::runtime_error("Failed to read tail byte");
         }
         // if (tail != 0x55) {
         //     throw std::runtime_error("Invalid tail byte");
         // }
 
-        uint16_t can_id = idl | (idh << 8);
+        uint16_t can_id = idl | (idh[0] << 8);
 
-        // std::cout << "Received: ID=0x" << std::hex << can_id << " Data=";
-        // for (uint8_t b : data) {
-        //     std::cout << std::hex << std::setw(2) << std::setfill('0') << (int)b << " ";
+        // std::cout << "📥 Received: ID=0x" << std::hex << can_id << " Data=";
+        // for (uint8_t b : data)
+        // {
+        //     std::cout << std::hex << (int)b << " ";
         // }
         // std::cout << std::dec << "\n";
 
@@ -191,7 +275,9 @@ private:
     void receive_worker(Callback callback) {
         while (rx_running_) {
             try {
-                auto [can_id, data] = receive();
+                auto result = receive();
+                auto can_id = result.first;
+                auto data   = result.second;
                 callback(can_id, data);
             } catch (const std::exception& e) {
                 std::cerr << "Error in receive loop: " << e.what() << ". Retrying...\n";
@@ -212,6 +298,7 @@ private:
 
  ros::Publisher pub;
  ros::Publisher pub_vel_stm;
+ ros::Publisher odom_pub;
  ros::Subscriber sub;
  ros::Timer loopControl;
  ros::Timer cnt_byte;
