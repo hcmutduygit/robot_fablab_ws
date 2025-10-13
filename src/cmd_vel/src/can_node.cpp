@@ -18,11 +18,14 @@ float x = 0;
 float y = 0;
 float yaw = 0;
 std::mutex odom_mutex; 
+float yaw_offset = 0;
+float yaw_prev = 0;
+bool initialized = false;
 
 
 static volatile int g_should_exit = 0;
 
-WaveshareCAN can("/dev/ttyUSB0", 2000000, 2.0);
+WaveshareCAN can("/dev/ttyUSB1", 2000000, 2.0);
 
 // RFID database - mapping RFID data to user info
 static const std::map<std::vector<uint8_t>, std::pair<std::string, std::string>> rfid_database = {
@@ -223,7 +226,7 @@ void process_frame(uint16_t can_id, const std::vector<uint8_t> &data, ros::Publi
         }
         yaw_angle = yaw; // Update global yaw angle
         // publishMQTTLocation(1.0, 2.0, yaw_angle);
-        std::cout << "Yaw: " << yaw << "\n";
+        // std::cout << "Yaw_degree: " << yaw << "\n";
         cnt_receive++;
         break;
     }
@@ -294,8 +297,8 @@ void process_frame(uint16_t can_id, const std::vector<uint8_t> &data, ros::Publi
         // std::cout << std::dec << "\n";
 
         // Print the received velocities (pulses per second)
-        std::cout << "Received Left Velocity (pulses/s): " << received_left_vel << "\n";
-        std::cout << "Received Right Velocity (pulses/s): " << received_right_vel << "\n";
+        // std::cout << "Received Left Velocity (pulses/s): " << received_left_vel << "\n";
+        // std::cout << "Received Right Velocity (pulses/s): " << received_right_vel << "\n";
 
         // Convert pulses to linear velocity (m/s)
         left_mps = ConvertVelocityFromPulse(received_left_vel);
@@ -303,7 +306,7 @@ void process_frame(uint16_t can_id, const std::vector<uint8_t> &data, ros::Publi
         // std::cout << std::fixed << std::setprecision(3);
         // std::cout << "Converted Left Velocity (m/s): " << left_mps << "\n";
         // std::cout << "Converted Right Velocity (m/s): " << right_mps << "\n";
-        updateOdometry(left_mps, right_mps, x, y, odom_pub, last_time, yaw_angle);
+        updateOdometry(left_mps, right_mps, x, y, odom_pub, last_time, yaw_offset, initialized, yaw_angle);
         cnt_receive++;
         break;
     }
@@ -382,14 +385,14 @@ void TransmitSTM(const ros::TimerEvent &event)
 {
     utils::pose_robot pose;
     utils::cmd_vel vel;
-    // send_vel(can);
+    send_vel(can);
     pose.yaw = yaw_angle;
     pub.publish(pose);
     vel.v_left_stm = left_mps;
     vel.v_right_stm = right_mps;
-    // ROS_INFO("lef = %f", left_mps);
+    ROS_INFO("lef = %f", left_mps);
     pub_vel_stm.publish(vel);
-    // can.send(0x050, {1, 0, 0, 0, 0, 0, 0, 0}); 
+    can.send(0x050, {1, 0, 0, 0, 0, 0, 0, 0}); 
 }
 
 int main(int argc, char **argv)

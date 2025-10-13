@@ -6,31 +6,51 @@
 #include <tf/transform_datatypes.h>
 #include <cmath>
 #include <mutex>
+#define PI 3.14159265358979323846
 
-extern float x, y, yaw;
+extern float x, y, yaw, yaw_offset, yaw_prev;
 extern std::mutex odom_mutex;
+extern bool initialized;
 
-inline void updateOdometry(float v_left, float v_right, float& x, float& y, ros::Publisher& odom_pub, ros::Time& last_time, float imu_yaw = NAN) {
+inline void updateOdometry(float v_left, float v_right, float& x, float& y, ros::Publisher& odom_pub, ros::Time& last_time, float& yaw_offset, bool& initialized, float imu_yaw = NAN) {
     std::lock_guard<std::mutex> lock(odom_mutex);
+    imu_yaw = -imu_yaw;
+    // if (!initialized) {
+    //     yaw_offset = imu_yaw;  // Hướng ban đầu
+    //     initialized = true;
+    // }
+    // imu_yaw = imu_yaw - yaw_offset;  // Yaw tuyệt đối theo hướng robot ban đầu
+    // std::cout << "yaw_offset" << yaw_offset << "\n";
+    yaw = imu_yaw * PI / 180.0;
+    std::cout << "yaw: " << yaw << "\n";
+
+    v_left = -v_left/20;
+    v_right = v_right/20;
+    std::cout << "v_left=" << v_left << "(m/s), v_right=" << v_right << "(m/s)\n";
 
     ros::Time cur_time = ros::Time::now();
-    double dt = (cur_time - last_time).toSec();
-    if (dt <= 0.0) return;
-    if (dt > 0.2) dt = 0.2; // clamp to avoid huge jumps
+    std::cout << "current_time: " << cur_time << "\n";
+    float dt = (cur_time - last_time).toSec();
+    std::cout << "dt: " << dt << "\n";
+    // if (dt <= 0.0) return;
+    // if (dt > 0.2) dt = 0.2; // clamp to avoid huge jumps
     last_time = cur_time;
 
     // Robot velocities
-    double v = (v_right + v_left) / 2.0;
-    double omega = (v_right - v_left) / 0.72;
+    float v = (v_right + v_left) / 2.0;
+    std::cout << "v: " << v << "\n";
+    float omega = (v_right - v_left) / 0.513;
+    std::cout << "omega: " << omega << "\n";
 
-    // Fuse IMU yaw if available
-    if (!std::isnan(imu_yaw)) {
-        double alpha = 0.9;
-        double yaw_pred = yaw + omega * dt;
-        yaw = alpha * yaw_pred + (1.0 - alpha) * imu_yaw;
-    } else {
-        yaw += omega * dt;
-    }
+    // // Fuse IMU yaw if available
+    // if (!std::isnan(imu_yaw)) {
+    //     double alpha = 0.9;
+    //     double yaw_pred = yaw + omega * dt;
+    //     yaw = alpha * yaw_pred + (1.0 - alpha) * imu_yaw;
+    // } else {
+    //     yaw += omega * dt;
+    // }
+    // std::cout << "fused_yaw: " << yaw << "\n";
 
     // Integrate position
     const double eps = 1e-6;
@@ -38,11 +58,15 @@ inline void updateOdometry(float v_left, float v_right, float& x, float& y, ros:
         x += v * cos(yaw) * dt;
         y += v * sin(yaw) * dt;
     } else {
-        double r = v / omega;
-        double dyaw = omega * dt;
+        float r = v / omega;
+        float dyaw = omega*dt;
+        std::cout << "dyaw: " << dyaw << "\n";
+        yaw_prev = yaw;
         x += r * (sin(yaw + dyaw) - sin(yaw));
         y += -r * (cos(yaw + dyaw) - cos(yaw));
     }
+
+    std::cout << "x: " << x << ", y: " << y << "\n";
 
     // Publish odom
     nav_msgs::Odometry odom;
@@ -53,6 +77,7 @@ inline void updateOdometry(float v_left, float v_right, float& x, float& y, ros:
     odom.pose.pose.position.y = y;
     odom.pose.pose.position.z = 0.0;
     odom.pose.pose.orientation = tf::createQuaternionMsgFromYaw(yaw);
+    std::cout << "pose.orientation: " << odom.pose.pose.orientation << "\n";
     odom.twist.twist.linear.x = v;
     odom.twist.twist.angular.z = omega;
 
@@ -74,4 +99,5 @@ inline void updateOdometry(float v_left, float v_right, float& x, float& y, ros:
     odom_tf.transform.translation.z = 0.0;
     odom_tf.transform.rotation = tf::createQuaternionMsgFromYaw(yaw);
     odom_broadcaster.sendTransform(odom_tf);
+    std::cout << "---------------------------" <<"\n";
 }
