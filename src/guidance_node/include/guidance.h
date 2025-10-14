@@ -50,5 +50,5 @@ std::vector<std::pair<double, double>> wp;
 ros::Timer loopControl; 
 ros::Subscriber sub;
 ros::Publisher pub;
-
+ros::Subscriber sub_amcl;
 #endif

@@ -84,10 +84,15 @@ double tranfer_wp (){
     return linear_x, angular_z;
 }
 
-void CallBackPosition (const utils::pose_robot::ConstPtr& msg){
-    x = msg->x;
-    y = msg->y;
+void CallBackYaw (const utils::pose_robot::ConstPtr& msg){
+    // x = msg->x;
+    // y = msg->y;
     theta = (msg->yaw*PI)/180;
+}
+
+void CallBackPosition (const utils::pose_robot::ConstPtr& msg){ //
+    
+    
 }
 
 void ControlVel(const ros::TimerEvent& event){
@@ -125,7 +130,8 @@ int main(int argc, char **argv){
     ros::NodeHandle nh;
 
     pub = nh.advertise<utils::cmd_vel >("Cmd_vel", 1);
-    sub = nh.subscribe("pose_robot",10, CallBackPosition);
+    sub = nh.subscribe("pose_robot",10, CallBackYaw);
+    sub_amcl = nh.subscribe("pose_robot_amcl",10, CallBackPosition); //theo topic
     loopControl = nh.createTimer(ros::Duration(cycle), ControlVel);
     std::string waypoints_x_str, waypoints_y_str;
     
