@@ -1,6 +1,7 @@
 #include <guidance.h>
 #include <gazebo_msgs/ModelStates.h>
 #include <geometry_msgs/Twist.h>
+#include <geometry_msgs/PoseWithCovarianceStamped.h>
 #include <tf/tf.h>
 #include <algorithm> 
 #include <math.h>
@@ -131,7 +132,7 @@ int main(int argc, char **argv){
 
     pub = nh.advertise<utils::cmd_vel >("Cmd_vel", 1);
     sub = nh.subscribe("pose_robot",10, CallBackYaw);
-    sub_amcl = nh.subscribe("pose_robot_amcl",10, CallBackPosition); //theo topic
+    sub_amcl = nh.subscribe("pose_robot_amcl",10, CallBackPose); //theo topic
     loopControl = nh.createTimer(ros::Duration(cycle), ControlVel);
     std::string waypoints_x_str, waypoints_y_str;
     
