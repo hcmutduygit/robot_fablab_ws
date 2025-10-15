@@ -90,9 +90,9 @@ void CallBackYaw (const utils::pose_robot::ConstPtr& msg){
     theta = (msg->yaw*PI)/180;
 }
 
-void CallBackPosition (const utils::pose_robot::ConstPtr& msg){ //
-    
-    
+void CallBackPose(const geometry_msgs::PoseWithCovarianceStamped::ConstPtr& msg){
+        pos_x = msg->pose.pose.position.x;
+        pos_y = msg->pose.pose.position.y;
 }
 
 void ControlVel(const ros::TimerEvent& event){
