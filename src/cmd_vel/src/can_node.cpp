@@ -25,7 +25,7 @@ bool initialized = false;
 
 static volatile int g_should_exit = 0;
 
-WaveshareCAN can("/dev/ttyUSB1", 2000000, 2.0);
+WaveshareCAN can("/dev/usbcan", 2000000, 2.0);
 
 // RFID database - mapping RFID data to user info
 static const std::map<std::vector<uint8_t>, std::pair<std::string, std::string>> rfid_database = {
@@ -385,14 +385,14 @@ void TransmitSTM(const ros::TimerEvent &event)
 {
     utils::pose_robot pose;
     utils::cmd_vel vel;
-    send_vel(can);
+    // send_vel(can);
     pose.yaw = yaw_angle;
     pub.publish(pose);
     vel.v_left_stm = left_mps;
     vel.v_right_stm = right_mps;
-    ROS_INFO("lef = %f", left_mps);
+    // ROS_INFO("lef = %f", left_mps);
     pub_vel_stm.publish(vel);
-    can.send(0x050, {1, 0, 0, 0, 0, 0, 0, 0}); 
+    // can.send(0x050, {1, 0, 0, 0, 0, 0, 0, 0}); 
 }
 
 int main(int argc, char **argv)
