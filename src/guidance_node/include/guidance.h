@@ -6,6 +6,7 @@
 #include <utils/cmd_vel.h>
 #include <utils/pose_robot.h>
 #include <tf2_msgs/TFMessage.h>
+#include <geometry_msgs/PoseWithCovarianceStamped.h>
 
 // using namespace utils;
 #define PI 3.14159265358979323846
