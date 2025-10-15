@@ -9,6 +9,8 @@
   <arg name="base_frame_id"   default="base_footprint"/>
   <arg name="global_frame_id" default="map"/>
 
+  <arg name="mqtt_enabled" default="true" />
+
   <!-- Lidar driver -->
   <include file="$(find rplidar_ros)/launch/rplidar_s2.launch"/>
 
@@ -25,6 +27,9 @@
     <param name="mode" value="1"/>
   </node>
 
+  <group if="$(arg mqtt_enabled)">
+      <node pkg = "publish_mqtt" type = "publish_mqtt_node" name = "Mqtt" output = "screen"></node>
+  </group>
   <!-- AMCL for localization -->
   <node pkg="amcl" type="amcl" name="amcl">
     <param name="use_map_topic"             value="$(arg use_map_topic)"/>
@@ -71,7 +76,7 @@
   <node pkg="tf" type="static_transform_publisher" name="basefootprint_to_laser"
         args="0 0 0 0 0 0 base_footprint laser 50" />
 
-  <group if="$(arg guidance_enabled)">
+  <!-- <group if="$(arg guidance_enabled)">
         <node pkg = "guidance_node" type = "guidance_node" name = "Guidance" output = "screen">
             <param name="linear_speed" value="6"/>
             <param name="angular_speed" value="6"/>
@@ -86,5 +91,5 @@
             <param name="waypoints_x" value="5.30342, 0.-2.2787375397544154" />
             <param name="waypoints_y" value="-4.18949, -0.22.95870043564341" />
         </node>
-    </group>
+    </group> -->
 </launch>
