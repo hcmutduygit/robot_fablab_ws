@@ -60,44 +60,6 @@ void publishMQTTMessage(const std::string &user_name, const std::string &mqtt_ms
     }
 }
 
-// New: publish velocity (v_left, v_right) via MQTT using the Python publisher
-void publishMQTTVelocity(double v_left_mps, double v_right_mps)
-{
-    // Path to the Python velocity publisher (kept as-is)
-    const std::string python_script = "/home/nvidia/robot_fablab_ws/src/MQTT/velocity_publisher.py";
-
-    // Build command with fixed precision (no '--' sentinel)
-    std::ostringstream cmd;
-    cmd.setf(std::ios::fixed);
-    cmd << std::setprecision(6)
-        << "python2 \"" << python_script << "\" "
-        << v_left_mps << ' ' << v_right_mps;
-
-    std::cout << "Publishing MQTT velocity (m/s): v_left=" << std::fixed << std::setprecision(3)
-              << v_left_mps << ", v_right=" << v_right_mps << std::endl;
-
-    int result = std::system(cmd.str().c_str());
-    if (result == 0)
-    {
-        std::cout << "MQTT velocity sent successfully!" << std::endl;
-    }
-    else
-    {
-        std::cout << "Failed to send MQTT velocity!" << std::endl;
-    }
-}
-
-void publishMQTTLocation(double x, double y, double theta) {
-    const std::string python_script = "/home/nvidia/robot_fablab_ws/src/MQTT/location_publisher.py";
-    std::string command = std::string("python2 \"") + python_script + "\" " +
-                         std::to_string(x) + " " + std::to_string(y) + " " + std::to_string(theta);
-    
-    std::cout << "Publishing MQTT location: x=" << x << ", y=" << y << ", theta=" << theta << std::endl;
-    
-    int result = std::system(command.c_str());
-}
-
-
 int ConvertPulse(float &velocity)
 {
     // Convert m/s to rounds per second (assuming wheel radius is 0.1 m)
