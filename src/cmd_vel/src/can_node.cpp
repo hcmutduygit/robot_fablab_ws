@@ -333,16 +333,6 @@ static void handle_signal(int)
     std::system("pkill -f 'name_publisher.py' > /dev/null 2>&1");
 }
 
-// void publish_mqtt() 
-// {
-//     // Don't publish if we're shutting down
-//     if (g_should_exit) {
-//         return;
-//     }
-//     publishMQTTLocation(1.0, 2.0, yaw_angle);
-//     publishMQTTVelocity(static_cast<double>(left_mps), static_cast<double>(right_mps));
-// }
-
 void TransmitSTM(const ros::TimerEvent &event)
 {
     utils::pose_robot pose;
