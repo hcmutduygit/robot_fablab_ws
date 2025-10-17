@@ -22,25 +22,24 @@ inline void updateOdometry(float v_left, float v_right, float& x, float& y, ros:
     // imu_yaw = imu_yaw - yaw_offset;  // Yaw tuyệt đối theo hướng robot ban đầu
     // std::cout << "yaw_offset" << yaw_offset << "\n";
     yaw = imu_yaw * PI / 180.0;
-    std::cout << "yaw: " << yaw << "\n";
+    
 
     v_left = -v_left/20;
     v_right = v_right/20;
-    std::cout << "v_left=" << v_left << "(m/s), v_right=" << v_right << "(m/s)\n";
 
     ros::Time cur_time = ros::Time::now();
-    std::cout << "current_time: " << cur_time << "\n";
+    
     float dt = (cur_time - last_time).toSec();
-    std::cout << "dt: " << dt << "\n";
+    
     // if (dt <= 0.0) return;
     // if (dt > 0.2) dt = 0.2; // clamp to avoid huge jumps
     last_time = cur_time;
 
     // Robot velocities
     float v = (v_right + v_left) / 2.0;
-    std::cout << "v: " << v << "\n";
+    
     float omega = (v_right - v_left) / 0.513;
-    std::cout << "omega: " << omega << "\n";
+    
 
     // // Fuse IMU yaw if available
     // if (!std::isnan(imu_yaw)) {
@@ -60,13 +59,11 @@ inline void updateOdometry(float v_left, float v_right, float& x, float& y, ros:
     } else {
         float r = v / omega;
         float dyaw = omega*dt;
-        std::cout << "dyaw: " << dyaw << "\n";
+        // std::cout << "dyaw: " << dyaw << "\n";
         yaw_prev = yaw;
         x += r * (sin(yaw + dyaw) - sin(yaw));
         y += -r * (cos(yaw + dyaw) - cos(yaw));
     }
-
-    std::cout << "x: " << x << ", y: " << y << "\n";
 
     // Publish odom
     nav_msgs::Odometry odom;
@@ -77,7 +74,7 @@ inline void updateOdometry(float v_left, float v_right, float& x, float& y, ros:
     odom.pose.pose.position.y = y;
     odom.pose.pose.position.z = 0.0;
     odom.pose.pose.orientation = tf::createQuaternionMsgFromYaw(yaw);
-    std::cout << "pose.orientation: " << odom.pose.pose.orientation << "\n";
+    // std::cout << "pose.orientation: " << odom.pose.pose.orientation << "\n";
     odom.twist.twist.linear.x = v;
     odom.twist.twist.angular.z = omega;
 
@@ -99,5 +96,14 @@ inline void updateOdometry(float v_left, float v_right, float& x, float& y, ros:
     odom_tf.transform.translation.z = 0.0;
     odom_tf.transform.rotation = tf::createQuaternionMsgFromYaw(yaw);
     odom_broadcaster.sendTransform(odom_tf);
-    std::cout << "---------------------------" <<"\n";
+
+    // std::cout << "yaw: " << yaw << "\n";
+    // std::cout << "v_left=" << v_left << "(m/s), v_right=" << v_right << "(m/s)\n";
+    // std::cout << "current_time: " << cur_time << "\n";
+    // std::cout << "dt: " << dt << "\n";
+    // std::cout << "current_time: " << cur_time << "\n";
+    // std::cout << "v: " << v << "\n";
+    // std::cout << "omega: " << omega << "\n";
+    // std::cout << "x: " << x << ", y: " << y << "\n";
+    // std::cout << "---------------------------" <<"\n";
 }
