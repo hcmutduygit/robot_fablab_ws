@@ -12,8 +12,7 @@ extern float x, y, yaw, yaw_offset, yaw_prev;
 extern std::mutex odom_mutex;
 extern bool initialized;
 
-inline void updateOdometry(float v_left, float v_right, float& x, float& y, ros::Publisher& odom_pub, ros::Time& last_time, float& yaw_offset, bool& initialized, float imu_yaw = NAN) {
-    std::lock_guard<std::mutex> lock(odom_mutex);
+inline void computeYaw(float& imu_yaw) {
     imu_yaw = -imu_yaw;
     // if (!initialized) {
     //     yaw_offset = imu_yaw;  // Hướng ban đầu
@@ -23,6 +22,10 @@ inline void updateOdometry(float v_left, float v_right, float& x, float& y, ros:
     // std::cout << "yaw_offset" << yaw_offset << "\n";
     yaw = imu_yaw * PI / 180.0;
     std::cout << "yaw: " << yaw << "\n";
+}
+
+inline void updateOdometry(float v_left, float v_right, float& x, float& y, ros::Publisher& odom_pub, ros::Time& last_time, float& yaw_offset, bool& initialized, float& imu_yaw) {
+    std::lock_guard<std::mutex> lock(odom_mutex);
 
     v_left = -v_left/20;
     v_right = v_right/20;
@@ -87,10 +90,14 @@ inline void updateOdometry(float v_left, float v_right, float& x, float& y, ros:
     odom.pose.covariance[7]  = 0.01; 
     odom.pose.covariance[35] = 0.02;
     odom_pub.publish(odom);
+    std::cout << "---------------------------" <<"\n";
+}
 
     // Broadcast TF
+inline void broadcastOdomTF(float x, float y, float yaw) {
     static tf::TransformBroadcaster odom_broadcaster;
     geometry_msgs::TransformStamped odom_tf;
+    ros::Time cur_time = ros::Time::now();
     odom_tf.header.stamp = cur_time;
     odom_tf.header.frame_id = "odom";
     odom_tf.child_frame_id = "base_footprint";
@@ -99,5 +106,4 @@ inline void updateOdometry(float v_left, float v_right, float& x, float& y, ros:
     odom_tf.transform.translation.z = 0.0;
     odom_tf.transform.rotation = tf::createQuaternionMsgFromYaw(yaw);
     odom_broadcaster.sendTransform(odom_tf);
-    std::cout << "---------------------------" <<"\n";
 }
