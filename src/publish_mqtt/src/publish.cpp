@@ -75,7 +75,7 @@ int main(int argc, char **argv){
     sub_yaw = nh.subscribe("pose_robot",10, CallBackYaw);
     sub_pose = nh.subscribe("amcl_pose",10, CallBackPose);
     sub_vel = nh.subscribe("Guidance",10, CallBackVel_stm);
-    loopMqtt = nh.createTimer(ros::Duration(0.1), publishMqtt);
+    loopMqtt = nh.createTimer(ros::Duration(0.5), publishMqtt);
     ros::spin();
     return 0;
 }
