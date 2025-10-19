@@ -12,7 +12,8 @@ extern float x, y, yaw, yaw_offset, yaw_prev;
 extern std::mutex odom_mutex;
 extern bool initialized;
 
-inline void computeYaw(float& imu_yaw) {
+inline void updateOdometry(float v_left, float v_right, float& x, float& y, ros::Publisher& odom_pub, ros::Time& last_time, float& yaw_offset, bool& initialized, float imu_yaw = NAN) {
+    std::lock_guard<std::mutex> lock(odom_mutex);
     imu_yaw = -imu_yaw;
     // if (!initialized) {
     //     yaw_offset = imu_yaw;  // Hướng ban đầu
@@ -22,28 +23,24 @@ inline void computeYaw(float& imu_yaw) {
     // std::cout << "yaw_offset" << yaw_offset << "\n";
     yaw = imu_yaw * PI / 180.0;
     std::cout << "yaw: " << yaw << "\n";
-}
-
-inline void updateOdometry(float v_left, float v_right, float& x, float& y, ros::Publisher& odom_pub, ros::Time& last_time, float& yaw_offset, bool& initialized, float& imu_yaw) {
-    std::lock_guard<std::mutex> lock(odom_mutex);
-    
 
     v_left = -v_left/20;
     v_right = v_right/20;
+    std::cout << "v_left=" << v_left << "(m/s), v_right=" << v_right << "(m/s)\n";
 
     ros::Time cur_time = ros::Time::now();
-    
+    std::cout << "current_time: " << cur_time << "\n";
     float dt = (cur_time - last_time).toSec();
-    
+    std::cout << "dt: " << dt << "\n";
     // if (dt <= 0.0) return;
     // if (dt > 0.2) dt = 0.2; // clamp to avoid huge jumps
     last_time = cur_time;
 
     // Robot velocities
     float v = (v_right + v_left) / 2.0;
-    
+    std::cout << "v: " << v << "\n";
     float omega = (v_right - v_left) / 0.513;
-    
+    std::cout << "omega: " << omega << "\n";
 
     // // Fuse IMU yaw if available
     // if (!std::isnan(imu_yaw)) {
@@ -63,11 +60,13 @@ inline void updateOdometry(float v_left, float v_right, float& x, float& y, ros:
     } else {
         float r = v / omega;
         float dyaw = omega*dt;
-        // std::cout << "dyaw: " << dyaw << "\n";
+        std::cout << "dyaw: " << dyaw << "\n";
         yaw_prev = yaw;
         x += r * (sin(yaw + dyaw) - sin(yaw));
         y += -r * (cos(yaw + dyaw) - cos(yaw));
     }
+
+    std::cout << "x: " << x << ", y: " << y << "\n";
 
     // Publish odom
     nav_msgs::Odometry odom;
@@ -78,7 +77,7 @@ inline void updateOdometry(float v_left, float v_right, float& x, float& y, ros:
     odom.pose.pose.position.y = y;
     odom.pose.pose.position.z = 0.0;
     odom.pose.pose.orientation = tf::createQuaternionMsgFromYaw(yaw);
-    // std::cout << "pose.orientation: " << odom.pose.pose.orientation << "\n";
+    std::cout << "pose.orientation: " << odom.pose.pose.orientation << "\n";
     odom.twist.twist.linear.x = v;
     odom.twist.twist.angular.z = omega;
 
@@ -88,14 +87,10 @@ inline void updateOdometry(float v_left, float v_right, float& x, float& y, ros:
     odom.pose.covariance[7]  = 0.01; 
     odom.pose.covariance[35] = 0.02;
     odom_pub.publish(odom);
-    std::cout << "---------------------------" <<"\n";
-}
 
     // Broadcast TF
-inline void broadcastOdomTF(float x, float y, float yaw) {
     static tf::TransformBroadcaster odom_broadcaster;
     geometry_msgs::TransformStamped odom_tf;
-    ros::Time cur_time = ros::Time::now();
     odom_tf.header.stamp = cur_time;
     odom_tf.header.frame_id = "odom";
     odom_tf.child_frame_id = "base_footprint";
@@ -104,14 +99,5 @@ inline void broadcastOdomTF(float x, float y, float yaw) {
     odom_tf.transform.translation.z = 0.0;
     odom_tf.transform.rotation = tf::createQuaternionMsgFromYaw(yaw);
     odom_broadcaster.sendTransform(odom_tf);
-
-    // std::cout << "yaw: " << yaw << "\n";
-    // std::cout << "v_left=" << v_left << "(m/s), v_right=" << v_right << "(m/s)\n";
-    // std::cout << "current_time: " << cur_time << "\n";
-    // std::cout << "dt: " << dt << "\n";
-    // std::cout << "current_time: " << cur_time << "\n";
-    // std::cout << "v: " << v << "\n";
-    // std::cout << "omega: " << omega << "\n";
-    // std::cout << "x: " << x << ", y: " << y << "\n";
-    // std::cout << "---------------------------" <<"\n";
+    std::cout << "---------------------------" <<"\n";
 }
