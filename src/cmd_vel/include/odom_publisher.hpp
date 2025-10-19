@@ -21,15 +21,7 @@ inline void computeYaw(float& imu_yaw) {
     // imu_yaw = imu_yaw - yaw_offset;  // Yaw tuyệt đối theo hướng robot ban đầu
     // std::cout << "yaw_offset" << yaw_offset << "\n";
     yaw = imu_yaw * PI / 180.0;
-<<<<<<< HEAD
-    std::cout << "yaw: " << yaw << "\n";
-}
-
-inline void updateOdometry(float v_left, float v_right, float& x, float& y, ros::Publisher& odom_pub, ros::Time& last_time, float& yaw_offset, bool& initialized, float& imu_yaw) {
-    std::lock_guard<std::mutex> lock(odom_mutex);
-=======
     
->>>>>>> 3a8e99cf2f499b14d612a779ed77f739b4a96628
 
     v_left = -v_left/20;
     v_right = v_right/20;
@@ -107,8 +99,6 @@ inline void broadcastOdomTF(float x, float y, float yaw) {
     odom_tf.transform.translation.z = 0.0;
     odom_tf.transform.rotation = tf::createQuaternionMsgFromYaw(yaw);
     odom_broadcaster.sendTransform(odom_tf);
-<<<<<<< HEAD
-=======
 
     // std::cout << "yaw: " << yaw << "\n";
     // std::cout << "v_left=" << v_left << "(m/s), v_right=" << v_right << "(m/s)\n";
@@ -119,5 +109,4 @@ inline void broadcastOdomTF(float x, float y, float yaw) {
     // std::cout << "omega: " << omega << "\n";
     // std::cout << "x: " << x << ", y: " << y << "\n";
     // std::cout << "---------------------------" <<"\n";
->>>>>>> 3a8e99cf2f499b14d612a779ed77f739b4a96628
 }
