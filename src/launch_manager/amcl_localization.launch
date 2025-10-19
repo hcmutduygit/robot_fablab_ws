@@ -1,6 +1,6 @@
 <launch>
   <arg name="guidance_enabled" default="true" />
-
+  <arg name="can_enabled" default="true" />
   <arg name="use_map_topic"   default="false"/>
   <arg name="initial_pose_x"  default="0.0"/>
   <arg name="initial_pose_y"  default="0.0"/>
@@ -23,10 +23,13 @@
   <node name="map_server" pkg="map_server" type="map_server" args="$(arg map_file)" />
 
   <!-- CAN node: đọc dữ liệu từ CAN/IMU -->
-  <node pkg="cmd_vel" type="can_node" name="can_node" output="screen">
-    <param name="mode" value="1"/>
-    <param name="cycle_transmit" value="0.1"/>
-  </node>
+    <group if="$(arg can_enabled)">
+        <node pkg = "cmd_vel" type = "can_node" name = "Cmd_vel" output = "screen">
+            <param name="mode" value="1"/>
+            <param name="calib" value="0"/>
+            <param name="cycle_transmit" value="0.1"/>
+        </node>
+    </group>
 
   <group if="$(arg mqtt_enabled)">
       <node pkg = "publish_mqtt" type = "publish_mqtt_node" name = "Mqtt" output = "screen"></node>
