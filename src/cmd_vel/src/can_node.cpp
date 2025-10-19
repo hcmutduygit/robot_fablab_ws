@@ -91,12 +91,12 @@ void CallBackVel(const utils::cmd_vel::ConstPtr &cmd_vel)
     right_wheel_velocity = ConvertPulse(v_right);
 }
 
-void ControlStm(const ros::TimerEvent &event)
-{
-    utils::pose_robot pose;
-    pose.yaw = yaw_angle; // cập nhật yaw
-    pub.publish(pose);
-}
+// void ControlStm(const ros::TimerEvent &event)
+// {
+//     utils::pose_robot pose;
+//     pose.yaw = yaw_angle; // cập nhật yaw
+//     pub.publish(pose);
+// }
 
 // Convert two bytes to a signed 16-bit integer
 int16_t hex_to_signed(const std::vector<uint8_t> &data, size_t start_idx, size_t bits = 16)
@@ -112,6 +112,14 @@ uint16_t hex_to_unsigned(const std::vector<uint8_t> &data, size_t start_idx)
 {
     // Combine two bytes into a 16-bit unsigned integer (big-endian)
     return static_cast<uint16_t>((data[start_idx] << 8) | data[start_idx + 1]);
+}
+
+void publish_yaw(float yaw_angle) 
+{
+    utils::pose_robot pose;
+    pose.yaw = yaw_angle;
+    pub.publish(pose);
+    // ROS_INFO("yaw_angle = %f", yaw_angle);
 }
 
 // Process CAN frame (equivalent to Python's process_frame)
@@ -187,7 +195,7 @@ void process_frame(uint16_t can_id, const std::vector<uint8_t> &data, ros::Publi
             yaw += 360.0;
         }
         yaw_angle = yaw; // Update global yaw angle
-        // publishMQTTLocation(1.0, 2.0, yaw_angle);
+        publish_yaw(yaw);
         // std::cout << "Yaw_degree: " << yaw << "\n";
         cnt_receive++;
         break;
@@ -321,25 +329,29 @@ void send_vel(WaveshareCAN &can)
 //     // ROS_INFO("Send Packages = %d Pkg/s", cnt_send);
 //     cnt_send = 0;
 // }
+
 // Signal handling for graceful shutdown
-static void handle_signal(int)
-{
-    g_should_exit = 1;
+// static void handle_signal(int)
+// {
+//     g_should_exit = 1;
     
-    // Kill any remaining Python MQTT processes
-    std::system("pkill -f 'python2.*mqtt' > /dev/null 2>&1");
-    std::system("pkill -f 'location_publisher.py' > /dev/null 2>&1");
-    std::system("pkill -f 'velocity_publisher.py' > /dev/null 2>&1");
-    std::system("pkill -f 'name_publisher.py' > /dev/null 2>&1");
-}
+//     // Kill any remaining Python MQTT processes
+//     std::system("pkill -f 'python2.*mqtt' > /dev/null 2>&1");
+//     std::system("pkill -f 'location_publisher.py' > /dev/null 2>&1");
+//     std::system("pkill -f 'velocity_publisher.py' > /dev/null 2>&1");
+//     std::system("pkill -f 'name_publisher.py' > /dev/null 2>&1");
+// }
 
 void TransmitSTM(const ros::TimerEvent &event)
 {
     utils::pose_robot pose;
-    utils::cmd_vel vel;
-    // send_vel(can);
     pose.yaw = yaw_angle;
     pub.publish(pose);
+    // ROS_INFO("yaw_angle = %f", yaw_angle);
+    // publish_yaw(yaw_angle);
+
+    utils::cmd_vel vel;
+    // send_vel(can);
     vel.v_left_stm = left_mps;
     vel.v_right_stm = right_mps;
     // ROS_INFO("lef = %f", left_mps);
@@ -353,6 +365,7 @@ int main(int argc, char **argv)
     ros::NodeHandle nh;
     odom_pub = nh.advertise<nav_msgs::Odometry>("odom", 10);
     ros::Time last_time = ros::Time::now();
+    pub = nh.advertise<utils::pose_robot>("pose_robot", 10);
 
     can.open();
     can.start_receive_loop([&](uint16_t can_id, const std::vector<uint8_t>& data) {
@@ -369,13 +382,10 @@ int main(int argc, char **argv)
     std::vector<uint8_t> velocity_data(data, data + 8);
     can.send(0x020, velocity_data);
 
-    pub = nh.advertise<utils::pose_robot>("pose_robot", 10);
     pub_vel_stm = nh.advertise<utils::cmd_vel>("Guidance", 10);
     sub = nh.subscribe("Cmd_vel", 10, CallBackVel);
     // cnt_byte = nh.createTimer(ros::Duration(1), CntBytes);
     loopControl = nh.createTimer(ros::Duration(cycle_transmit), TransmitSTM);
-
-    broadcastOdomTF(x, y, yaw);
 
     ros::spin();
     return 0;
