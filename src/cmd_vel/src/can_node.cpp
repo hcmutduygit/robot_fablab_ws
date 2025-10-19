@@ -189,7 +189,6 @@ void process_frame(uint16_t can_id, const std::vector<uint8_t> &data, ros::Publi
         yaw_angle = yaw; // Update global yaw angle
         // publishMQTTLocation(1.0, 2.0, yaw_angle);
         // std::cout << "Yaw_degree: " << yaw << "\n";
-        computeYaw(yaw_angle);
         cnt_receive++;
         break;
     }
