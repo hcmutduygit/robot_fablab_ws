@@ -302,7 +302,7 @@ private:
  ros::Subscriber sub;
  ros::Timer loopControl;
  ros::Timer cnt_byte;
- int number, calib ;
+ int number, new_number, calib ;
  float cycle_transmit = 0;
  int cnt_receive = 0;
  int cnt_send = 0;
