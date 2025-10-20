@@ -92,11 +92,11 @@
             <param name="angular_speed_max" value="10"/>
             <param name="linear_speed_max" value="5"/>
             <param name="KP" value="1"/>
-            <param name="drive" value="-1"/>
+            <param name="drive" value="1"/>
             <param name="direct" value="-1"/>
             <param name="min_speed_linear" value="2.0"/>
-            <param name="waypoints_x" value="5.30342, -2.2787375397544154" />
-            <param name="waypoints_y" value="-4.18949, 22.95870043564341" />
+            <param name="waypoints_x" value="8.43370545973, 6.36293782299" />
+            <param name="waypoints_y" value=" 15.9036135775, 16.8994345637" />
         </node>
     </group>
 </launch>
