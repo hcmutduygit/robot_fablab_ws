@@ -70,7 +70,7 @@ float control_los(float goal_x, float goal_y, float previous_x, float previous_y
 
 double tranfer_wp (){
     if (cnt + 1 >= (wp.size())){
-        ROS_INFO ("Stopping Robot");
+        // ROS_INFO ("Stopping Robot");
         linear_x = 0.0;
         angular_z = 0.0;
     }
@@ -79,7 +79,7 @@ double tranfer_wp (){
     }
 
     if (dist_to_goal <= GOAL_RADIUS){
-        ROS_INFO("Reached wp(%.2f, %.2f)",wp[cnt+1].first,wp[cnt+1].second);
+        // ROS_INFO("Reached wp(%.2f, %.2f)",wp[cnt+1].first,wp[cnt+1].second);
         cnt +=1;
     }
     return linear_x, angular_z;
