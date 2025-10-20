@@ -311,7 +311,7 @@ void send_vel(WaveshareCAN &can)
         // Send both velocities to single ID 0x013
         can.send(0x013, velocity_data);
         cnt_send++;
-        // std::cout << "Sent left velocity " << left_vel << " and right velocity " << right_vel << " to ID 0x013" << std::endl;
+        std::cout << "Sent left velocity " << left_vel << " and right velocity " << right_vel << " to ID 0x013" << std::endl;
     }
     catch (const std::exception &e)
     {
@@ -351,10 +351,11 @@ void TransmitSTM(const ros::TimerEvent &event)
     // publish_yaw(yaw_angle);
 
     utils::cmd_vel vel;
-    // send_vel(can);
+    send_vel(can);
     vel.v_left_stm = left_mps;
     vel.v_right_stm = right_mps;
-    // ROS_INFO("lef = %f", left_mps);
+    ROS_INFO("lef = %f", left_mps);
+    ROS_INFO("rig = %f", right_mps);
     pub_vel_stm.publish(vel);
     // can.send(0x050, {1, 0, 0, 0, 0, 0, 0, 0}); 
 }
@@ -380,7 +381,15 @@ int main(int argc, char **argv)
     uint8_t data[8];
     std::memcpy(data, &number, sizeof(int));
     std::vector<uint8_t> velocity_data(data, data + 8);
-    can.send(0x020, velocity_data);
+    if (number == 1) {
+        can.send(0x020, {1, 0, 0, 0, 0, 0, 0, 0});
+        std::cout << "send 1" << "\n";
+    }
+    else if (number == 2) {
+        can.send(0x020, {2, 0, 0, 0, 0, 0, 0, 0});
+        std::cout << "send 2" << "\n";
+    } 
+    can.send(0x020, velocity_data); // chuyen mode
 
     pub_vel_stm = nh.advertise<utils::cmd_vel>("Guidance", 10);
     sub = nh.subscribe("Cmd_vel", 10, CallBackVel);
