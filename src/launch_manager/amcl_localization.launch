@@ -77,9 +77,8 @@
 
   <!-- Fixed Initial Pose -->
   <node pkg="rostopic" type="rostopic" name="set_initial_pose"
-        args='pub -1 /initialpose geometry_msgs/PoseWithCovarianceStamped "{header: {frame_id: map}, pose: {pose: {position: {x: 7.9458, y: 16.1173, z: 0.0}, orientation: {x: 0.0, y: 0.0, z: 0.95388, w: 0.30018}}, covariance: [0.0037, 0, 0, 0, 0, 0, 0, 0.0037, 0, 0, 0, 0, 0, 0, 1e-6, 0, 0, 0, 0, 0, 0, 1e-6, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0.0028]}}"' 
+        args='pub -1 /initialpose geometry_msgs/PoseWithCovarianceStamped "{header: {frame_id: map}, pose: {pose: {position: {x: 7.9458, y: 16.1173, z: 0.0}, orientation: {x: 0.0, y: 0.0, z: 0.95388, w: 0.30018}}, covariance: [0.0037, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0037, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1e-6, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1e-6, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0028]}}"' 
         output="screen" />
-
 
   <!-- Static TF: base_footprint -> laser -->
   <node pkg="tf" type="static_transform_publisher" name="basefootprint_to_laser"
