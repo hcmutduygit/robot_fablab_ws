@@ -381,6 +381,7 @@ int main(int argc, char **argv)
     uint8_t data[8];
     std::memcpy(data, &number, sizeof(int));
     std::vector<uint8_t> velocity_data(data, data + 8);
+    
     if (number == 1) {
         can.send(0x020, {1, 0, 0, 0, 0, 0, 0, 0});
         std::cout << "send 1" << "\n";
@@ -396,6 +397,27 @@ int main(int argc, char **argv)
     // cnt_byte = nh.createTimer(ros::Duration(1), CntBytes);
     loopControl = nh.createTimer(ros::Duration(cycle_transmit), TransmitSTM);
 
+     // Thêm biến mới để kiểm tra runtime thay đổi mode
+    new_number = number;
+
+    // Giữ nguyên ros::spin() nhưng thêm vòng kiểm tra trong luồng song song
+    std::thread param_monitor([&]() {
+        ros::Rate rate(2.0); // kiểm tra 2Hz
+        while (ros::ok()) {
+            arg_nh.getParam("mode", new_number);
+            if (new_number != number) {
+                number = new_number;
+                ROS_WARN("Mode changed at runtime to: %d", number);
+                uint8_t data2[8];
+                std::memcpy(data2, &number, sizeof(int));
+                std::vector<uint8_t> velocity_data2(data2, data2 + 8);
+                can.send(0x020, velocity_data2);
+            }
+            rate.sleep();
+        }
+    });
+
     ros::spin();
+    param_monitor.join(); // đảm bảo thread kết thúc gọn gàng khi node tắt
     return 0;
 }
