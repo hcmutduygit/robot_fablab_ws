@@ -1,6 +1,6 @@
 <launch>
   <arg name="guidance_enabled" default="true" />
-  <arg name="can_enabled" default="true" />
+
   <arg name="use_map_topic"   default="false"/>
   <arg name="initial_pose_x"  default="0.0"/>
   <arg name="initial_pose_y"  default="0.0"/>
@@ -8,8 +8,6 @@
   <arg name="odom_frame_id"   default="odom"/>
   <arg name="base_frame_id"   default="base_footprint"/>
   <arg name="global_frame_id" default="map"/>
-
-  <arg name="mqtt_enabled" default="true" />
 
   <!-- Lidar driver -->
   <include file="$(find rplidar_ros)/launch/rplidar_s2.launch"/>
@@ -22,18 +20,11 @@
   <arg name="map_file" default="$(find robot_fablab)/maps/map_fablab.yaml" />
   <node name="map_server" pkg="map_server" type="map_server" args="$(arg map_file)" />
 
+  <!-- CAN node: đọc dữ liệu từ CAN/IMU -->
+  <node pkg="cmd_vel" type="can_node" name="can_node" output="screen">
+    <param name="mode" value="1"/>
+  </node>
 
-  <group if="$(arg can_enabled)">
-      <node pkg = "cmd_vel" type = "can_node" name = "Cmd_vel" output = "screen">
-          <param name="mode" value="2"/> <!-- Mode 1: manual, Mode 2: auto-->
-          <param name="calib" value="0"/>
-          <param name="cycle_transmit" value="0.1"/>
-      </node>
-  </group>
-
-  <group if="$(arg mqtt_enabled)">
-      <node pkg = "publish_mqtt" type = "publish_mqtt_node" name = "Mqtt" output = "screen"></node>
-  </group>
   <!-- AMCL for localization -->
   <node pkg="amcl" type="amcl" name="amcl">
     <param name="use_map_topic"             value="$(arg use_map_topic)"/>
@@ -93,24 +84,28 @@
                 0, 0, 0, 0, 0, 0.0028]'
   " output="screen" />
 
+<<<<<<< HEAD
+=======
+
+>>>>>>> ba3433675f1477528842cb8940cea404deb11d6a
   <!-- Static TF: base_footprint -> laser -->
   <node pkg="tf" type="static_transform_publisher" name="basefootprint_to_laser"
         args="0 0 0 0 0 0 base_footprint laser 50" />
 
   <group if="$(arg guidance_enabled)">
-      <node pkg = "guidance_node" type = "guidance_node" name = "Guidance" output = "screen">
-          <param name="linear_speed" value="6"/>
-          <param name="angular_speed" value="6"/>
-          <param name="goal_radius" value="0.3"/>
-          <param name="cycle" value="0.1"/>
-          <param name="angular_speed_max" value="10"/>
-          <param name="linear_speed_max" value="5"/>
-          <param name="KP" value="1"/>
-          <param name="drive" value="-1"/>
-          <param name="direct" value="-1"/>
-          <param name="min_speed_linear" value="2.0"/>
-          <param name="waypoints_x" value="0.848164863033, -0.511375319075" />
-          <param name="waypoints_y" value="-0.419962754559, -100.191731778014" />
-      </node>
-  </group>
+        <node pkg = "guidance_node" type = "guidance_node" name = "Guidance" output = "screen">
+            <param name="linear_speed" value="6"/>
+            <param name="angular_speed" value="6"/>
+            <param name="goal_radius" value="0.3"/>
+            <param name="cycle" value="0.1"/>
+            <param name="angular_speed_max" value="10"/>
+            <param name="linear_speed_max" value="5"/>
+            <param name="KP" value="1"/>
+            <param name="drive" value="-1"/>
+            <param name="direct" value="-1"/>
+            <param name="min_speed_linear" value="2.0"/>
+            <param name="waypoints_x" value="5.30342, -2.2787375397544154" />
+            <param name="waypoints_y" value="-4.18949, 22.95870043564341" />
+        </node>
+    </group>
 </launch>
