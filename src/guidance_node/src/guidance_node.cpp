@@ -135,6 +135,10 @@ int main(int argc, char **argv){
     
     if (arg_nh.getParam("waypoints_x", waypoints_x_str) && arg_nh.getParam("waypoints_y", waypoints_y_str)) {
         
+        double current_x = x;
+        double current_y = y;
+        wp.push_back({current_x, current_y});
+
         std::vector<double> waypoints_x_temp;
         std::vector<double> waypoints_y_temp;
         

@@ -17,8 +17,10 @@
             <param name="drive" value="-1"/>
             <param name="direct" value="-1"/>
             <param name="min_speed_linear" value="2.0"/>
-            <param name="waypoints_x" value="8.112411409209532, -2.2787375397544154" />
-            <param name="waypoints_y" value="16.55553421686869, 22.95870043564341" />
+            <!-- <param name="waypoints_x" value="8.112411409209532, -2.2787375397544154" />
+            <param name="waypoints_y" value="16.55553421686869, 22.95870043564341" /> -->
+            <param name="waypoints_x" value="-2.2787375397544154" />
+            <param name="waypoints_y" value="22.95870043564341" />
         </node>
     </group>
 
