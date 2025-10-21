@@ -1,11 +1,12 @@
 <launch>
     <arg name="guidance_enabled" default="true" />
-    <arg name="can_enabled" default="true" />
-    <!-- <arg name="camera_enabled" default="false" /> -->
-    <!-- <arg name="mqtt_enabled" default="false" /> -->
+    <!-- <arg name="can_enabled" default="true" />
+    <arg name="camera_enabled" default="false" />
+    <arg name="mqtt_enabled" default="false" /> -->
 
     <group if="$(arg guidance_enabled)">
         <node pkg = "guidance_node" type = "guidance_node" name = "Guidance" output = "screen">
+            <param name="mode" value="1"/>
             <param name="linear_speed" value="6"/>
             <param name="angular_speed" value="6"/>
             <param name="goal_radius" value="0.3"/>
@@ -16,18 +17,19 @@
             <param name="drive" value="-1"/>
             <param name="direct" value="-1"/>
             <param name="min_speed_linear" value="2.0"/>
-            <param name="waypoints_x" value="8.112411409209532, -2.2787375397544154" />
-            <param name="waypoints_y" value="16.55553421686869, 22.95870043564341" />
+            <!-- <param name="waypoints_x" value="8.112411409209532, -2.2787375397544154" />
+            <param name="waypoints_y" value="16.55553421686869, 22.95870043564341" /> -->
+            <param name="waypoints_x" value="-2.2787375397544154" />
+            <param name="waypoints_y" value="22.95870043564341" />
         </node>
     </group>
 
-    <group if="$(arg can_enabled)">
+    <!-- <group if="$(arg can_enabled)">
         <node pkg = "cmd_vel" type = "can_node" name = "Cmd_vel" output = "screen">
-            <param name="mode" value="1"/>
             <param name="calib" value="0"/>
             <param name="cycle_transmit" value="0.1"/>
         </node>
-    </group>
+    </group> -->
 
     <!-- <group if="$(arg camera_enabled)">
         <node pkg = "camera" type = "camera_server.py" name = "camera_webserver" output = "screen"></node>

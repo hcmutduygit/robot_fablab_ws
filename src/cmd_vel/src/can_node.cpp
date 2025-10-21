@@ -23,6 +23,7 @@ float yaw_prev = 0;
 bool initialized = false;
 
 
+
 static volatile int g_should_exit = 0;
 
 WaveshareCAN can("/dev/usbcan", 2000000, 2.0);
@@ -351,9 +352,11 @@ void TransmitSTM(const ros::TimerEvent &event)
     pub.publish(pose);
     // ROS_INFO("yaw_angle = %f", yaw_angle);
     // publish_yaw(yaw_angle);
-
+    
     utils::cmd_vel vel;
-    send_vel(can);
+    if (number==2) {
+        send_vel(can);
+    }
     vel.v_left_stm = left_mps;
     vel.v_right_stm = right_mps;
     // ROS_INFO("lef = %f", left_mps);
