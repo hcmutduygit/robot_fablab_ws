@@ -35,12 +35,12 @@ double limit(double value, double min_val, double max_val)
     else return value;
 }
 
-float control_los(float goal_x, float goal_y, float previous_x, float previous_y){
+void control_los(float goal_x, float goal_y, float previous_x, float previous_y){
     alpha_k = get_heading(previous_x,previous_y,goal_x,goal_y);
     s_k_1   = (goal_x - previous_x) * cos(alpha_k) + (goal_y - previous_y) * sin(alpha_k); 
 
 
-    cross_track = -(x - previous_x) * sin(alpha_k) + (y - previous_y) * cos(alpha_k)*direct;
+    cross_track = (-(x - previous_x) * sin(alpha_k) + (y - previous_y) * cos(alpha_k))*direct;
     long_track  =  (x - previous_x) * cos(alpha_k) + (y - previous_y) * sin(alpha_k);
 
     delta       =  (delta_max - delta_min) * exp(-0.7 * pow(cross_track, 2)) + delta_min;
@@ -60,47 +60,44 @@ float control_los(float goal_x, float goal_y, float previous_x, float previous_y
         linear_x = MAX_LINEAR_SPEED/2;
     }
     else {
-        linear_x = limit( LINEAR_SPEED*perc_dist,min_speed,MAX_LINEAR_SPEED);
+        linear_x = limit(LINEAR_SPEED*perc_dist, min_speed, MAX_LINEAR_SPEED);
     }
     filtered_angular_z = low_pass_filter(filtered_angular_z, angular_z);
     angular_z = filtered_angular_z;
-
-    return linear_x, angular_z, dist_to_goal;
 }
 
-double tranfer_wp (){
+void tranfer_wp (){
     if (cnt + 1 >= (wp.size())){
         // ROS_INFO ("Stopping Robot");
         linear_x = 0.0;
         angular_z = 0.0;
     }
     else {
-        linear_x,angular_z,dist_to_goal = control_los(wp[cnt+1].first,wp[cnt+1].second,wp[cnt].first,wp[cnt].second);
+        control_los(wp[cnt+1].first, wp[cnt+1].second, wp[cnt].first, wp[cnt].second);
     }
 
     if (dist_to_goal <= GOAL_RADIUS){
         // ROS_INFO("Reached wp(%.2f, %.2f)",wp[cnt+1].first,wp[cnt+1].second);
         cnt +=1;
     }
-    return linear_x, angular_z;
 }
 
 void CallBackYaw (const utils::pose_robot::ConstPtr& msg){
     // x = msg->x;
     // y = msg->y;
-    theta = (msg->yaw*PI)/180;
+    theta = (-(msg->yaw)*PI)/180;
 }
 
 void CallBackPose(const geometry_msgs::PoseWithCovarianceStamped::ConstPtr& msg){
-        x = msg->pose.pose.position.x;
-        y = msg->pose.pose.position.y;
+    x = msg->pose.pose.position.x;
+    y = msg->pose.pose.position.y;
 }
 
 void ControlVel(const ros::TimerEvent& event){
     utils::cmd_vel cmd;
-    linear_x, angular_z = tranfer_wp();
-    double v_left = linear_x - (angular_z * 0.535 / 2);
-    double v_right = linear_x + (angular_z * 0.535 / 2);
+    tranfer_wp();
+    double v_left = linear_x - (angular_z * 0.513 / 2);
+    double v_right = linear_x + (angular_z * 0.513 / 2);
     
     // cmd.linear.x  = linear_x;        
     // cmd.angular.z = angular_z; 
@@ -111,7 +108,7 @@ void ControlVel(const ros::TimerEvent& event){
 
 
 int main(int argc, char **argv){
-    ros::init(argc,argv,"Guidance");
+    ros::init(argc,argv,"Guidance_node");
     
     ros::NodeHandle arg_nh("~");
     arg_nh.getParam("linear_speed", LINEAR_SPEED);
@@ -132,7 +129,7 @@ int main(int argc, char **argv){
 
     pub = nh.advertise<utils::cmd_vel >("Cmd_vel", 1);
     sub = nh.subscribe("pose_robot",10, CallBackYaw);
-    sub_amcl = nh.subscribe("pose_robot_amcl",10, CallBackPose); //theo topic
+    sub_amcl = nh.subscribe("amcl_pose",10, CallBackPose); //theo topic
     loopControl = nh.createTimer(ros::Duration(cycle), ControlVel);
     std::string waypoints_x_str, waypoints_y_str;
     
