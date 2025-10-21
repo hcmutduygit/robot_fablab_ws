@@ -137,7 +137,7 @@ int main(int argc, char **argv){
         
         double current_x = x;
         double current_y = y;
-        wp.push_back({current_x, current_y});
+        // wp.push_back({current_x, current_y});
 
         std::vector<double> waypoints_x_temp;
         std::vector<double> waypoints_y_temp;
