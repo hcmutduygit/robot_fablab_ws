@@ -1,5 +1,5 @@
 <launch>
-  <arg name="guidance_enabled" default="true" />
+  <!-- <arg name="guidance_enabled" default="true" /> -->
   <arg name="can_enabled" default="true" />
   <arg name="use_map_topic"   default="false"/>
   <arg name="initial_pose_x"  default="0.0"/>
@@ -24,7 +24,7 @@
 
   <group if="$(arg can_enabled)">
       <node pkg = "cmd_vel" type = "can_node" name = "Cmd_vel" output = "screen">
-          <param name="mode" value="1"/> <!-- Mode 1: manual, Mode 2: auto-->
+          <!-- <param name="mode" value="1"/> Mode 1: manual, Mode 2: auto -->
           <param name="calib" value="0"/>
           <param name="cycle_transmit" value="0.1"/>
       </node>
@@ -83,7 +83,7 @@
   <node pkg="tf" type="static_transform_publisher" name="basefootprint_to_laser"
         args="0 0 0 0 0 0 base_footprint laser 50" />
 
-  <group if="$(arg guidance_enabled)">
+  <!-- <group if="$(arg guidance_enabled)">
         <node pkg = "guidance_node" type = "guidance_node" name = "Guidance" output = "screen">
             <param name="linear_speed" value="6"/>
             <param name="angular_speed" value="6"/>
@@ -98,5 +98,5 @@
             <param name="waypoints_x" value="8.43370545973, 6.36293782299" />
             <param name="waypoints_y" value="15.9036135775, 16.8994345637" />
         </node>
-    </group>
+    </group> -->
 </launch>
