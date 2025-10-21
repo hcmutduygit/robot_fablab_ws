@@ -10,6 +10,8 @@
 #include <vector>
 #include <sstream>
 #include <utility>
+#include "guidance.h"
+#include "PID.cpp"
 
 PID pid_controller;
 
@@ -51,18 +53,20 @@ void control_los(float goal_x, float goal_y, float previous_x, float previous_y)
     // ROS_INFO("CrossTrack = %.2f, LongTrack = %.2f, HeadingDesire = %.2f, HeadingErr = %.2f, Theta = %.2f",cross_track, long_track,target_heading,heading_error,theta);
 
     filtered_angular_z = pid_controller.pid(heading_error, KP, ANGULAR_SPEED);
-    filtered_angular_z = limit( filtered_angular_z, - MAX_ANGULAR_SPEED, ANGULAR_SPEED);
+    // filtered_angular_z = limit(filtered_angular_z, - MAX_ANGULAR_SPEED, ANGULAR_SPEED);
+    filtered_angular_z = limit(filtered_angular_z, - MAX_ANGULAR_SPEED, MAX_ANGULAR_SPEED);
 
     dist_to_goal = abs(s_k_1 - long_track);
     perc_dist = abs(s_k_1 - long_track)/s_k_1;
 
     if (abs(heading_error) > 0.1){
-        linear_x = MAX_LINEAR_SPEED/2;
+        // linear_x = MAX_LINEAR_SPEED/2;
+        linear_x = limit(MAX_LINEAR_SPEED * exp(-3 * abs(heading_error)), min_speed, MAX_LINEAR_SPEED);
     }
     else {
         linear_x = limit(LINEAR_SPEED*perc_dist, min_speed, MAX_LINEAR_SPEED);
     }
-    filtered_angular_z = low_pass_filter(filtered_angular_z, angular_z);
+    filtered_angular_z = low_pass_filter(angular_z, filtered_angular_z);
     angular_z = filtered_angular_z;
 }
 
@@ -137,7 +141,7 @@ int main(int argc, char **argv){
         
         double current_x = x;
         double current_y = y;
-        wp.push_back({current_x, current_y});
+        // wp.push_back({current_x, current_y});
 
         std::vector<double> waypoints_x_temp;
         std::vector<double> waypoints_y_temp;
