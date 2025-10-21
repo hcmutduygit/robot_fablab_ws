@@ -12,6 +12,6 @@ private:
     double derivate = 0;
 
 public:
-    double pid(double error, float kp, float ki);
+    double pid(double error, float kp, float kd);
 };
 #endif
