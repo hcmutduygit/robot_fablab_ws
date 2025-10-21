@@ -295,6 +295,8 @@ void send_vel(WaveshareCAN &can)
         // Get integer velocities
         int right_vel = right_wheel_velocity;
         int left_vel = left_wheel_velocity;
+        right_vel *= 20;
+        left_vel *= 20;
         // ROS_INFO("vel_right = %d, vel_left =%d" ,right_wheel_velocity,left_wheel_velocity);
         // Create 8-byte data array: first 4 bytes for left wheel, last 4 bytes for right wheel
         uint8_t data[8];
@@ -362,7 +364,7 @@ void TransmitSTM(const ros::TimerEvent &event)
 
 int main(int argc, char **argv)
 {
-    ros::init(argc, argv, "Cmd_vel");
+    ros::init(argc, argv, "Can_node");
     ros::NodeHandle nh;
     odom_pub = nh.advertise<nav_msgs::Odometry>("odom", 10);
     ros::Time last_time = ros::Time::now();
@@ -381,7 +383,7 @@ int main(int argc, char **argv)
     uint8_t data[8];
     std::memcpy(data, &number, sizeof(int));
     std::vector<uint8_t> velocity_data(data, data + 8);
-    
+    can.send(0x020, velocity_data); // chuyen mode
     if (number == 1) {
         can.send(0x020, {1, 0, 0, 0, 0, 0, 0, 0});
         std::cout << "send 1" << "\n";
@@ -390,7 +392,6 @@ int main(int argc, char **argv)
         can.send(0x020, {2, 0, 0, 0, 0, 0, 0, 0});
         std::cout << "send 2" << "\n";
     } 
-    can.send(0x020, velocity_data); // chuyen mode
 
     pub_vel_stm = nh.advertise<utils::cmd_vel>("Guidance", 10);
     sub = nh.subscribe("Cmd_vel", 10, CallBackVel);
