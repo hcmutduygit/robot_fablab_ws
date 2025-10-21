@@ -6,7 +6,7 @@
 
     <group if="$(arg guidance_enabled)">
         <node pkg = "guidance_node" type = "guidance_node" name = "Guidance" output = "screen">
-            <param name="mode" value="1"/>
+            <param name="mode" value="2"/>
             <param name="linear_speed" value="6"/>
             <param name="angular_speed" value="6"/>
             <param name="goal_radius" value="0.3"/>

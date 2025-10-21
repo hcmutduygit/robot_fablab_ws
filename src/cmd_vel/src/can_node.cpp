@@ -378,7 +378,7 @@ int main(int argc, char **argv)
         process_frame(can_id, data, odom_pub, last_time);
     });
     ros::NodeHandle arg_nh("~");
-    arg_nh.getParam("mode", number);
+    nh.getParam("mode", number);
     arg_nh.getParam("calib", calib);
     arg_nh.getParam("cycle_transmit", cycle_transmit);
     ROS_INFO("mode = %d", number);
@@ -386,7 +386,7 @@ int main(int argc, char **argv)
     uint8_t data[8];
     std::memcpy(data, &number, sizeof(int));
     std::vector<uint8_t> velocity_data(data, data + 8);
-    can.send(0x020, velocity_data); // chuyen mode
+    can.send(0x020, velocity_data); // chuyen mode /cmd_vel/mode
     if (number == 1) {
         can.send(0x020, {1, 0, 0, 0, 0, 0, 0, 0});
         std::cout << "send 1" << "\n";
@@ -406,7 +406,7 @@ int main(int argc, char **argv)
 
     // Giữ nguyên ros::spin() nhưng thêm vòng kiểm tra trong luồng song song
     std::thread param_monitor([&]() {
-        ros::Rate rate(2.0); // kiểm tra 2Hz
+        ros::Rate rate(5.0); // kiểm tra 2Hz
         while (ros::ok()) {
             arg_nh.getParam("mode", new_number);
             if (new_number != number) {
