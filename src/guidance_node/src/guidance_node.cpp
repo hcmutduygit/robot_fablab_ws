@@ -11,7 +11,10 @@
 #include <sstream>
 #include <utility>
 #include "guidance.h"
+<<<<<<< HEAD
 #include "pid.h"
+=======
+>>>>>>> c6122eb0de1f08d739d339e0ac4c3e53b82bbb6f
 
 PID pid_controller;
 
@@ -53,20 +56,30 @@ void control_los(float goal_x, float goal_y, float previous_x, float previous_y)
     // ROS_INFO("CrossTrack = %.2f, LongTrack = %.2f, HeadingDesire = %.2f, HeadingErr = %.2f, Theta = %.2f",cross_track, long_track,target_heading,heading_error,theta);
 
     filtered_angular_z = pid_controller.pid(heading_error, KP, ANGULAR_SPEED);
+<<<<<<< HEAD
     filtered_angular_z = limit(filtered_angular_z, - MAX_ANGULAR_SPEED, ANGULAR_SPEED);
     // filtered_angular_z = limit(filtered_angular_z, - MAX_ANGULAR_SPEED, MAX_ANGULAR_SPEED);
+=======
+    filtered_angular_z = limit( filtered_angular_z, - MAX_ANGULAR_SPEED, ANGULAR_SPEED);
+>>>>>>> c6122eb0de1f08d739d339e0ac4c3e53b82bbb6f
 
     dist_to_goal = abs(s_k_1 - long_track);
     perc_dist = abs(s_k_1 - long_track)/s_k_1;
 
     if (abs(heading_error) > 0.1){
         linear_x = MAX_LINEAR_SPEED/2;
+<<<<<<< HEAD
         // linear_x = limit(MAX_LINEAR_SPEED * exp(-3 * abs(heading_error)), min_speed, MAX_LINEAR_SPEED);
+=======
+>>>>>>> c6122eb0de1f08d739d339e0ac4c3e53b82bbb6f
     }
     else {
         linear_x = limit(LINEAR_SPEED*perc_dist, min_speed, MAX_LINEAR_SPEED);
     }
+<<<<<<< HEAD
     // filtered_angular_z = low_pass_filter(angular_z, filtered_angular_z);
+=======
+>>>>>>> c6122eb0de1f08d739d339e0ac4c3e53b82bbb6f
     filtered_angular_z = low_pass_filter(filtered_angular_z, angular_z);
     angular_z = filtered_angular_z;
 }
@@ -96,6 +109,15 @@ void CallBackYaw (const utils::pose_robot::ConstPtr& msg){
 void CallBackPose(const geometry_msgs::PoseWithCovarianceStamped::ConstPtr& msg){
     x = msg->pose.pose.position.x;
     y = msg->pose.pose.position.y;
+    double orientation_x = msg->pose.pose.orientation.x;
+    double orientation_y = msg->pose.pose.orientation.y;
+    double orientation_z = msg->pose.pose.orientation.z;
+    double orientation_w = msg->pose.pose.orientation.w;
+
+    tf::Quaternion q(orientation_x, orientation_y, orientation_z, orientation_w);
+    double roll, pitch, yaw;
+    tf::Matrix3x3(q).getRPY(roll, pitch, yaw);
+    theta = yaw;
 }
 
 void ControlVel(const ros::TimerEvent& event){
@@ -133,7 +155,6 @@ int main(int argc, char **argv){
     ros::NodeHandle nh;
 
     pub = nh.advertise<utils::cmd_vel >("Cmd_vel", 1);
-    sub = nh.subscribe("pose_robot",10, CallBackYaw);
     sub_amcl = nh.subscribe("amcl_pose",10, CallBackPose); //theo topic
     loopControl = nh.createTimer(ros::Duration(cycle), ControlVel);
     std::string waypoints_x_str, waypoints_y_str;
