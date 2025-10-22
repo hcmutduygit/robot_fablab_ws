@@ -88,7 +88,7 @@ void CallBackVel(const utils::cmd_vel::ConstPtr &cmd_vel)
     float v_left = cmd_vel->v_left;
     float v_right = cmd_vel->v_right;
 
-    ROS_INFO("vel_right guidance = %f, vel_left guidance = %f", v_right, v_left);
+    ROS_INFO("vel_left guidance = %f, vel_right guidance = %f", v_left, v_right);
 
     v_left *= 20;
     v_right *= 20;
