@@ -40,7 +40,7 @@ float KP;
 double filtered_linear_x = 0.0;
 double filtered_angular_z = 0.0;
 int cnt = 0;
-int drive,direct;
+int drive, direct;
 float theta;
 std::vector<std::pair<double, double>> wp;
 
