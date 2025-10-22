@@ -11,10 +11,7 @@
 #include <sstream>
 #include <utility>
 #include "guidance.h"
-<<<<<<< HEAD
 #include "pid.h"
-=======
->>>>>>> c6122eb0de1f08d739d339e0ac4c3e53b82bbb6f
 
 PID pid_controller;
 
@@ -53,33 +50,23 @@ void control_los(float goal_x, float goal_y, float previous_x, float previous_y)
     target_heading = normalize_angle(alpha_k + atan(-cross_track/delta));
     heading_error  = normalize_angle(target_heading - theta);
 
-    // ROS_INFO("CrossTrack = %.2f, LongTrack = %.2f, HeadingDesire = %.2f, HeadingErr = %.2f, Theta = %.2f",cross_track, long_track,target_heading,heading_error,theta);
+    ROS_INFO("CrossTrack = %.2f, LongTrack = %.2f, HeadingDesire = %.2f, HeadingErr = %.2f, Theta = %.2f",cross_track, long_track,target_heading,heading_error,theta);
 
     filtered_angular_z = pid_controller.pid(heading_error, KP, ANGULAR_SPEED);
-<<<<<<< HEAD
     filtered_angular_z = limit(filtered_angular_z, - MAX_ANGULAR_SPEED, ANGULAR_SPEED);
     // filtered_angular_z = limit(filtered_angular_z, - MAX_ANGULAR_SPEED, MAX_ANGULAR_SPEED);
-=======
-    filtered_angular_z = limit( filtered_angular_z, - MAX_ANGULAR_SPEED, ANGULAR_SPEED);
->>>>>>> c6122eb0de1f08d739d339e0ac4c3e53b82bbb6f
 
     dist_to_goal = abs(s_k_1 - long_track);
     perc_dist = abs(s_k_1 - long_track)/s_k_1;
 
     if (abs(heading_error) > 0.1){
         linear_x = MAX_LINEAR_SPEED/2;
-<<<<<<< HEAD
         // linear_x = limit(MAX_LINEAR_SPEED * exp(-3 * abs(heading_error)), min_speed, MAX_LINEAR_SPEED);
-=======
->>>>>>> c6122eb0de1f08d739d339e0ac4c3e53b82bbb6f
     }
     else {
         linear_x = limit(LINEAR_SPEED*perc_dist, min_speed, MAX_LINEAR_SPEED);
     }
-<<<<<<< HEAD
     // filtered_angular_z = low_pass_filter(angular_z, filtered_angular_z);
-=======
->>>>>>> c6122eb0de1f08d739d339e0ac4c3e53b82bbb6f
     filtered_angular_z = low_pass_filter(filtered_angular_z, angular_z);
     angular_z = filtered_angular_z;
 }
@@ -100,11 +87,11 @@ void tranfer_wp (){
     }
 }
 
-void CallBackYaw (const utils::pose_robot::ConstPtr& msg){
-    // x = msg->x;
-    // y = msg->y;
-    theta = (-(msg->yaw)*PI)/180;
-}
+// void CallBackYaw (const utils::pose_robot::ConstPtr& msg){
+//     // x = msg->x;
+//     // y = msg->y;
+//     theta = (-(msg->yaw)*PI)/180;
+// }
 
 void CallBackPose(const geometry_msgs::PoseWithCovarianceStamped::ConstPtr& msg){
     x = msg->pose.pose.position.x;
@@ -128,8 +115,11 @@ void ControlVel(const ros::TimerEvent& event){
     
     // cmd.linear.x  = linear_x;        
     // cmd.angular.z = angular_z; 
-    cmd.v_left = -v_left*drive; 
+
+ cmd.v_left = -v_left*drive; 
     cmd.v_right = v_right*drive; 
+   
+      ROS_INFO("v_left = %.2f, v_right = %.2f,ANGULAR = %.2f", cmd.v_left, cmd.v_right,angular_z);
     pub.publish(cmd);
 }
 
