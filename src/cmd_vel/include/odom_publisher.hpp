@@ -24,8 +24,8 @@ inline void updateOdometry(float v_left, float v_right, float& x, float& y, ros:
     yaw = imu_yaw * PI / 180.0;
     // std::cout << "yaw: " << yaw << "\n";
 
-    v_left = -v_left/20;
-    v_right = v_right/20;
+    float vel_left = -v_left/20;
+    float vel_right = v_right/20;
     // std::cout << "v_left=" << v_left << "(m/s), v_right=" << v_right << "(m/s)\n";
 
     ros::Time cur_time = ros::Time::now();
@@ -37,9 +37,9 @@ inline void updateOdometry(float v_left, float v_right, float& x, float& y, ros:
     last_time = cur_time;
 
     // Robot velocities
-    float v = (v_right + v_left) / 2.0;
+    float v = (vel_right + vel_left) / 2.0;
     // std::cout << "v: " << v << "\n";
-    float omega = (v_right - v_left) / 0.513;
+    float omega = (vel_right - vel_left) / 0.513;
     // std::cout << "omega: " << omega << "\n";
 
     // // Fuse IMU yaw if available
@@ -101,7 +101,7 @@ inline void updateOdometry(float v_left, float v_right, float& x, float& y, ros:
     odom_broadcaster.sendTransform(odom_tf);
 
     std::cout << "yaw: " << yaw << "\n";
-    // std::cout << "v_left=" << v_left << "(m/s), v_right=" << v_right << "(m/s)\n";
+    std::cout << "v_left odom =" << vel_left << "(m/s), v_right odom =" << vel_right << "(m/s)\n";
     // std::cout << "current_time: " << cur_time << "\n";
     // std::cout << "dt: " << dt << "\n";
     // std::cout << "v: " << v << "\n";

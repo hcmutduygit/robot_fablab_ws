@@ -88,6 +88,11 @@ void CallBackVel(const utils::cmd_vel::ConstPtr &cmd_vel)
     float v_left = cmd_vel->v_left;
     float v_right = cmd_vel->v_right;
 
+    ROS_INFO("vel_right guidance = %f, vel_left guidance = %f", v_right, v_left);
+
+    v_left *= 20;
+    v_right *= 20;
+
     left_wheel_velocity = ConvertPulse(v_left);
     right_wheel_velocity = ConvertPulse(v_right);
 }
@@ -296,9 +301,7 @@ void send_vel(WaveshareCAN &can)
         // Get integer velocities
         int right_vel = right_wheel_velocity;
         int left_vel = left_wheel_velocity;
-        right_vel *= 20;
-        left_vel *= 20;
-        // ROS_INFO("vel_right = %d, vel_left =%d" ,right_wheel_velocity,left_wheel_velocity);
+     
         // Create 8-byte data array: first 4 bytes for left wheel, last 4 bytes for right wheel
         uint8_t data[8];
 
@@ -314,7 +317,7 @@ void send_vel(WaveshareCAN &can)
         // Send both velocities to single ID 0x013
         can.send(0x013, velocity_data);
         cnt_send++;
-        // std::cout << "Sent left velocity " << left_vel << " and right velocity " << right_vel << " to ID 0x013" << std::endl;
+        std::cout << "Sent left velocity " << left_vel << " and right velocity " << right_vel << " to ID 0x013" << std::endl;
     }
     catch (const std::exception &e)
     {
