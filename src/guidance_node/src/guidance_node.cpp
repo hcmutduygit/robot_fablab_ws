@@ -92,6 +92,15 @@ void CallBackYaw (const utils::pose_robot::ConstPtr& msg){
 void CallBackPose(const geometry_msgs::PoseWithCovarianceStamped::ConstPtr& msg){
     x = msg->pose.pose.position.x;
     y = msg->pose.pose.position.y;
+    double orientation_x = msg->pose.pose.orientation.x;
+    double orientation_y = msg->pose.pose.orientation.y;
+    double orientation_z = msg->pose.pose.orientation.z;
+    double orientation_w = msg->pose.pose.orientation.w;
+
+    tf::Quaternion q(orientation_x, orientation_y, orientation_z, orientation_w);
+    double roll, pitch, yaw;
+    tf::Matrix3x3(q).getRPY(roll, pitch, yaw);
+    theta = yaw;
 }
 
 void ControlVel(const ros::TimerEvent& event){
@@ -129,7 +138,6 @@ int main(int argc, char **argv){
     ros::NodeHandle nh;
 
     pub = nh.advertise<utils::cmd_vel >("Cmd_vel", 1);
-    sub = nh.subscribe("pose_robot",10, CallBackYaw);
     sub_amcl = nh.subscribe("amcl_pose",10, CallBackPose); //theo topic
     loopControl = nh.createTimer(ros::Duration(cycle), ControlVel);
     std::string waypoints_x_str, waypoints_y_str;
