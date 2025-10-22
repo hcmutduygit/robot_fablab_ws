@@ -87,11 +87,11 @@ void tranfer_wp (){
     }
 }
 
-// void CallBackYaw (const utils::pose_robot::ConstPtr& msg){
-//     // x = msg->x;
-//     // y = msg->y;
-//     theta = (-(msg->yaw)*PI)/180;
-// }
+void CallBackYaw (const utils::pose_robot::ConstPtr& msg){
+    // x = msg->x;
+    // y = msg->y;
+    theta = (-(msg->yaw)*PI)/180;
+}
 
 void CallBackPose(const geometry_msgs::PoseWithCovarianceStamped::ConstPtr& msg){
     x = msg->pose.pose.position.x;
@@ -104,7 +104,7 @@ void CallBackPose(const geometry_msgs::PoseWithCovarianceStamped::ConstPtr& msg)
     tf::Quaternion q(orientation_x, orientation_y, orientation_z, orientation_w);
     double roll, pitch, yaw;
     tf::Matrix3x3(q).getRPY(roll, pitch, yaw);
-    theta = yaw;
+    // theta = yaw;
 }
 
 void ControlVel(const ros::TimerEvent& event){
@@ -116,10 +116,10 @@ void ControlVel(const ros::TimerEvent& event){
     // cmd.linear.x  = linear_x;        
     // cmd.angular.z = angular_z; 
 
- cmd.v_left = -v_left*drive; 
+    cmd.v_left = -v_left*drive; 
     cmd.v_right = v_right*drive; 
    
-      ROS_INFO("v_left = %.2f, v_right = %.2f,ANGULAR = %.2f", cmd.v_left, cmd.v_right,angular_z);
+    ROS_INFO("v_left = %.2f, v_right = %.2f,ANGULAR = %.2f", cmd.v_left, cmd.v_right,angular_z);
     pub.publish(cmd);
 }
 
@@ -145,7 +145,8 @@ int main(int argc, char **argv){
     ros::NodeHandle nh;
 
     pub = nh.advertise<utils::cmd_vel >("Cmd_vel", 1);
-    sub_amcl = nh.subscribe("amcl_pose",10, CallBackPose); //theo topic
+    sub = nh.subscribe("pose_robot", 10, CallBackYaw);
+    sub_amcl = nh.subscribe("amcl_pose", 10, CallBackPose); //theo topic
     loopControl = nh.createTimer(ros::Duration(cycle), ControlVel);
     std::string waypoints_x_str, waypoints_y_str;
     
