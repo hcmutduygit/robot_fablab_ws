@@ -88,7 +88,9 @@ void tranfer_wp() {
 void CallBackYaw (const utils::pose_robot::ConstPtr& msg){
     // x = msg->x;
     // y = msg->y;
-    theta = (-(msg->yaw)*PI)/180;
+    float theta_temp = (-(msg->yaw)*PI)/180;
+    if ((theta_temp + 2.615) > PI) theta = theta_temp + 2.615 - 2*PI;
+    else theta = theta_temp + 2.615;
 }
 
 void CallBackPose(const geometry_msgs::PoseWithCovarianceStamped::ConstPtr& msg){

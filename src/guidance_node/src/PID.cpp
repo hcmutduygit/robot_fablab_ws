@@ -11,5 +11,5 @@ double PID::pid(double error, float kp, float kd) {
     last_value = error;
     last_time = current_time;
     // return   ki * error + kp * derivate;
-    return kp * error + kd * derivate;
+    return kd * error + kp * derivate;
 }
