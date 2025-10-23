@@ -91,7 +91,7 @@
             <param name="cycle" value="0.1"/>
             <param name="angular_speed_max" value="1.2"/>
             <param name="linear_speed_max" value="0.45"/>
-            <param name="KP" value="3"/>
+            <param name="KP" value="1"/>
             <param name="drive" value="1"/>
             <param name="direct" value="1"/>
             <param name="min_speed_linear" value="0.2"/>
