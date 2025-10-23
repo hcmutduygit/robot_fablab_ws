@@ -85,12 +85,12 @@
 
   <group if="$(arg guidance_enabled)">
         <node pkg = "guidance_node" type = "guidance_node" name = "Guidance" output = "screen">
-            <param name="linear_speed" value="0.3"/>
+            <param name="linear_speed" value="0.4"/>
             <param name="angular_speed" value="0.5"/>
             <param name="goal_radius" value="0.3"/>
             <param name="cycle" value="0.1"/>
             <param name="angular_speed_max" value="1.2"/>
-            <param name="linear_speed_max" value="0.45"/>
+            <param name="linear_speed_max" value="0.5"/>
             <param name="KP" value="0.9"/>
             <param name="drive" value="1"/>
             <param name="direct" value="1"/>

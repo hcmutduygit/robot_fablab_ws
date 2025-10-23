@@ -26,18 +26,18 @@ def on_message(mosq, obj, msg):
             for point in data:
                 if "x" in point and "y" in point:
                     wp = waypoints()
-                    wp.x = point["x"]
-                    wp.y = point["y"]
+                    wp.direction_x = point["x"]
+                    wp.direction_y = point["y"]
                     pub.publish(wp)
-                    rospy.loginfo("Đã publish waypoint: x=%.2f, y=%.2f", wp.x, wp.y)
+                    rospy.loginfo("Đã publish waypoint: x=%.2f, y=%.2f", wp.direction_x, wp.direction_y)
         
         # Nếu chỉ là 1 toạ độ {"x":..,"y":..}
         elif isinstance(data, dict) and "x" in data and "y" in data:
             wp = waypoints()
-            wp.x = data["x"]
-            wp.y = data["y"]
+            wp.direction_x = data["x"]
+            wp.direction_y = data["y"]
             pub.publish(wp)
-            rospy.loginfo("Đã publish waypoint: x=%.2f, y=%.2f", wp.x, wp.y)
+            rospy.loginfo("Đã publish waypoint: x=%.2f, y=%.2f", wp.direction_x, wp.direction_y)
 
         else:
             rospy.logwarn("Dữ liệu JSON không hợp lệ: %s", payload)
