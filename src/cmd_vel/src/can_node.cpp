@@ -129,7 +129,7 @@ void publish_yaw(float yaw_angle)
 }
 
 // Process CAN frame (equivalent to Python's process_frame)
-void process_frame(uint16_t can_id, const std::vector<uint8_t> &data, ros::Publisher& odom_pub, ros::Time& last_time)
+void process_frame(uint16_t can_id, const std::vector<uint8_t> &data, ros::Publisher& odom_pub, ros::Time& lasttime)
 {
     switch (can_id)
     {
@@ -201,8 +201,8 @@ void process_frame(uint16_t can_id, const std::vector<uint8_t> &data, ros::Publi
             yaw += 360.0;
         }
         yaw_angle = yaw; // Update global yaw angle
-        publish_yaw(yaw);
-        std::cout << "Yaw_degree: " << yaw << "\n";
+        // publish_yaw(yaw);
+        // std::cout << "Yaw_degree: " << yaw << "\n";
         cnt_receive++;
         break;
     }
@@ -282,7 +282,7 @@ void process_frame(uint16_t can_id, const std::vector<uint8_t> &data, ros::Publi
         // std::cout << std::fixed << std::setprecision(3);
         // std::cout << "Converted Left Velocity (m/s): " << left_mps << "\n";
         // std::cout << "Converted Right Velocity (m/s): " << right_mps << "\n";
-        updateOdometry(left_mps, right_mps, x, y, odom_pub, last_time, yaw_offset, initialized, yaw_angle);
+        // updateOdometry(left_mps, right_mps, x, y, odom_pub, lasttime, yaw_offset, initialized, yaw_angle);
         cnt_receive++;
         break;
     }
@@ -348,18 +348,18 @@ void send_vel(WaveshareCAN &can)
 //     std::system("pkill -f 'name_publisher.py' > /dev/null 2>&1");
 // }
 
-void TransmitSTM(const ros::TimerEvent &event)
+void TransmitSTM(ros::Publisher& odom_pub, ros::Time& lasttime)
 {
-    utils::pose_robot pose;
-    pose.yaw = yaw_angle;
-    pub.publish(pose);
+    publish_yaw(yaw_angle);
     // ROS_INFO("yaw_angle = %f", yaw_angle);
     // publish_yaw(yaw_angle);
+    updateOdometry(left_mps, right_mps, x, y, odom_pub, lasttime, yaw_offset, initialized, yaw_angle);
     
-    utils::cmd_vel vel;
     if (number==2) {
         send_vel(can);
     }
+
+    utils::cmd_vel vel;
     vel.v_left_stm = left_mps;
     vel.v_right_stm = right_mps;
     // ROS_INFO("lef = %f", left_mps);
@@ -373,12 +373,12 @@ int main(int argc, char **argv)
     ros::init(argc, argv, "Can_node");
     ros::NodeHandle nh;
     odom_pub = nh.advertise<nav_msgs::Odometry>("odom", 10);
-    ros::Time last_time = ros::Time::now();
+    ros::Time lasttime = ros::Time::now();
     pub = nh.advertise<utils::pose_robot>("pose_robot", 10);
 
     can.open();
     can.start_receive_loop([&](uint16_t can_id, const std::vector<uint8_t>& data) {
-        process_frame(can_id, data, odom_pub, last_time);
+        process_frame(can_id, data, odom_pub, lasttime);
     });
     ros::NodeHandle arg_nh("~");
     nh.getParam("mode", number);
@@ -402,7 +402,7 @@ int main(int argc, char **argv)
     pub_vel_stm = nh.advertise<utils::cmd_vel>("Guidance", 10);
     sub = nh.subscribe("Cmd_vel", 10, CallBackVel);
     // cnt_byte = nh.createTimer(ros::Duration(1), CntBytes);
-    loopControl = nh.createTimer(ros::Duration(cycle_transmit), TransmitSTM);
+    loopControl = nh.createTimer(ros::Duration(cycle_transmit), TransmitSTM(odom_pub, lasttime));
 
      // Thêm biến mới để kiểm tra runtime thay đổi mode
     new_number = number;
