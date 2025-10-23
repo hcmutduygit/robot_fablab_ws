@@ -83,6 +83,8 @@
   <node pkg="tf" type="static_transform_publisher" name="basefootprint_to_laser"
         args="0 0 0 0 0 0 base_footprint laser 50" />
 
+  <node pkg="subscribe_mqtt" type="waypoints_subscriber" name="waypoints_subscriber" output="screen"></node>
+
   <group if="$(arg guidance_enabled)">
         <node pkg = "guidance_node" type = "guidance_node" name = "Guidance" output = "screen">
             <param name="linear_speed" value="0.4"/>
