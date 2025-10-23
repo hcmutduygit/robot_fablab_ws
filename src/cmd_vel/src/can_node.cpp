@@ -353,7 +353,7 @@ void TransmitSTM(ros::Publisher& odom_pub, ros::Time& lasttime)
     publish_yaw(yaw_angle);
     // ROS_INFO("yaw_angle = %f", yaw_angle);
     // publish_yaw(yaw_angle);
-    updateOdometry(left_mps, right_mps, x, y, odom_pub, lasttime, yaw_offset, initialized, yaw_angle);
+    updateOdometry(left_mps, right_mps, x, y, odom_pub, lasttime, yaw_offset, initialized, yaw_prev, yaw_angle);
     
     if (number==2) {
         send_vel(can);

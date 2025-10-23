@@ -12,7 +12,7 @@ extern float x, y, yaw, yaw_offset, yaw_prev;
 extern std::mutex odom_mutex;
 extern bool initialized;
 
-inline void updateOdometry(float v_left, float v_right, float& x, float& y, ros::Publisher& odom_pub, ros::Time& lasttime, float& yaw_offset, bool& initialized, float imu_yaw = NAN) {
+inline void updateOdometry(float v_left, float v_right, float& x, float& y, ros::Publisher& odom_pub, ros::Time& lasttime, float& yaw_offset, bool& initialized, float& yaw_prev, float imu_yaw) {
     std::lock_guard<std::mutex> lock(odom_mutex);
     imu_yaw = -imu_yaw;
     // if (!initialized) {
@@ -59,8 +59,8 @@ inline void updateOdometry(float v_left, float v_right, float& x, float& y, ros:
         y += v * sin(yaw) * dt;
     } else {
         float r = v / omega;
-        float dyaw = omega*dt;
-        // std::cout << "dyaw: " << dyaw << "\n";
+        float dyaw = (yaw_prev == 0) ? 0.001 : (yaw - yaw_prev);
+        std::cout << "dyaw: " << dyaw << "\n";
         yaw_prev = yaw;
         x += r * (sin(yaw + dyaw) - sin(yaw));
         y += -r * (cos(yaw + dyaw) - cos(yaw));
