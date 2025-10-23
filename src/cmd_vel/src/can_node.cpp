@@ -402,7 +402,12 @@ int main(int argc, char **argv)
     pub_vel_stm = nh.advertise<utils::cmd_vel>("Guidance", 10);
     sub = nh.subscribe("Cmd_vel", 10, CallBackVel);
     // cnt_byte = nh.createTimer(ros::Duration(1), CntBytes);
-    loopControl = nh.createTimer(ros::Duration(cycle_transmit), TransmitSTM(odom_pub, lasttime));
+    loopControl = nh.createTimer(
+        ros::Duration(cycle_transmit),
+        [&](const ros::TimerEvent&) {
+            TransmitSTM(odom_pub, lasttime);
+        }
+    );
 
      // Thêm biến mới để kiểm tra runtime thay đổi mode
     new_number = number;
