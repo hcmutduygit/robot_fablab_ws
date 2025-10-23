@@ -21,6 +21,7 @@ std::mutex odom_mutex;
 float yaw_offset = 0;
 float yaw_prev = 0;
 bool initialized = false;
+int odom_count = 0;
 
 
 

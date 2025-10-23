@@ -11,9 +11,12 @@
 extern float x, y, yaw, yaw_offset, yaw_prev;
 extern std::mutex odom_mutex;
 extern bool initialized;
+extern int odom_count;
 
 inline void updateOdometry(float v_left, float v_right, float& x, float& y, ros::Publisher& odom_pub, ros::Time& lasttime, float& yaw_offset, bool& initialized, float& yaw_prev, float imu_yaw) {
     std::lock_guard<std::mutex> lock(odom_mutex);
+    odom_count += 1;
+    std::cout << "odom_count" << odom_count << "\n";
     imu_yaw = -imu_yaw;
     // if (!initialized) {
     //     yaw_offset = imu_yaw;  // Hướng ban đầu
@@ -22,7 +25,7 @@ inline void updateOdometry(float v_left, float v_right, float& x, float& y, ros:
     // imu_yaw = imu_yaw - yaw_offset;  // Yaw tuyệt đối theo hướng robot ban đầu
     // std::cout << "yaw_offset" << yaw_offset << "\n";
     yaw = imu_yaw * PI / 180.0;
-    // std::cout << "yaw: " << yaw << "\n";
+    std::cout << "yaw: " << yaw << "\n";
 
     float vel_left = -v_left/20;
     float vel_right = v_right/20;
@@ -59,7 +62,8 @@ inline void updateOdometry(float v_left, float v_right, float& x, float& y, ros:
         y += v * sin(yaw) * dt;
     } else {
         float r = v / omega;
-        float dyaw = (yaw_prev == 0) ? 0.001 : (yaw - yaw_prev);
+        // float dyaw = (yaw_prev == 0) ? 0.001 : (yaw - yaw_prev);
+        float dyaw = omega*dt;
         std::cout << "dyaw: " << dyaw << "\n";
         yaw_prev = yaw;
         x += r * (sin(yaw + dyaw) - sin(yaw));
@@ -100,7 +104,7 @@ inline void updateOdometry(float v_left, float v_right, float& x, float& y, ros:
     odom_tf.transform.rotation = tf::createQuaternionMsgFromYaw(yaw);
     odom_broadcaster.sendTransform(odom_tf);
 
-    std::cout << "yaw: " << yaw << "\n";
+    // std::cout << "yaw: " << yaw << "\n";
     std::cout << "v_left odom =" << vel_left << "(m/s), v_right odom =" << vel_right << "(m/s)\n";
     // std::cout << "current_time: " << cur_time << "\n";
     // std::cout << "dt: " << dt << "\n";
