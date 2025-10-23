@@ -12,7 +12,7 @@ extern float x, y, yaw, yaw_offset, yaw_prev;
 extern std::mutex odom_mutex;
 extern bool initialized;
 
-inline void updateOdometry(float v_left, float v_right, float& x, float& y, ros::Publisher& odom_pub, ros::Time& last_time, float& yaw_offset, bool& initialized, float imu_yaw = NAN) {
+inline void updateOdometry(float v_left, float v_right, float& x, float& y, ros::Publisher& odom_pub, ros::Time& lasttime, float& yaw_offset, bool& initialized, float imu_yaw = NAN) {
     std::lock_guard<std::mutex> lock(odom_mutex);
     imu_yaw = -imu_yaw;
     // if (!initialized) {
@@ -30,11 +30,11 @@ inline void updateOdometry(float v_left, float v_right, float& x, float& y, ros:
 
     ros::Time cur_time = ros::Time::now();
     // std::cout << "current_time: " << cur_time << "\n";
-    float dt = (cur_time - last_time).toSec();
+    float dt = (cur_time - lasttime).toSec();
     // std::cout << "dt: " << dt << "\n";
     // if (dt <= 0.0) return;
     // if (dt > 0.2) dt = 0.2; // clamp to avoid huge jumps
-    last_time = cur_time;
+    lasttime = cur_time;
 
     // Robot velocities
     float v = (vel_right + vel_left) / 2.0;
