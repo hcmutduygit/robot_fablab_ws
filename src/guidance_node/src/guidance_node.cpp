@@ -12,6 +12,7 @@
 #include <utility>
 #include "guidance.h"
 #include "pid.h"
+#include "utils/waypoints.h"
 
 PID pid_controller;
 
@@ -107,6 +108,11 @@ void CallBackPose(const geometry_msgs::PoseWithCovarianceStamped::ConstPtr& msg)
     // theta = yaw;
 }
 
+void CallBackWp(const utils::waypoints::ConstPtr& msg) {
+    wp.push_back({msg->direction_x, msg->direction_y});
+    ROS_INFO("Đã đọc được %zu waypoint.", wp.size());
+}
+
 void ControlVel(const ros::TimerEvent& event){
     utils::cmd_vel cmd;
     tranfer_wp();
@@ -147,40 +153,41 @@ int main(int argc, char **argv){
     pub = nh.advertise<utils::cmd_vel >("Cmd_vel", 1);
     sub = nh.subscribe("pose_robot", 10, CallBackYaw);
     sub_amcl = nh.subscribe("amcl_pose", 10, CallBackPose); //theo topic
+    sub_wp = nh.subscribe("waypoints", 10, CallBackWp);
     loopControl = nh.createTimer(ros::Duration(cycle), ControlVel);
     std::string waypoints_x_str, waypoints_y_str;
     
-    if (arg_nh.getParam("waypoints_x", waypoints_x_str) && arg_nh.getParam("waypoints_y", waypoints_y_str)) {
+    // if (arg_nh.getParam("waypoints_x", waypoints_x_str) && arg_nh.getParam("waypoints_y", waypoints_y_str)) {
         
-        double current_x = x;
-        double current_y = y;
-        // wp.push_back({current_x, current_y});
+    //     double current_x = x;
+    //     double current_y = y;
+    //     // wp.push_back({current_x, current_y});
 
-        std::vector<double> waypoints_x_temp;
-        std::vector<double> waypoints_y_temp;
+    //     std::vector<double> waypoints_x_temp;
+    //     std::vector<double> waypoints_y_temp;
         
-        std::stringstream ss_x(waypoints_x_str);
-        std::stringstream ss_y(waypoints_y_str);
-        std::string segment;
+    //     std::stringstream ss_x(waypoints_x_str);
+    //     std::stringstream ss_y(waypoints_y_str);
+    //     std::string segment;
 
-        while(std::getline(ss_x, segment, ',')) {
-            waypoints_x_temp.push_back(std::stod(segment));
-        }
+    //     while(std::getline(ss_x, segment, ',')) {
+    //         waypoints_x_temp.push_back(std::stod(segment));
+    //     }
 
-        while(std::getline(ss_y, segment, ',')) {
-            waypoints_y_temp.push_back(std::stod(segment));
-        }
+    //     while(std::getline(ss_y, segment, ',')) {
+    //         waypoints_y_temp.push_back(std::stod(segment));
+    //     }
 
-        if (waypoints_x_temp.size() == waypoints_y_temp.size()) {
-            for (size_t i = 0; i < waypoints_x_temp.size(); ++i) {
-                wp.push_back({waypoints_x_temp[i], waypoints_y_temp[i]});
-            }
-        } 
-        // ROS_INFO("Đã đọc được %zu waypoint.", wp.size());
-        // for (size_t i = 0; i < wp.size(); ++i) {
-        //     ROS_INFO("Waypoint %zu: (%f, %f)", i, wp[i].first, wp[i].second);
-        // }
-    } 
+    //     if (waypoints_x_temp.size() == waypoints_y_temp.size()) {
+    //         for (size_t i = 0; i < waypoints_x_temp.size(); ++i) {
+    //             wp.push_back({waypoints_x_temp[i], waypoints_y_temp[i]});
+    //         }
+    //     } 
+    //     // ROS_INFO("Đã đọc được %zu waypoint.", wp.size());
+    //     // for (size_t i = 0; i < wp.size(); ++i) {
+    //     //     ROS_INFO("Waypoint %zu: (%f, %f)", i, wp[i].first, wp[i].second);
+    //     // }
+    // } 
     ros::spin();
     return 0;
 
