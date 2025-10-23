@@ -5,6 +5,7 @@
 #include <pid.h>
 #include <utils/cmd_vel.h>
 #include <utils/pose_robot.h>
+#include <utils/waypoints.h>
 #include <tf2_msgs/TFMessage.h>
 #include <geometry_msgs/PoseWithCovarianceStamped.h>
 
@@ -52,4 +53,5 @@ ros::Timer loopControl;
 ros::Subscriber sub;
 ros::Publisher pub;
 ros::Subscriber sub_amcl;
+ros::Subscriber sub_wp;
 #endif
