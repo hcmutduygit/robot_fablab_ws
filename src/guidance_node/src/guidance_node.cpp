@@ -37,15 +37,13 @@ double limit(double value, double min_val, double max_val)
     else return value;
 }
 
-void control_los(float goal_x, float goal_y, float previous_x, float previous_y){
-    alpha_k = get_heading(previous_x,previous_y,goal_x,goal_y);
-    s_k_1   = (goal_x - previous_x) * cos(alpha_k) + (goal_y - previous_y) * sin(alpha_k); 
+void control_los(float goal_x, float goal_y, float previous_x, float previous_y) {
+    alpha_k = get_heading(previous_x, previous_y, goal_x, goal_y);
+    s_k_1 = (goal_x - previous_x) * cos(alpha_k) + (goal_y - previous_y) * sin(alpha_k); 
 
-
-    cross_track = (-(x - previous_x) * sin(alpha_k) + (y - previous_y) * cos(alpha_k))*direct;
-    long_track  =  (x - previous_x) * cos(alpha_k) + (y - previous_y) * sin(alpha_k);
-
-    delta       =  (delta_max - delta_min) * exp(-0.7 * pow(cross_track, 2)) + delta_min;
+    cross_track = (-(x - previous_x) * sin(alpha_k) + (y - previous_y) * cos(alpha_k)) * direct;
+    long_track = (x - previous_x) * cos(alpha_k) + (y - previous_y) * sin(alpha_k);
+    delta = (delta_max - delta_min) * exp(-0.7 * pow(cross_track, 2)) + delta_min;
 
     target_heading = normalize_angle(alpha_k + atan(-cross_track/delta));
     heading_error  = normalize_angle(target_heading - theta);
@@ -53,8 +51,8 @@ void control_los(float goal_x, float goal_y, float previous_x, float previous_y)
     ROS_INFO("CrossTrack = %.2f, LongTrack = %.2f, HeadingDesire = %.2f, HeadingErr = %.2f, Theta = %.2f",cross_track, long_track,target_heading,heading_error,theta);
 
     filtered_angular_z = pid_controller.pid(heading_error, KP, ANGULAR_SPEED);
-    filtered_angular_z = limit(filtered_angular_z, - MAX_ANGULAR_SPEED, ANGULAR_SPEED);
-    // filtered_angular_z = limit(filtered_angular_z, - MAX_ANGULAR_SPEED, MAX_ANGULAR_SPEED);
+    // filtered_angular_z = limit(filtered_angular_z, -MAX_ANGULAR_SPEED, ANGULAR_SPEED);
+    filtered_angular_z = limit(filtered_angular_z, -MAX_ANGULAR_SPEED, MAX_ANGULAR_SPEED);
 
     dist_to_goal = abs(s_k_1 - long_track);
     perc_dist = abs(s_k_1 - long_track)/s_k_1;
@@ -66,13 +64,13 @@ void control_los(float goal_x, float goal_y, float previous_x, float previous_y)
     else {
         linear_x = limit(LINEAR_SPEED*perc_dist, min_speed, MAX_LINEAR_SPEED);
     }
-    // filtered_angular_z = low_pass_filter(angular_z, filtered_angular_z);
-    filtered_angular_z = low_pass_filter(filtered_angular_z, angular_z);
+    filtered_angular_z = low_pass_filter(angular_z, filtered_angular_z);
+    // filtered_angular_z = low_pass_filter(filtered_angular_z, angular_z);
     angular_z = filtered_angular_z;
 }
 
-void tranfer_wp (){
-    if (cnt + 1 >= (wp.size())){
+void tranfer_wp() {
+    if (cnt + 1 >= (wp.size())) {
         // ROS_INFO ("Stopping Robot");
         linear_x = 0.0;
         angular_z = 0.0;
@@ -81,7 +79,7 @@ void tranfer_wp (){
         control_los(wp[cnt+1].first, wp[cnt+1].second, wp[cnt].first, wp[cnt].second);
     }
 
-    if (dist_to_goal <= GOAL_RADIUS){
+    if (dist_to_goal <= GOAL_RADIUS) {
         // ROS_INFO("Reached wp(%.2f, %.2f)",wp[cnt+1].first,wp[cnt+1].second);
         cnt +=1;
     }
@@ -119,7 +117,7 @@ void ControlVel(const ros::TimerEvent& event){
     cmd.v_left = -v_left*drive; 
     cmd.v_right = v_right*drive; 
    
-    ROS_INFO("v_left = %.2f, v_right = %.2f,ANGULAR = %.2f", cmd.v_left, cmd.v_right,angular_z);
+    ROS_INFO("v_left = %.2f, v_right = %.2f, ANGULAR = %.2f", cmd.v_left, cmd.v_right, angular_z);
     pub.publish(cmd);
 }
 
