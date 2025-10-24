@@ -13,30 +13,22 @@ extern std::mutex odom_mutex;
 extern bool initialized;
 extern int odom_count;
 
-inline void updateOdometry(float v_left, float v_right, float& x, float& y, ros::Publisher& odom_pub, ros::Time& lasttime, float& yaw_offset, bool& initialized, float& yaw_prev, float imu_yaw) {
+inline void updateOdometry(float v_left, float v_right, float& x, float& y, ros::Publisher& odom_pub, ros::Time& lasttime, float& yaw_offset, bool& initialized, float& yaw_prev, float yaw_imu) {
     std::lock_guard<std::mutex> lock(odom_mutex);
     odom_count += 1;
     std::cout << "odom_count" << odom_count << "\n";
-    imu_yaw = -imu_yaw;
+    yaw_imu = -yaw_imu * PI / 180;
     // if (!initialized) {
     //     yaw_offset = imu_yaw;  // Hướng ban đầu
     //     initialized = true;
     // }
-    // imu_yaw = imu_yaw - yaw_offset;  // Yaw tuyệt đối theo hướng robot ban đầu
-    // std::cout << "yaw_offset" << yaw_offset << "\n";
-    yaw = imu_yaw * PI / 180.0;
     std::cout << "yaw: " << yaw << "\n";
 
     float vel_left = -v_left/20;
     float vel_right = v_right/20;
-    // std::cout << "v_left=" << v_left << "(m/s), v_right=" << v_right << "(m/s)\n";
 
     ros::Time cur_time = ros::Time::now();
-    // std::cout << "current_time: " << cur_time << "\n";
     float dt = (cur_time - lasttime).toSec();
-    // std::cout << "dt: " << dt << "\n";
-    // if (dt <= 0.0) return;
-    // if (dt > 0.2) dt = 0.2; // clamp to avoid huge jumps
     lasttime = cur_time;
 
     // Robot velocities
@@ -45,15 +37,11 @@ inline void updateOdometry(float v_left, float v_right, float& x, float& y, ros:
     float omega = (vel_right - vel_left) / 0.513;
     // std::cout << "omega: " << omega << "\n";
 
-    // // Fuse IMU yaw if available
-    // if (!std::isnan(imu_yaw)) {
-    //     double alpha = 0.9;
-    //     double yaw_pred = yaw + omega * dt;
-    //     yaw = alpha * yaw_pred + (1.0 - alpha) * imu_yaw;
-    // } else {
-    //     yaw += omega * dt;
-    // }
-    // std::cout << "fused_yaw: " << yaw << "\n";
+    // Fuse IMU yaw if available
+    float yaw_enc = yaw_prev + omega * dt;
+    float alpha = 0.9;  // 0.9–0.99: tin encoder nhiều hơn
+    yaw = alpha * yaw_enc + (1 - alpha) * yaw_imu;
+    std::cout << "fused_yaw: " << yaw << "\n";
 
     // Integrate position
     float dyaw = (yaw_prev == 0) ? 0.001 : (yaw - yaw_prev);
