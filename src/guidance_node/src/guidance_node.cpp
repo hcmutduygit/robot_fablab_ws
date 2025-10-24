@@ -12,7 +12,6 @@
 #include <utility>
 #include "guidance.h"
 #include "pid.h"
-#include "utils/waypoints.h"
 
 PID pid_controller;
 
@@ -92,6 +91,7 @@ void CallBackYaw (const utils::pose_robot::ConstPtr& msg){
     float theta_temp = (-(msg->yaw)*PI)/180;
     if ((theta_temp + 2.615) > PI) theta = theta_temp + 2.615 - 2*PI;
     else theta = theta_temp + 2.615;
+    std::cout << "theta = " << theta << "\n";
 }
 
 void CallBackPose(const geometry_msgs::PoseWithCovarianceStamped::ConstPtr& msg){

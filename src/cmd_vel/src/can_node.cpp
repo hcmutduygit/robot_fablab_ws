@@ -204,6 +204,7 @@ void process_frame(uint16_t can_id, const std::vector<uint8_t> &data, ros::Publi
         yaw_angle = yaw; // Update global yaw angle
         // publish_yaw(yaw);
         // std::cout << "Yaw_degree: " << yaw << "\n";
+        updateOdometry(left_mps, right_mps, x, y, odom_pub, lasttime, yaw_offset, initialized, yaw_prev, yaw_angle);
         cnt_receive++;
         break;
     }
@@ -354,7 +355,7 @@ void TransmitSTM(ros::Publisher& odom_pub, ros::Time& lasttime)
     publish_yaw(yaw_angle);
     // ROS_INFO("yaw_angle = %f", yaw_angle);
     // publish_yaw(yaw_angle);
-    updateOdometry(left_mps, right_mps, x, y, odom_pub, lasttime, yaw_offset, initialized, yaw_prev, yaw_angle);
+    // updateOdometry(left_mps, right_mps, x, y, odom_pub, lasttime, yaw_offset, initialized, yaw_prev, yaw_angle);
     
     if (number==2) {
         send_vel(can);
