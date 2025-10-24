@@ -44,6 +44,11 @@ inline void updateOdometry(float v_left, float v_right, float& x, float& y, ros:
     yaw = atan2(sin(yaw_temp), cos(yaw_temp));
     std::cout << "fused_yaw: " << yaw << "\n";
 
+    // // Use only yaw from encoder
+    // float yaw_enc = yaw_prev + omega*dt;
+    // yaw = yaw_enc;
+    // std::cout << "yaw_encoder = " << yaw << "\n";
+
     // Integrate position
     float dyaw = (yaw_prev == 0) ? 0.001 : (yaw - yaw_prev);
     yaw_prev = yaw;
