@@ -22,7 +22,7 @@ inline void updateOdometry(float v_left, float v_right, float& x, float& y, ros:
     //     yaw_offset = imu_yaw;  // Hướng ban đầu
     //     initialized = true;
     // }
-    std::cout << "yaw: " << yaw << "\n";
+    std::cout << "yaw_imu: " << yaw << "\n";
 
     float vel_left = -v_left/20;
     float vel_right = v_right/20;
@@ -39,8 +39,9 @@ inline void updateOdometry(float v_left, float v_right, float& x, float& y, ros:
 
     // Fuse IMU yaw if available
     float yaw_enc = yaw_prev + omega * dt;
-    float alpha = 0.9;  // 0.9–0.99: tin encoder nhiều hơn
-    yaw = alpha * yaw_enc + (1 - alpha) * yaw_imu;
+    float alpha = 0.98;  // 0.9–0.99: tin encoder nhiều hơn
+    float yaw_temp = alpha * yaw_enc + (1 - alpha) * yaw_imu;
+    yaw = atan2(sin(yaw_temp), cos(yaw_temp));
     std::cout << "fused_yaw: " << yaw << "\n";
 
     // Integrate position
