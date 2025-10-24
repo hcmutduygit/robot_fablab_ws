@@ -56,16 +56,16 @@ inline void updateOdometry(float v_left, float v_right, float& x, float& y, ros:
     // std::cout << "fused_yaw: " << yaw << "\n";
 
     // Integrate position
+    float dyaw = (yaw_prev == 0) ? 0.001 : (yaw - yaw_prev);
+    yaw_prev = yaw;
     const double eps = 1e-6;
     if (std::abs(omega) < eps) {
         x += v * cos(yaw) * dt;
         y += v * sin(yaw) * dt;
     } else {
         float r = v / omega;
-        // float dyaw = (yaw_prev == 0) ? 0.001 : (yaw - yaw_prev);
-        float dyaw = omega*dt;
+        // float dyaw = omega*dt;
         std::cout << "dyaw: " << dyaw << "\n";
-        yaw_prev = yaw;
         x += r * (sin(yaw + dyaw) - sin(yaw));
         y += -r * (cos(yaw + dyaw) - cos(yaw));
     }
