@@ -6,7 +6,7 @@ from utils.msg import waypoints
 import json
 import paho.mqtt.client as mqtt
 
-# --- Cấu hình MQTT ---
+# --- Config MQTT ---
 MQTT_HOST = "45.117.177.157"
 MQTT_PORT = 1883
 MQTT_KEEPALIVE_INTERVAL = 5
@@ -14,14 +14,14 @@ MQTT_USERNAME = "client"
 MQTT_PASSWORD = "viam1234"
 MQTT_TOPIC = "robot/waypoints"
 
-# --- Hàm callback khi nhận tin nhắn MQTT ---
+# --- Callback function when received MQTT message ---
 def on_message(mosq, obj, msg):
     try:
-        rospy.loginfo("Nhận tin nhắn từ topic: %s", msg.topic)
+        # rospy.loginfo("Receive mesage from topic: %s", msg.topic)
         payload = msg.payload.decode("utf-8")
         data = json.loads(payload)
 
-        # Nếu là danh sách toạ độ [{"x":..,"y":..}, ...]
+        # List of waypoint [{"x":..,"y":..}, ...]
         if isinstance(data, list):
             for point in data:
                 if "x" in point and "y" in point:
@@ -29,54 +29,54 @@ def on_message(mosq, obj, msg):
                     wp.direction_x = point["x"]
                     wp.direction_y = point["y"]
                     pub.publish(wp)
-                    rospy.loginfo("Đã publish waypoint: x=%.2f, y=%.2f", wp.direction_x, wp.direction_y)
+                    # rospy.loginfo("Published waypoint: x=%.2f, y=%.2f", wp.direction_x, wp.direction_y)
         
-        # Nếu chỉ là 1 toạ độ {"x":..,"y":..}
+        # One waypoint {"x":..,"y":..}
         elif isinstance(data, dict) and "x" in data and "y" in data:
             wp = waypoints()
             wp.direction_x = data["x"]
             wp.direction_y = data["y"]
             pub.publish(wp)
-            rospy.loginfo("Đã publish waypoint: x=%.2f, y=%.2f", wp.direction_x, wp.direction_y)
+            # rospy.loginfo("Publish waypoint: x=%.2f, y=%.2f", wp.direction_x, wp.direction_y)
 
         else:
-            rospy.logwarn("Dữ liệu JSON không hợp lệ: %s", payload)
+            rospy.logwarn("Unvalid JSON data: %s", payload)
 
     except Exception as e:
-        rospy.logerr("Lỗi khi xử lý message MQTT: %s", e)
+        rospy.logerr("Error handle message MQTT: %s", e)
 
-# --- Callback khi kết nối MQTT ---
+# --- Callback when connect MQTT ---
 def on_connect(mosq, obj, flags, rc):
-    rospy.loginfo("Kết nối MQTT broker thành công (rc=%s)", str(rc))
+    rospy.loginfo("Connect to MQTT broker success (rc=%s)", str(rc))
     mosq.subscribe(MQTT_TOPIC, 0)
 
-# --- Callback khi subscribe ---
+# --- Callback when subscribe ---
 def on_subscribe(mosq, obj, mid, granted_qos):
-    rospy.loginfo("Đã subscribe topic: %s", MQTT_TOPIC)
+    rospy.loginfo("Subscribe topic: %s", MQTT_TOPIC)
 
-# --- Hàm chính ---
+# --- Main function ---
 if __name__ == '__main__':
     rospy.init_node('mqtt_waypoint_subscriber', anonymous=True)
     pub = rospy.Publisher('waypoints', waypoints, queue_size=10)
 
-    # Tạo client MQTT
+    # Create client MQTT
     mqttc = mqtt.Client()
     mqttc.username_pw_set(MQTT_USERNAME, MQTT_PASSWORD)
 
-    # Gán callback
+    # Var callback
     mqttc.on_connect = on_connect
     mqttc.on_subscribe = on_subscribe
     mqttc.on_message = on_message
 
-    # Kết nối tới broker
+    # Connect to broker
     try:
         mqttc.connect(MQTT_HOST, MQTT_PORT, MQTT_KEEPALIVE_INTERVAL)
-        rospy.loginfo("Đang kết nối tới MQTT broker %s:%d ...", MQTT_HOST, MQTT_PORT)
+        rospy.loginfo("Connecting MQTT broker %s:%d ...", MQTT_HOST, MQTT_PORT)
     except Exception as e:
-        rospy.logerr("Không thể kết nối MQTT broker: %s", e)
+        rospy.logerr("Can't connect to MQTT broker: %s", e)
         exit(1)
 
-    # --- Chạy song song ROS + MQTT ---
+    # --- Runing ROS + MQTT ---
     while not rospy.is_shutdown():
-        mqttc.loop(0.1)  # xử lý sự kiện MQTT trong vòng lặp
+        mqttc.loop(0.1)  # handle MQTT in loop
         rospy.sleep(0.1)
