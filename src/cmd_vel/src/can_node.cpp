@@ -192,18 +192,18 @@ void process_frame(uint16_t can_id, const std::vector<uint8_t> &data, ros::Publi
         // Extract roll, pitch, yaw as signed 16-bit integers and scale by 100.0
         // double roll = hex_to_signed(data, 0) / 100.0;  // Bytes 0-1
         // double pitch = hex_to_signed(data, 2) / 100.0; // Bytes 2-3
-        float yaw = hex_to_unsigned(data, 4) / 100.0; // Bytes 4-5
-        while (yaw > 180.0)
+        float raw_yaw = hex_to_unsigned(data, 4) / 100.0; // Bytes 4-5
+        while (raw_yaw > 180.0)
         {
-            yaw -= 360.0;
+            raw_yaw -= 360.0;
         }
-        while (yaw <= -180.0)
+        while (raw_yaw <= -180.0)
         {
-            yaw += 360.0;
+            raw_yaw += 360.0;
         }
-        yaw_angle = yaw; // Update global yaw angle
+        yaw_angle = raw_yaw; // Update global yaw angle
         // publish_yaw(yaw);
-        std::cout << "Yaw_degree: " << yaw << "\n";
+        std::cout << "Yaw_degree: " << raw_yaw << "\n";
         updateOdometry(left_mps, right_mps, x, y, odom_pub, lasttime, yaw_offset, initialized, yaw_prev, yaw_angle);
         cnt_receive++;
         break;
