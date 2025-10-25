@@ -39,6 +39,7 @@ inline void updateOdometry(float v_left, float v_right, float& x, float& y, ros:
 
     // Fuse IMU yaw if available
     float yaw_enc = yaw_prev + omega * dt;
+    yaw_enc = atan2(sin(yaw_enc), cos(yaw_enc));
     float alpha = 0.98;  // 0.9–0.99: tin encoder nhiều hơn
     float yaw_temp = alpha * yaw_enc + (1 - alpha) * yaw_imu;
     yaw = atan2(sin(yaw_temp), cos(yaw_temp));
@@ -46,6 +47,7 @@ inline void updateOdometry(float v_left, float v_right, float& x, float& y, ros:
 
     // // Use only yaw from encoder
     // float yaw_enc = yaw_prev + omega*dt;
+    // yaw_enc = atan2(sin(yaw_enc), cos(yaw_enc));
     // yaw = yaw_enc;
     // std::cout << "yaw_encoder = " << yaw << "\n";
 
