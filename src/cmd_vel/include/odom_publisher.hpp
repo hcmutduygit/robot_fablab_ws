@@ -26,8 +26,8 @@ inline void updateOdometry(float vel_left, float vel_right, float& x, float& y, 
 
     vel_left = -vel_left/20;
     vel_right = vel_right/20;
-    vel_left = (std::abs(vel_left)<3e-3) ? 0.0 : vel_left; 
-    vel_left = (std::abs(vel_right)<3e-3) ? 0.0 : vel_right; 
+    vel_left = (std::abs(vel_left) < 5e-4) ? 0.0 : vel_left; 
+    vel_right = (std::abs(vel_right) < 5e-4) ? 0.0 : vel_right; 
 
     ros::Time cur_time = ros::Time::now();
     float dt = (cur_time - lasttime).toSec();
@@ -36,7 +36,7 @@ inline void updateOdometry(float vel_left, float vel_right, float& x, float& y, 
     // Robot velocities
     float v = (vel_right + vel_left) / 2.0;
     // std::cout << "v: " << v << "\n";
-    float omega = (vel_right - vel_left) / 0.595;
+    float omega = (vel_right - vel_left) / 0.59;
     // std::cout << "omega: " << omega << "\n";
 
     // // Fuse IMU yaw if available
