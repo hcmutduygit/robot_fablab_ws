@@ -13,19 +13,21 @@ extern std::mutex odom_mutex;
 extern bool initialized;
 extern int odom_count;
 
-inline void updateOdometry(float v_left, float v_right, float& x, float& y, ros::Publisher& odom_pub, ros::Time& lasttime, float& yaw_offset, bool& initialized, float& yaw_prev, float yaw_imu) {
+inline void updateOdometry(float vel_left, float vel_right, float& x, float& y, ros::Publisher& odom_pub, ros::Time& lasttime, float& yaw_offset, bool& initialized, float& yaw_prev, float yaw_imu) {
     std::lock_guard<std::mutex> lock(odom_mutex);
     odom_count += 1;
-    std::cout << "odom_count" << odom_count << "\n";
+    // std::cout << "odom_count" << odom_count << "\n";
     yaw_imu = -yaw_imu * PI / 180;
     // if (!initialized) {
     //     yaw_offset = imu_yaw;  // Hướng ban đầu
     //     initialized = true;
     // }
-    std::cout << "yaw_imu: " << yaw << "\n";
+    std::cout << "yaw_imu: " << yaw_imu << "\n";
 
-    float vel_left = -v_left/20;
-    float vel_right = v_right/20;
+    vel_left = -vel_left/20;
+    vel_right = vel_right/20;
+    vel_left = (std::abs(vel_left)<3e-3) ? 0.0 : vel_left; 
+    vel_left = (std::abs(vel_right)<3e-3) ? 0.0 : vel_right; 
 
     ros::Time cur_time = ros::Time::now();
     float dt = (cur_time - lasttime).toSec();
@@ -34,7 +36,7 @@ inline void updateOdometry(float v_left, float v_right, float& x, float& y, ros:
     // Robot velocities
     float v = (vel_right + vel_left) / 2.0;
     // std::cout << "v: " << v << "\n";
-    float omega = (vel_right - vel_left) / 0.513;
+    float omega = (vel_right - vel_left) / 0.595;
     // std::cout << "omega: " << omega << "\n";
 
     // // Fuse IMU yaw if available
@@ -45,13 +47,13 @@ inline void updateOdometry(float v_left, float v_right, float& x, float& y, ros:
     // yaw = atan2(sin(yaw_temp), cos(yaw_temp));
     // std::cout << "fused_yaw: " << yaw << "\n";
 
-    // // Use only yaw from encoder
-    // float yaw_enc = yaw_prev + omega*dt;
-    // yaw_enc = atan2(sin(yaw_enc), cos(yaw_enc));
-    // yaw = yaw_enc;
-    // std::cout << "yaw_encoder = " << yaw << "\n";
+    // Use only yaw from encoder
+    float yaw_enc = yaw_prev + omega*dt;
+    yaw_enc = atan2(sin(yaw_enc), cos(yaw_enc));
+    yaw = yaw_enc;
+    std::cout << "yaw_encoder = " << yaw * 180 / PI << "\n";
 
-    yaw = yaw_imu;
+    // yaw = yaw_imu;
 
     // Integrate position
     // float dyaw = (yaw_prev == 0) ? 0.001 : (yaw - yaw_prev);
@@ -63,7 +65,7 @@ inline void updateOdometry(float v_left, float v_right, float& x, float& y, ros:
         y += v * sin(yaw) * dt;
     } else {
         float r = v / omega;
-        std::cout << "dyaw: " << dyaw << "\n";
+        // std::cout << "dyaw: " << dyaw << "\n";
         x += r * (sin(yaw + dyaw) - sin(yaw));
         y += -r * (cos(yaw + dyaw) - cos(yaw));
     }

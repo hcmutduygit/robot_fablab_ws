@@ -203,6 +203,8 @@ void process_frame(uint16_t can_id, const std::vector<uint8_t> &data, ros::Publi
         }
         yaw_angle = raw_yaw; // Update global yaw angle
         // publish_yaw(yaw);
+        // std::cout << "roll_degree: " << roll << "\n";
+        // std::cout << "pitch_degree: " << pitch << "\n";
         std::cout << "Yaw_degree: " << raw_yaw << "\n";
         updateOdometry(left_mps, right_mps, x, y, odom_pub, lasttime, yaw_offset, initialized, yaw_prev, yaw_angle);
         cnt_receive++;
