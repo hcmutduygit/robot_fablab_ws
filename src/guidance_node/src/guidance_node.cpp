@@ -85,14 +85,14 @@ void tranfer_wp() {
     }
 }
 
-void CallBackYaw (const utils::pose_robot::ConstPtr& msg){
-    // x = msg->x;
-    // y = msg->y;
-    float theta_temp = (-(msg->yaw)*PI)/180;
-    if ((theta_temp + 2.615) > PI) theta = theta_temp + 2.615 - 2*PI;
-    else theta = theta_temp + 2.615;
-    std::cout << "theta = " << theta << "\n";
-}
+// void CallBackYaw (const utils::pose_robot::ConstPtr& msg){
+//     // x = msg->x;
+//     // y = msg->y;
+//     float theta_temp = (-(msg->yaw)*PI)/180;
+//     if ((theta_temp + 2.615) > PI) theta = theta_temp + 2.615 - 2*PI;
+//     else theta = theta_temp + 2.615;
+//     std::cout << "theta = " << theta << "\n";
+// }
 
 void CallBackPose(const geometry_msgs::PoseWithCovarianceStamped::ConstPtr& msg){
     x = msg->pose.pose.position.x;
@@ -150,8 +150,8 @@ int main(int argc, char **argv){
     ROS_INFO("Linear_speed_max = %.2f, Angular_speed_max= %.2f, goal_radius= %.2f. KP = %.2f",MAX_LINEAR_SPEED,MAX_ANGULAR_SPEED,GOAL_RADIUS,KP);
     ros::NodeHandle nh;
 
-    pub = nh.advertise<utils::cmd_vel >("Cmd_vel", 1);
-    sub = nh.subscribe("pose_robot", 10, CallBackYaw);
+    pub = nh.advertise<utils::cmd_vel>("Cmd_vel", 1);
+    // sub = nh.subscribe("pose_robot", 10, CallBackYaw);
     sub_amcl = nh.subscribe("amcl_pose", 10, CallBackPose); //theo topic
     // sub_wp = nh.subscribe("waypoints", 10, CallBackWp);
     loopControl = nh.createTimer(ros::Duration(cycle), ControlVel);
