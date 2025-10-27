@@ -18,6 +18,8 @@
 #include <chrono>
 #include <cerrno>
 #include <cstring>
+#include <geometry_msgs/PoseWithCovarianceStamped.h>
+
 class WaveshareCAN {
 public:
     using Callback = std::function<void(uint16_t, const std::vector<uint8_t>&)>;
@@ -301,7 +303,7 @@ private:
  ros::Publisher pub_vel_stm;
  ros::Publisher odom_pub;
  ros::Subscriber sub;
- ros::Subscriber ekf_sub;
+ ros::Subscriber amcl_sub;
  ros::Timer loopControl;
  ros::Timer cnt_byte;
  int number, new_number, calib ;
