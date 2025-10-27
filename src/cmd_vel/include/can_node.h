@@ -296,7 +296,7 @@ private:
     std::unique_ptr<std::thread> rx_thread_;
 };
 
- ros::Publisher pub;
+ ros::Publisher imu_pub;
  ros::Publisher pub_vel_stm;
  ros::Publisher odom_pub;
  ros::Subscriber sub;
