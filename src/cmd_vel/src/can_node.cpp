@@ -109,7 +109,7 @@ void CallBackEKF(const nav_msgs::Odometry::ConstPtr &msg) {
 
     // Chuyển quaternion -> yaw (-pi đến pi)
     float yaw_filtered = tf::getYaw(tf::Quaternion(qx, qy, qz, qw));
-    std::cout << "yaw_filtered = " << yaw_filtered << "\n";
+    std::cout << "yaw_filtered = " << yaw_filtered * 180 / PI << "\n";
 }
 
 // void ControlStm(const ros::TimerEvent &event)
@@ -172,7 +172,7 @@ void publish_yaw(float yaw_angle)
 
 }
 
-float mapf(float x, float in_min, float in_max, float out_min, float out_max)
+inline float mapf(float x, float in_min, float in_max, float out_min, float out_max)
 {
     return (x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;
 }
@@ -225,104 +225,126 @@ void process_frame(uint16_t can_id, const std::vector<uint8_t> &data, ros::Publi
     // IMU Angle
     case 0x12:
     {
-        // // Ensure data has at least 6 bytes for roll, pitch, yaw (2 bytes each)
-        // if (data.size() < 6)
-        // {
-        //     std::cerr << "Error: Insufficient data bytes for ID 0x012\n";
-        //     return;
-        // }
-        // // std::cout << "ID 0x" << std::hex << can_id << std::dec << " receive IMU hex: ";
-        // // for (uint8_t b : data)
-        // // {
-        // //     std::cout << std::hex << std::setw(2) << std::setfill('0') << (int)b << " ";
-        // // }
-        // // std::cout << std::dec << std::endl;
-        // // Extract roll, pitch, yaw as signed 16-bit integers and scale by 100.0
-        // // double roll = hex_to_signed(data, 0) / 100.0;  // Bytes 0-1
-        // // double pitch = hex_to_signed(data, 2) / 100.0; // Bytes 2-3
-        // float raw_yaw = hex_to_unsigned(data, 4) / 100.0; // Bytes 4-5
-        // while (raw_yaw > 180.0)
-        // {
-        //     raw_yaw -= 360.0;
-        // }
-        // while (raw_yaw <= -180.0)
-        // {
-        //     raw_yaw += 360.0;
-        // }
-        // yaw_angle = raw_yaw; // Update global yaw angle
-        // // publish_yaw(yaw);
-        // // std::cout << "roll_degree: " << roll << "\n";
-        // // std::cout << "pitch_degree: " << pitch << "\n";
-        // std::cout << "Yaw_degree: " << raw_yaw << "\n";
+        // Ensure data has at least 6 bytes for roll, pitch, yaw (2 bytes each)
         if (data.size() < 6)
         {
             std::cerr << "Error: Insufficient data bytes for ID 0x012\n";
             return;
         }
-
-        // Đọc góc yaw, scale về độ
-        float raw_yaw = hex_to_unsigned(data, 4) / 100.0f;
-
-        // --- B1: Chuẩn hóa yaw về [-180,180] ---
-        while (raw_yaw > 180.0f)  yaw -= 360.0f;
-        while (raw_yaw <= -180.0f) yaw += 360.0f;
-
-        // --- B2: Giữ yaw liên tục khi qua ±180° ---
-        static float yaw_cont = 0.0f;
-        static float last_yaw = 0.0f;
-        float dyaw = raw_yaw - last_yaw;
-        if (dyaw > 180.0f)      dyaw -= 360.0f;   // qua +180°
-        else if (dyaw < -180.0f) dyaw += 360.0f;   // qua -180°
-        yaw_cont += dyaw;
-        last_yaw = yaw;
-
-        // --- B3: Giữ yaw mượt khi qua 0° ---
-        // (Không cần gì thêm nếu đã unwrap — góc chạy mượt 0↔360)
-
-        float corrected_yaw = yaw_cont;
-
-        // --- B4: Map 4 vùng đã hiệu chỉnh thực tế ---
-        float y = fmodf(yaw_cont, 360.0f);
-        if (y < 0) y += 360.0f; // 0–360°
-
-        if (y >= 346.5 || y < 46.5) // Q4: 60→0→-13.5 (qua 0)
+        // std::cout << "ID 0x" << std::hex << can_id << std::dec << " receive IMU hex: ";
+        // for (uint8_t b : data)
+        // {
+        //     std::cout << std::hex << std::setw(2) << std::setfill('0') << (int)b << " ";
+        // }
+        // std::cout << std::dec << std::endl;
+        // Extract roll, pitch, yaw as signed 16-bit integers and scale by 100.0
+        // double roll = hex_to_signed(data, 0) / 100.0;  // Bytes 0-1
+        // double pitch = hex_to_signed(data, 2) / 100.0; // Bytes 2-3
+        float raw_yaw = hex_to_unsigned(data, 4) / 100.0; // Bytes 4-5
+    float raw=0;
+    //     while (raw_yaw > 180.0)
+    //     {
+    //         raw_yaw -= 360.0;
+    //     }
+    //     while (raw_yaw <= -180.0)
+    //     {
+    //         raw_yaw += 360.0;
+    
+    //   }
+    //     if(raw_yaw>0 && raw_yaw<90) raw=mapf(raw_yaw,0,90,0,105);
+    //     else if(raw_yaw>90 && raw_yaw<180) raw=mapf(raw_yaw,90,180,105,180);
+    //     else if(raw_yaw>-90 && raw_yaw<0) raw=mapf(raw_yaw,-90,0,-105,0);
+    //    else if(raw_yaw>-180 && raw_yaw<-90) raw=mapf(raw_yaw,-180,-90,-180,-105);
+              if(raw_yaw>341 && raw_yaw<360) raw=mapf(raw_yaw,341,360,333,360);
+        else if(raw_yaw>280 && raw_yaw<341) raw=mapf(raw_yaw,280,341,243,333);
+        else if(raw_yaw>147 && raw_yaw<280) raw=mapf(raw_yaw,147,280,153,243);
+       else if(raw_yaw>44.5 && raw_yaw<147) raw=mapf(raw_yaw,44.5,147,63.18,153);
+        else if(raw_yaw>0 && raw_yaw<44.5) raw=mapf(raw_yaw,0,44.5,0,63.18); 
+               while (raw > 180.0)
         {
-            if (y >= 0 && y < 46.5)
-                corrected_yaw = mapf(y, 0.0, 46.5, 0.0, 90.0);
-            else
-                corrected_yaw = mapf(y, 346.5, 360.0, 0.0, 0.0);
+            raw-= 360.0;
         }
-        else if (y >= 46.5 && y < 117.0) // Q3: 60–156
+        while (raw <= -180.0)
         {
-            corrected_yaw = mapf(y, 60.0, 156.0, 90.0, 180.0);
-        }
-        else if (y >= 117.0 && y < 273.0) // Q2: -87→156 (qua ±180)
-        {
-            corrected_yaw = mapf(y, 156.0, 273.0, 180.0, -90.0);
-        }
-        else if (y >= 273.0 && y < 346.5) // Q1: -13.5→-87
-        {
-            corrected_yaw = mapf(y, 273.0, 346.5, -90.0, 0.0);
-        }
+            raw += 360.0;
+    
+      }
+        yaw_angle = raw_yaw; // Update global yaw angle
+        publish_yaw(yaw);
+        // std::cout << "roll_degree: " << roll << "\n";
+        // std::cout << "pitch_degree: " << pitch << "\n";
+        std::cout << "Yaw_degree: " << raw<< "\n";
+      //  std::cout << "Yaw: " << raw<< "\n";
+        // if (data.size() < 6)
+        // {
+        //     std::cerr << "Error: Insufficient data bytes for ID 0x012\n";
+        //     return;
+        // }
 
-        // --- B5: Làm mượt nhẹ chống rung ---
-        static float last_corr = 0;
-        corrected_yaw = last_corr + 0.1f * (corrected_yaw - last_corr);
-        last_corr = corrected_yaw;
+        // // Đọc góc yaw, scale về độ
+        // float raw_yaw = hex_to_unsigned(data, 4) / 100.0f;
 
-        // --- B6: Chuẩn hóa lại [-180,180] ---
-        while (corrected_yaw > 180.0f)  corrected_yaw -= 360.0f;
-        while (corrected_yaw <= -180.0f) corrected_yaw += 360.0f;
+        // // --- B1: Chuẩn hóa yaw về [-180,180] ---
+        // while (raw_yaw > 180.0f)  yaw -= 360.0f;
+        // while (raw_yaw <= -180.0f) yaw += 360.0f;
 
-        yaw_angle = corrected_yaw;
-        // publish_yaw(corrected_yaw);
+        // // --- B2: Giữ yaw liên tục khi qua ±180° ---
+        // static float yaw_cont = 0.0f;
+        // static float last_yaw = 0.0f;
+        // float dyaw = raw_yaw - last_yaw;
+        // if (dyaw > 180.0f)      dyaw -= 360.0f;   // qua +180°
+        // else if (dyaw < -180.0f) dyaw += 360.0f;   // qua -180°
+        // yaw_cont += dyaw;
+        // last_yaw = raw_yaw;
 
-        // Debug
-        // std::cout << "Yaw raw: " << yaw << " | cont: " << yaw_cont
-        //           << " | corr: " << corrected_yaw << std::endl;
+        // // --- B3: Giữ yaw mượt khi qua 0° ---
+        // // (Không cần gì thêm nếu đã unwrap — góc chạy mượt 0↔360)
 
-        // updateOdometry(left_mps, right_mps, odom_pub, lasttime);
-        std::cout << "corrected_yaw" << corrected_yaw << "\n";
+        // float corrected_yaw = yaw_cont;
+        // if (dyaw > 180.0f)      dyaw -= 360.0f;   // qua +180°
+
+        // // --- B4: Map 4 vùng đã hiệu chỉnh thực tế ---
+        // float y = fmodf(yaw_cont, 360.0f);
+        // if (y < 0) y += 360.0f; // 0–360°
+
+        // if (y >= 346.5 || y < 46.5) // Q4: 60→0→-13.5 (qua 0)
+        // {
+        //     if (y >= 0 && y < 46.5)
+        //         corrected_yaw = mapf(y, 0.0, 46.5, 0.0, 90.0);
+        //     else
+        //         corrected_yaw = mapf(y, 346.5, 360.0, 0.0, 0.0);
+        // }
+        // else if (y >= 46.5 && y < 117.0) // Q3: 60–156
+        // {
+        //     corrected_yaw = mapf(y, 60.0, 156.0, 90.0, 180.0);
+        // }
+        // else if (y >= 117.0 && y < 273.0) // Q2: -87→156 (qua ±180)
+        // {
+        //     corrected_yaw = mapf(y, 156.0, 273.0, 180.0, -90.0);
+        // }
+        // else if (y >= 273.0 && y < 346.5) // Q1: -13.5→-87
+        // {
+        //     corrected_yaw = mapf(y, 273.0, 346.5, -90.0, 0.0);
+        // }
+
+        // // --- B5: Làm mượt nhẹ chống rung ---
+        // static float last_corr = 0;
+        // corrected_yaw = last_corr + 0.1f * (corrected_yaw - last_corr);
+        // last_corr = corrected_yaw;
+
+        // // --- B6: Chuẩn hóa lại [-180,180] ---
+        // while (corrected_yaw > 180.0f)  corrected_yaw -= 360.0f;
+        // while (corrected_yaw <= -180.0f) corrected_yaw += 360.0f;
+
+        // yaw_angle = corrected_yaw;
+        // // publish_yaw(corrected_yaw);
+
+        // // Debug
+        // // std::cout << "Yaw raw: " << yaw << " | cont: " << yaw_cont
+        // //           << " | corr: " << corrected_yaw << std::endl;
+
+        updateOdometry(left_mps, right_mps, odom_pub, lasttime);
+        // std::cout << "corrected_yaw" << corrected_yaw << "\n";
         cnt_receive++;
         break;
     }
