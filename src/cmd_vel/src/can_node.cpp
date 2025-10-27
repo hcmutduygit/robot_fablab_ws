@@ -19,7 +19,7 @@ float y = 0;
 float yaw = 0;
 std::mutex odom_mutex; 
 float yaw_offset = 0;
-float yaw_prev = 0;
+float yaw_prev = 2.615;
 bool initialized = false;
 int odom_count = 0;
 
@@ -96,6 +96,18 @@ void CallBackVel(const utils::cmd_vel::ConstPtr &cmd_vel)
 
     left_wheel_velocity = ConvertPulse(v_left);
     right_wheel_velocity = ConvertPulse(v_right);
+}
+
+void CallBackAMCL(const geometry_msgs::PoseWithCovarianceStamped::ConstPtr& msg) {
+    double orientation_x = msg->pose.pose.orientation.x;
+    double orientation_y = msg->pose.pose.orientation.y;
+    double orientation_z = msg->pose.pose.orientation.z;
+    double orientation_w = msg->pose.pose.orientation.w;
+
+    tf::Quaternion q(orientation_x, orientation_y, orientation_z, orientation_w);
+    double roll, pitch, yaw_amcl;
+    tf::Matrix3x3(q).getRPY(roll, pitch, yaw_amcl);
+    yaw = yaw_amcl;
 }
 
 // void ControlStm(const ros::TimerEvent &event)
@@ -206,7 +218,7 @@ void process_frame(uint16_t can_id, const std::vector<uint8_t> &data, ros::Publi
         // std::cout << "roll_degree: " << roll << "\n";
         // std::cout << "pitch_degree: " << pitch << "\n";
         std::cout << "Yaw_degree: " << raw_yaw << "\n";
-        updateOdometry(left_mps, right_mps, x, y, odom_pub, lasttime, yaw_offset, initialized, yaw_prev, yaw_angle);
+        updateOdometry(left_mps, right_mps, odom_pub, lasttime);
         cnt_receive++;
         break;
     }
@@ -405,6 +417,7 @@ int main(int argc, char **argv)
 
     pub_vel_stm = nh.advertise<utils::cmd_vel>("Guidance", 10);
     sub = nh.subscribe("Cmd_vel", 10, CallBackVel);
+    amcl_sub = nh.subscribe("amcl_pose", 10, CallBackAMCL);
     // cnt_byte = nh.createTimer(ros::Duration(1), CntBytes);
     loopControl = nh.createTimer(
         ros::Duration(cycle_transmit),
