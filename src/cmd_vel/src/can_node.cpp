@@ -141,6 +141,11 @@ void publish_yaw(float yaw_angle)
     // ROS_INFO("yaw_angle = %f", yaw_angle);
 }
 
+float mapf(float x, float in_min, float in_max, float out_min, float out_max)
+{
+    return (x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;
+}
+
 // Process CAN frame (equivalent to Python's process_frame)
 void process_frame(uint16_t can_id, const std::vector<uint8_t> &data, ros::Publisher& odom_pub, ros::Time& lasttime)
 {
@@ -205,15 +210,22 @@ void process_frame(uint16_t can_id, const std::vector<uint8_t> &data, ros::Publi
         // double roll = hex_to_signed(data, 0) / 100.0;  // Bytes 0-1
         // double pitch = hex_to_signed(data, 2) / 100.0; // Bytes 2-3
         float raw_yaw = hex_to_unsigned(data, 4) / 100.0; // Bytes 4-5
-        while (raw_yaw > 180.0)
+        float raw = 0;
+        if (raw_yaw>341 && raw_yaw<360) raw=mapf(raw_yaw,341,360,333,360);
+        else if (raw_yaw>280 && raw_yaw<341) raw=mapf(raw_yaw,280,341,243,333);
+        else if (raw_yaw>147 && raw_yaw<280) raw=mapf(raw_yaw,147,280,153,243);
+        else if (raw_yaw>44.5 && raw_yaw<147) raw=mapf(raw_yaw,44.5,147,63.18,153);
+        else if (raw_yaw>0 && raw_yaw<44.5) raw=mapf(raw_yaw,0,44.5,0,63.18); 
+        while (raw > 180.0)
         {
-            raw_yaw -= 360.0;
+            raw-= 360.0;
         }
-        while (raw_yaw <= -180.0)
+        while (raw <= -180.0)
         {
-            raw_yaw += 360.0;
+            raw += 360.0;
         }
-        yaw_angle = raw_yaw; // Update global yaw angle
+        
+        yaw_angle = raw; // Update global yaw angle
         // publish_yaw(yaw);
         // std::cout << "roll_degree: " << roll << "\n";
         // std::cout << "pitch_degree: " << pitch << "\n";

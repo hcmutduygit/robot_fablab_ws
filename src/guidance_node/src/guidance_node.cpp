@@ -150,8 +150,8 @@ int main(int argc, char **argv){
     ROS_INFO("Linear_speed_max = %.2f, Angular_speed_max= %.2f, goal_radius= %.2f. KP = %.2f",MAX_LINEAR_SPEED,MAX_ANGULAR_SPEED,GOAL_RADIUS,KP);
     ros::NodeHandle nh;
 
-    pub = nh.advertise<utils::cmd_vel >("Cmd_vel", 1);
-    sub = nh.subscribe("pose_robot", 10, CallBackYaw);
+    pub = nh.advertise<utils::cmd_vel>("Cmd_vel", 1);
+    // sub = nh.subscribe("pose_robot", 10, CallBackYaw);
     sub_amcl = nh.subscribe("amcl_pose", 10, CallBackPose); //theo topic
     // sub_wp = nh.subscribe("waypoints", 10, CallBackWp);
     loopControl = nh.createTimer(ros::Duration(cycle), ControlVel);
