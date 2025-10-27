@@ -17,11 +17,9 @@ inline void updateOdometry(float vel_left, float vel_right, ros::Publisher& odom
     std::lock_guard<std::mutex> lock(odom_mutex);
     odom_count += 1;
     // std::cout << "odom_count" << odom_count << "\n";
-    float yaw_imu = -yaw_angle * PI / 180 + 2.615;
-    // if (!initialized) {
-    //     yaw_offset = imu_yaw;  // Hướng ban đầu
-    //     initialized = true;
-    // }
+    // float yaw_imu = -yaw_angle * PI / 180 + 2.615;
+    float yaw_imu = -yaw_angle * PI / 180;
+
     std::cout << "yaw_imu: " << yaw_imu << "\n";
 
     vel_left = -vel_left/20;
@@ -57,10 +55,16 @@ inline void updateOdometry(float vel_left, float vel_right, ros::Publisher& odom
 
     // Integrate position
     // float dyaw = (yaw_prev == 0) ? 0.001 : (yaw - yaw_prev);
-    float dyaw = yaw_imu - yaw_prev;
-    yaw_prev = yaw_imu;
-    yaw = yaw + dyaw;
+
+    // float dyaw = yaw_imu - yaw_prev;
+    // yaw_prev = yaw_imu;
+    // yaw = yaw + dyaw;
+
+    yaw = yaw_imu;
+    float dyaw = yaw - yaw_prev;
+    yaw_prev = yaw;
     std::cout << "yaw: " << yaw << "\n";
+
     const double eps = 1e-6;
     if (std::abs(omega) < eps) {
         x += v * cos(yaw) * dt;
