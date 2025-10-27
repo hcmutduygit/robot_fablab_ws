@@ -1,0 +1,34 @@
+frequency: 30
+sensor_timeout: 0.1
+two_d_mode: true
+
+odom0: /wheel_odom
+odom0_config: [true,  true,  false,
+               false, false, true,
+               false, false, false,
+               false, false, false,
+               false, false, false]
+odom0_differential: false
+odom0_queue_size: 10
+
+imu0: /imu
+imu0_config: [false, false, false,   # position
+              false, false, true,    # orientation (yaw)
+              false, false, false,   # linear velocity
+              false, false, true,    # angular velocity (yaw rate)
+              false, false, false]   # linear acceleration
+imu0_differential: false
+imu0_queue_size: 10
+imu0_remove_gravitational_acceleration: true
+
+process_noise_covariance: [0.05, 0, 0, 0, 0, 0,
+                           0, 0.05, 0, 0, 0, 0,
+                           0, 0, 0.0, 0, 0, 0,
+                           0, 0, 0, 0.01, 0, 0,
+                           0, 0, 0, 0, 0.01, 0,
+                           0, 0, 0, 0, 0, 0.01]
+
+output_frame: odom
+world_frame: odom
+base_link_frame: base_footprint
+publish_tf: true
