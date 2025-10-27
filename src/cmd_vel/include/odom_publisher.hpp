@@ -8,16 +8,16 @@
 #include <mutex>
 #define PI 3.14159265358979323846
 
-extern float x, y, yaw, yaw_offset, yaw_prev;
+extern float x, y, yaw, yaw_offset, yaw_prev, yaw_angle;
 extern std::mutex odom_mutex;
 extern bool initialized;
 extern int odom_count;
 
-inline void updateOdometry(float vel_left, float vel_right, float& x, float& y, ros::Publisher& odom_pub, ros::Time& lasttime, float& yaw_offset, bool& initialized, float& yaw_prev, float yaw_imu) {
+inline void updateOdometry(float vel_left, float vel_right, ros::Publisher& odom_pub, ros::Time& lasttime) {
     std::lock_guard<std::mutex> lock(odom_mutex);
     odom_count += 1;
     // std::cout << "odom_count" << odom_count << "\n";
-    yaw_imu = -yaw_imu * PI / 180;
+    float yaw_imu = -yaw_angle * PI / 180 + 2.615;
     // if (!initialized) {
     //     yaw_offset = imu_yaw;  // Hướng ban đầu
     //     initialized = true;
@@ -53,12 +53,14 @@ inline void updateOdometry(float vel_left, float vel_right, float& x, float& y, 
     // yaw = yaw_enc;
     // std::cout << "yaw_encoder = " << yaw * 180 / PI << "\n";
 
-    yaw = yaw_imu;
+    // yaw = yaw_imu;
 
     // Integrate position
     // float dyaw = (yaw_prev == 0) ? 0.001 : (yaw - yaw_prev);
-    float dyaw = omega*dt;
-    yaw_prev = yaw;
+    float dyaw = yaw_imu - yaw_prev;
+    yaw_prev = yaw_imu;
+    yaw = yaw + dyaw;
+    std::cout << "yaw: " << yaw << "\n";
     const double eps = 1e-6;
     if (std::abs(omega) < eps) {
         x += v * cos(yaw) * dt;

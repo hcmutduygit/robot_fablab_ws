@@ -85,14 +85,14 @@ void tranfer_wp() {
     }
 }
 
-void CallBackYaw (const utils::pose_robot::ConstPtr& msg){
-    // x = msg->x;
-    // y = msg->y;
-    float theta_temp = (-(msg->yaw)*PI)/180;
-    if ((theta_temp + 2.615) > PI) theta = theta_temp + 2.615 - 2*PI;
-    else theta = theta_temp + 2.615;
-    std::cout << "theta = " << theta << "\n";
-}
+// void CallBackYaw (const utils::pose_robot::ConstPtr& msg){
+//     // x = msg->x;
+//     // y = msg->y;
+//     float theta_temp = (-(msg->yaw)*PI)/180;
+//     if ((theta_temp + 2.615) > PI) theta = theta_temp + 2.615 - 2*PI;
+//     else theta = theta_temp + 2.615;
+//     std::cout << "theta = " << theta << "\n";
+// }
 
 void CallBackPose(const geometry_msgs::PoseWithCovarianceStamped::ConstPtr& msg){
     x = msg->pose.pose.position.x;

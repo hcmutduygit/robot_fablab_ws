@@ -1,106 +1,107 @@
 <launch>
-  <arg name="guidance_enabled" default="true" />
-  <arg name="can_enabled" default="true" />
-  <arg name="use_map_topic"   default="false"/>
-  <arg name="initial_pose_x"  default="0.0"/>
-  <arg name="initial_pose_y"  default="0.0"/>
-  <arg name="initial_pose_a"  default="0.0"/>
-  <arg name="odom_frame_id"   default="odom"/>
-  <arg name="base_frame_id"   default="base_footprint"/>
-  <arg name="global_frame_id" default="map"/>
+    <arg name="guidance_enabled" default="true" />
+    <arg name="can_enabled" default="true" />
+    <arg name="use_map_topic"   default="false"/>
+    <arg name="initial_pose_x"  default="0.0"/>
+    <arg name="initial_pose_y"  default="0.0"/>
+    <arg name="initial_pose_a"  default="0.0"/>
+    <arg name="odom_frame_id"   default="odom"/>
+    <arg name="base_frame_id"   default="base_footprint"/>
+    <arg name="global_frame_id" default="map"/>
 
-  <arg name="mqtt_enabled" default="true" />
+    <arg name="mqtt_enabled" default="true" />
 
-  <!-- Lidar driver -->
-  <include file="$(find rplidar_ros)/launch/rplidar_s2.launch"/>
+    <!-- Lidar driver -->
+    <include file="$(find rplidar_ros)/launch/rplidar_s2.launch"/>
 
-  <!-- RViz -->
-  <arg name="rvizconfig" default="$(find rviz)/amcl.rviz"/>
-  <node name="rviz" pkg="rviz" type="rviz" args="-d $(arg rvizconfig)"/>
+    <!-- RViz -->
+    <arg name="rvizconfig" default="$(find rviz)/amcl.rviz"/>
+    <node name="rviz" pkg="rviz" type="rviz" args="-d $(arg rvizconfig)"/>
 
-  <!-- Load map (yaml file, không dùng .pbstream) -->
-  <arg name="map_file" default="$(find robot_fablab)/maps/map_fablab.yaml" />
-  <node name="map_server" pkg="map_server" type="map_server" args="$(arg map_file)" />
+    <!-- Load map (yaml file, không dùng .pbstream) -->
+    <arg name="map_file" default="$(find robot_fablab)/maps/map_fablab.yaml" />
+    <node name="map_server" pkg="map_server" type="map_server" args="$(arg map_file)" />
 
-  <group if="$(arg can_enabled)">
-      <node pkg = "cmd_vel" type = "can_node" name = "Cmd_vel" output = "screen">
-          <param name="mode" value="1"/> 
-          <param name="calib" value="0"/>
-          <param name="cycle_transmit" value="0.1"/>
-      </node>
-  </group>
-
-  <group if="$(arg mqtt_enabled)">
-      <node pkg = "publish_mqtt" type = "publish_mqtt_node" name = "Mqtt" output = "screen"></node>
-  </group>
-  <!-- AMCL for localization -->
-  <node pkg="amcl" type="amcl" name="amcl">
-    <param name="use_map_topic"             value="$(arg use_map_topic)"/>
-    <!-- Publish scans from best pose at a max of 10 Hz -->
-    <param name="odom_model_type"           value="diff"/>
-    <param name="odom_alpha5"               value="0.1"/>
-    <param name="gui_publish_rate"          value="10.0"/>
-    <param name="laser_max_beams"             value="60"/>
-    <param name="laser_max_range"           value="12.0"/>
-    <param name="min_particles"             value="500"/>
-    <param name="max_particles"             value="2000"/>
-    <param name="kld_err"                   value="0.10"/>
-    <param name="kld_z"                     value="0.5"/>
-    <param name="odom_alpha1"               value="0.008"/>
-    <param name="odom_alpha2"               value="0.040"/>
-    <!-- translation std dev, m -->
-    <param name="odom_alpha3"               value="0.004"/>
-    <param name="odom_alpha4"               value="0.025"/>
-    <param name="laser_z_hit"               value="0.9"/>
-    <param name="laser_z_short"             value="0.05"/>
-    <param name="laser_z_max"               value="0.05"/>
-    <param name="laser_z_rand"              value="0.5"/>
-    <param name="laser_sigma_hit"           value="0.1"/>
-    <param name="laser_lambda_short"        value="0.1"/>
-    <param name="laser_model_type"          value="likelihood_field"/>
-    <!-- <param name="laser_model_type" value="beam"/> -->
-    <param name="laser_likelihood_max_dist" value="4.0"/>
-    <param name="update_min_d"              value="0.25"/>
-    <param name="update_min_a"              value="0.2"/>
-    <param name="odom_frame_id"             value="$(arg odom_frame_id)"/> 
-    <param name="base_frame_id"             value="$(arg base_frame_id)"/> 
-    <param name="global_frame_id"           value="$(arg global_frame_id)"/>
-    <param name="resample_interval"         value="1"/>
-    <!-- Increase tolerance because the computer can get quite busy -->
-    <param name="transform_tolerance"       value="1.0"/>
-    <param name="recovery_alpha_slow"       value="0.0"/>
-    <param name="recovery_alpha_fast"       value="0.0"/>
-    <param name="initial_pose_x"            value="$(arg initial_pose_x)"/>
-    <param name="initial_pose_y"            value="$(arg initial_pose_y)"/>
-    <param name="initial_pose_a"            value="$(arg initial_pose_a)"/>
-  </node>
-
-  <node pkg="rostopic" type="rostopic" name="set_initial_pose"
-      args="pub -1 /initialpose geometry_msgs/PoseWithCovarianceStamped -f $(find robot_fablab)/config/initial_pose.yaml"
-      output="screen"/>
-
-  <!-- Static TF: base_footprint -> laser -->
-  <node pkg="tf" type="static_transform_publisher" name="basefootprint_to_laser"
-        args="0 0 0 0 0 0 base_footprint laser 50" />
-
-  <node pkg="subscribe_mqtt" type="waypoints_subscriber.py" name="waypoints_subscriber" output="screen"></node>
-
-  <group if="$(arg guidance_enabled)">
-        <node pkg = "guidance_node" type = "guidance_node" name = "Guidance" output = "screen">
-            <param name="linear_speed" value="0.4"/>
-            <param name="angular_speed" value="0.6"/>
-            <param name="goal_radius" value="0.3"/>
-            <param name="cycle" value="0.1"/>
-            <param name="angular_speed_max" value="1.2"/>
-            <param name="linear_speed_max" value="0.5"/>
-            <param name="KP" value="1"/>
-            <param name="drive" value="1"/>
-            <param name="direct" value="1"/>
-            <param name="min_speed_linear" value="0.2"/>
-            <param name="waypoints_x" value="8.43370545973, -0.944272611617, -1.02582621629, -5.14741795585" />
-            <param name="waypoints_y" value="15.9036135775, 21.7211835314, 24.8810294018, 27.6081660781" />
+    <group if="$(arg can_enabled)">
+        <node pkg = "cmd_vel" type = "can_node" name = "Cmd_vel" output = "screen">
+            <param name="mode" value="1"/> 
+            <param name="calib" value="0"/>
+            <param name="cycle_transmit" value="0.1"/>
         </node>
     </group>
+
+    <group if="$(arg mqtt_enabled)">
+        <node pkg = "publish_mqtt" type = "publish_mqtt_node" name = "Mqtt" output = "screen"></node>
+    </group>
+    
+    <!-- AMCL for localization -->
+    <node pkg="amcl" type="amcl" name="amcl">
+        <param name="use_map_topic"             value="$(arg use_map_topic)"/>
+        <!-- Publish scans from best pose at a max of 10 Hz -->
+        <param name="odom_model_type"           value="diff"/>
+        <param name="odom_alpha5"               value="0.1"/>
+        <param name="gui_publish_rate"          value="20.0"/>
+        <param name="laser_max_beams"             value="60"/>
+        <param name="laser_max_range"           value="12.0"/>
+        <param name="min_particles"             value="500"/>
+        <param name="max_particles"             value="2000"/>
+        <param name="kld_err"                   value="0.10"/>
+        <param name="kld_z"                     value="0.5"/>
+        <param name="odom_alpha1"               value="0.008"/>
+        <param name="odom_alpha2"               value="0.040"/>
+        <!-- translation std dev, m -->
+        <param name="odom_alpha3"               value="0.004"/>
+        <param name="odom_alpha4"               value="0.025"/>
+        <param name="laser_z_hit"               value="0.9"/>
+        <param name="laser_z_short"             value="0.05"/>
+        <param name="laser_z_max"               value="0.05"/>
+        <param name="laser_z_rand"              value="0.5"/>
+        <param name="laser_sigma_hit"           value="0.1"/>
+        <param name="laser_lambda_short"        value="0.1"/>
+        <param name="laser_model_type"          value="likelihood_field"/>
+        <!-- <param name="laser_model_type" value="beam"/> -->
+        <param name="laser_likelihood_max_dist" value="4.0"/>
+        <param name="update_min_d"              value="0.2"/>
+        <param name="update_min_a"              value="0.1"/>
+        <param name="odom_frame_id"             value="$(arg odom_frame_id)"/> 
+        <param name="base_frame_id"             value="$(arg base_frame_id)"/> 
+        <param name="global_frame_id"           value="$(arg global_frame_id)"/>
+        <param name="resample_interval"         value="1"/>
+        <!-- Increase tolerance because the computer can get quite busy -->
+        <param name="transform_tolerance"       value="1.0"/>
+        <param name="recovery_alpha_slow"       value="0.0"/>
+        <param name="recovery_alpha_fast"       value="0.0"/>
+        <param name="initial_pose_x"            value="$(arg initial_pose_x)"/>
+        <param name="initial_pose_y"            value="$(arg initial_pose_y)"/>
+        <param name="initial_pose_a"            value="$(arg initial_pose_a)"/>
+    </node>
+
+    <node pkg="rostopic" type="rostopic" name="set_initial_pose"
+        args="pub -1 /initialpose geometry_msgs/PoseWithCovarianceStamped -f $(find robot_fablab)/config/initial_pose.yaml"
+        output="screen"/>
+
+    <!-- Static TF: base_footprint -> laser -->
+    <node pkg="tf" type="static_transform_publisher" name="basefootprint_to_laser"
+            args="0 0 0 0 0 0 base_footprint laser 50" />
+
+    <node pkg="subscribe_mqtt" type="waypoints_subscriber.py" name="waypoints_subscriber" output="screen"></node>
+
+    <group if="$(arg guidance_enabled)">
+            <node pkg = "guidance_node" type = "guidance_node" name = "Guidance" output = "screen">
+                <param name="linear_speed" value="0.4"/>
+                <param name="angular_speed" value="0.6"/>
+                <param name="goal_radius" value="0.3"/>
+                <param name="cycle" value="0.1"/>
+                <param name="angular_speed_max" value="1.2"/>
+                <param name="linear_speed_max" value="0.5"/>
+                <param name="KP" value="1"/>
+                <param name="drive" value="1"/>
+                <param name="direct" value="1"/>
+                <param name="min_speed_linear" value="0.2"/>
+                <param name="waypoints_x" value="8.43370545973, -0.944272611617, -1.02582621629, -5.14741795585" />
+                <param name="waypoints_y" value="15.9036135775, 21.7211835314, 24.8810294018, 27.6081660781" />
+            </node>
+        </group>
 </launch>
 
 <!-- x: , -1.61775819822
