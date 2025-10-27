@@ -19,7 +19,7 @@ float y = 0;
 float yaw = 0;
 std::mutex odom_mutex; 
 float yaw_offset = 0;
-float yaw_prev = 2.615;
+float yaw_prev = 0.0;
 bool initialized = false;
 int odom_count = 0;
 
@@ -98,24 +98,24 @@ void CallBackVel(const utils::cmd_vel::ConstPtr &cmd_vel)
     right_wheel_velocity = ConvertPulse(v_right);
 }
 
-// void CallBackAMCL(const geometry_msgs::PoseWithCovarianceStamped::ConstPtr& msg) {
-//     double orientation_x = msg->pose.pose.orientation.x;
-//     double orientation_y = msg->pose.pose.orientation.y;
-//     double orientation_z = msg->pose.pose.orientation.z;
-//     double orientation_w = msg->pose.pose.orientation.w;
+void CallBackAMCL(const geometry_msgs::PoseWithCovarianceStamped::ConstPtr& msg) {
+    double orientation_x = msg->pose.pose.orientation.x;
+    double orientation_y = msg->pose.pose.orientation.y;
+    double orientation_z = msg->pose.pose.orientation.z;
+    double orientation_w = msg->pose.pose.orientation.w;
 
-//     tf::Quaternion q(orientation_x, orientation_y, orientation_z, orientation_w);
-//     double roll, pitch, yaw_amcl;
-//     tf::Matrix3x3(q).getRPY(roll, pitch, yaw_amcl);
-//     yaw = yaw_amcl;
-// }
+    tf::Quaternion q(orientation_x, orientation_y, orientation_z, orientation_w);
+    double roll, pitch, yaw_amcl;
+    tf::Matrix3x3(q).getRPY(roll, pitch, yaw_amcl);
+    yaw = yaw_amcl;
+}
 
-// void ControlStm(const ros::TimerEvent &event)
-// {
-//     utils::pose_robot pose;
-//     pose.yaw = yaw_angle; // cập nhật yaw
-//     pub.publish(pose);
-// }
+void ControlStm(const ros::TimerEvent &event)
+{
+    utils::pose_robot pose;
+    pose.yaw = yaw_angle; // cập nhật yaw
+    pub.publish(pose);
+}
 
 // Convert two bytes to a signed 16-bit integer
 int16_t hex_to_signed(const std::vector<uint8_t> &data, size_t start_idx, size_t bits = 16)
@@ -210,22 +210,22 @@ void process_frame(uint16_t can_id, const std::vector<uint8_t> &data, ros::Publi
         // double roll = hex_to_signed(data, 0) / 100.0;  // Bytes 0-1
         // double pitch = hex_to_signed(data, 2) / 100.0; // Bytes 2-3
         float raw_yaw = hex_to_unsigned(data, 4) / 100.0; // Bytes 4-5
-        float raw = 0;
-        if (raw_yaw>341 && raw_yaw<360) raw=mapf(raw_yaw,341,360,333,360);
-        else if (raw_yaw>280 && raw_yaw<341) raw=mapf(raw_yaw,280,341,243,333);
-        else if (raw_yaw>147 && raw_yaw<280) raw=mapf(raw_yaw,147,280,153,243);
-        else if (raw_yaw>44.5 && raw_yaw<147) raw=mapf(raw_yaw,44.5,147,63.18,153);
-        else if (raw_yaw>0 && raw_yaw<44.5) raw=mapf(raw_yaw,0,44.5,0,63.18); 
-        while (raw > 180.0)
+        // float raw = 0;
+        // if (raw_yaw>341 && raw_yaw<360) raw=mapf(raw_yaw,341,360,333,360);
+        // else if (raw_yaw>280 && raw_yaw<341) raw=mapf(raw_yaw,280,341,243,333);
+        // else if (raw_yaw>147 && raw_yaw<280) raw=mapf(raw_yaw,147,280,153,243);
+        // else if (raw_yaw>44.5 && raw_yaw<147) raw=mapf(raw_yaw,44.5,147,63.18,153);
+        // else if (raw_yaw>0 && raw_yaw<44.5) raw=mapf(raw_yaw,0,44.5,0,63.18); 
+        while (raw_yaw > 180.0)
         {
-            raw-= 360.0;
+            raw_yaw-= 360.0;
         }
-        while (raw <= -180.0)
+        while (raw_yaw <= -180.0)
         {
-            raw += 360.0;
+            raw_yaw += 360.0;
         }
         
-        yaw_angle = raw; // Update global yaw angle
+        yaw_angle = raw_yaw; // Update global yaw angle
         // publish_yaw(yaw);
         // std::cout << "roll_degree: " << roll << "\n";
         // std::cout << "pitch_degree: " << pitch << "\n";
@@ -427,9 +427,8 @@ int main(int argc, char **argv)
         std::cout << "send 2" << "\n";
     } 
 
-    pub_vel_stm = nh.advertise<utils::cmd_vel>("Guidance", 10);
     sub = nh.subscribe("Cmd_vel", 10, CallBackVel);
-    // amcl_sub = nh.subscribe("amcl_pose", 10, CallBackAMCL);
+    amcl_sub = nh.subscribe("amcl_pose", 10, CallBackAMCL);
     // cnt_byte = nh.createTimer(ros::Duration(1), CntBytes);
     loopControl = nh.createTimer(
         ros::Duration(cycle_transmit),
