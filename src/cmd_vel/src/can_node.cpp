@@ -136,44 +136,10 @@ uint16_t hex_to_unsigned(const std::vector<uint8_t> &data, size_t start_idx)
 
 void publish_yaw(float yaw_angle) 
 {
-    // utils::pose_robot pose;
-    // pose.yaw = yaw_angle;
-    // pub.publish(pose);
+    utils::pose_robot pose;
+    pose.yaw = yaw_angle;
+    pub.publish(pose);
     // ROS_INFO("yaw_angle = %f", yaw_angle);
-
-    sensor_msgs::Imu imu_msg;
-    imu_msg.header.stamp = ros::Time::now();
-    imu_msg.header.frame_id = "imu_link";
-
-    // Gán góc yaw → quaternion
-    imu_msg.orientation = tf::createQuaternionMsgFromYaw(yaw_imu);
-
-    // Không có tốc độ góc, gia tốc → set 0
-    imu_msg.angular_velocity.x = 0.0;
-    imu_msg.angular_velocity.y = 0.0;
-    imu_msg.angular_velocity.z = 0.0;
-
-    imu_msg.linear_acceleration.x = 0.0;
-    imu_msg.linear_acceleration.y = 0.0;
-    imu_msg.linear_acceleration.z = 0.0;
-
-    // Covariance: rất quan trọng, nói cho EKF biết dữ liệu nào hợp lệ
-    // orientation_covariance[0] < 0 nghĩa là orientation invalid → nên gán giá trị thật
-    imu_msg.orientation_covariance[0] = 0.01;   // X (unused)
-    imu_msg.orientation_covariance[4] = 0.01;   // Y (unused)
-    imu_msg.orientation_covariance[8] = 0.05;   // Z (yaw) — độ tin cậy thấp một chút
-
-    // angular_velocity, linear_acceleration không có → set -1 để EKF bỏ qua
-    imu_msg.angular_velocity_covariance[0] = -1;
-    imu_msg.linear_acceleration_covariance[0] = -1;
-
-    imu_pub.publish(imu_msg);
-
-}
-
-inline float mapf(float x, float in_min, float in_max, float out_min, float out_max)
-{
-    return (x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;
 }
 
 float mapf(float x, float in_min, float in_max, float out_min, float out_max)
@@ -245,22 +211,22 @@ void process_frame(uint16_t can_id, const std::vector<uint8_t> &data, ros::Publi
         // double roll = hex_to_signed(data, 0) / 100.0;  // Bytes 0-1
         // double pitch = hex_to_signed(data, 2) / 100.0; // Bytes 2-3
         float raw_yaw = hex_to_unsigned(data, 4) / 100.0; // Bytes 4-5
-        float raw = 0;
-        if (raw_yaw>341 && raw_yaw<360) raw=mapf(raw_yaw,341,360,333,360);
-        else if (raw_yaw>280 && raw_yaw<341) raw=mapf(raw_yaw,280,341,243,333);
-        else if (raw_yaw>147 && raw_yaw<280) raw=mapf(raw_yaw,147,280,153,243);
-        else if (raw_yaw>44.5 && raw_yaw<147) raw=mapf(raw_yaw,44.5,147,63.18,153);
-        else if (raw_yaw>0 && raw_yaw<44.5) raw=mapf(raw_yaw,0,44.5,0,63.18); 
-        while (raw > 180.0)
+        // float raw = 0;
+        // if (raw_yaw>341 && raw_yaw<360) raw=mapf(raw_yaw,341,360,333,360);
+        // else if (raw_yaw>280 && raw_yaw<341) raw=mapf(raw_yaw,280,341,243,333);
+        // else if (raw_yaw>147 && raw_yaw<280) raw=mapf(raw_yaw,147,280,153,243);
+        // else if (raw_yaw>44.5 && raw_yaw<147) raw=mapf(raw_yaw,44.5,147,63.18,153);
+        // else if (raw_yaw>0 && raw_yaw<44.5) raw=mapf(raw_yaw,0,44.5,0,63.18); 
+        while (raw_yaw > 180.0)
         {
-            raw-= 360.0;
+            raw_yaw-= 360.0;
         }
-        while (raw <= -180.0)
+        while (raw_yaw <= -180.0)
         {
-            raw += 360.0;
+            raw_yaw += 360.0;
         }
         
-        yaw_angle = raw; // Update global yaw angle
+        yaw_angle = raw_yaw; // Update global yaw angle
         // publish_yaw(yaw);
         // std::cout << "roll_degree: " << roll << "\n";
         // std::cout << "pitch_degree: " << pitch << "\n";
@@ -435,9 +401,9 @@ int main(int argc, char **argv)
 {
     ros::init(argc, argv, "Can_node");
     ros::NodeHandle nh;
-    odom_pub = nh.advertise<nav_msgs::Odometry>("wheel_odometry", 10);
+    odom_pub = nh.advertise<nav_msgs::Odometry>("odom", 10);
     ros::Time lasttime = ros::Time::now();
-    imu_pub = nh.advertise<sensor_msgs::Imu>("imu", 10);
+    pub = nh.advertise<utils::pose_robot>("pose_robot", 10);
 
     can.open();
     can.start_receive_loop([&](uint16_t can_id, const std::vector<uint8_t>& data) {

@@ -60,7 +60,7 @@ inline void updateOdometry(float vel_left, float vel_right, ros::Publisher& odom
     // yaw_prev = yaw_imu;
     // yaw = yaw + dyaw;
 
-    yaw = yaw_imu;
+    yaw = (yaw_imu == 0) ? yaw_prev : yaw_imu;
     float dyaw = yaw - yaw_prev;
     yaw_prev = yaw;
     std::cout << "yaw: " << yaw << "\n";
