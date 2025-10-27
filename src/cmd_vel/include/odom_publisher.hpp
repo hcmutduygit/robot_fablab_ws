@@ -8,12 +8,12 @@
 #include <mutex>
 #define PI 3.14159265358979323846
 
-extern float x, y, yaw, yaw_offset, yaw_prev;
+extern float x, y, yaw, yaw_offset, yaw_prev, yaw_imu;
 extern std::mutex odom_mutex;
 extern bool initialized;
 extern int odom_count;
 
-inline void updateOdometry(float vel_left, float vel_right, float& x, float& y, ros::Publisher& odom_pub, ros::Time& lasttime, float& yaw_offset, bool& initialized, float& yaw_prev, float yaw_imu) {
+inline void updateOdometry(float vel_left, float vel_right, ros::Publisher& odom_pub, ros::Time& lasttime) {
     std::lock_guard<std::mutex> lock(odom_mutex);
     odom_count += 1;
     // std::cout << "odom_count" << odom_count << "\n";

@@ -8,6 +8,7 @@
 #include <chrono> // For time measurement
 #include <ctime>
 #include <iomanip>
+#include <sensor_msgs/Imu.h>
 #define PI 3.14159265358979323846
 
 // Global variable to store the updated value
@@ -20,6 +21,7 @@ float yaw = 0;
 std::mutex odom_mutex; 
 float yaw_offset = 0;
 float yaw_prev = 0;
+float yaw_imu = 0;
 bool initialized = false;
 int odom_count = 0;
 
@@ -123,10 +125,39 @@ uint16_t hex_to_unsigned(const std::vector<uint8_t> &data, size_t start_idx)
 
 void publish_yaw(float yaw_angle) 
 {
-    utils::pose_robot pose;
-    pose.yaw = yaw_angle;
-    pub.publish(pose);
+    // utils::pose_robot pose;
+    // pose.yaw = yaw_angle;
+    // pub.publish(pose);
     // ROS_INFO("yaw_angle = %f", yaw_angle);
+
+    sensor_msgs::Imu imu_msg;
+    imu_msg.header.stamp = ros::Time::now();
+    imu_msg.header.frame_id = "imu_link";
+
+    // Gán góc yaw → quaternion
+    imu_msg.orientation = tf::createQuaternionMsgFromYaw(yaw_imu);
+
+    // Không có tốc độ góc, gia tốc → set 0
+    imu_msg.angular_velocity.x = 0.0;
+    imu_msg.angular_velocity.y = 0.0;
+    imu_msg.angular_velocity.z = 0.0;
+
+    imu_msg.linear_acceleration.x = 0.0;
+    imu_msg.linear_acceleration.y = 0.0;
+    imu_msg.linear_acceleration.z = 0.0;
+
+    // Covariance: rất quan trọng, nói cho EKF biết dữ liệu nào hợp lệ
+    // orientation_covariance[0] < 0 nghĩa là orientation invalid → nên gán giá trị thật
+    imu_msg.orientation_covariance[0] = 0.01;   // X (unused)
+    imu_msg.orientation_covariance[4] = 0.01;   // Y (unused)
+    imu_msg.orientation_covariance[8] = 0.05;   // Z (yaw) — độ tin cậy thấp một chút
+
+    // angular_velocity, linear_acceleration không có → set -1 để EKF bỏ qua
+    imu_msg.angular_velocity_covariance[0] = -1;
+    imu_msg.linear_acceleration_covariance[0] = -1;
+
+    imu_pub.publish(imu_msg);
+
 }
 
 // Process CAN frame (equivalent to Python's process_frame)
@@ -206,7 +237,7 @@ void process_frame(uint16_t can_id, const std::vector<uint8_t> &data, ros::Publi
         // std::cout << "roll_degree: " << roll << "\n";
         // std::cout << "pitch_degree: " << pitch << "\n";
         std::cout << "Yaw_degree: " << raw_yaw << "\n";
-        updateOdometry(left_mps, right_mps, x, y, odom_pub, lasttime, yaw_offset, initialized, yaw_prev, yaw_angle);
+        updateOdometry(left_mps, right_mps, odom_pub, lasttime);
         cnt_receive++;
         break;
     }
@@ -376,9 +407,9 @@ int main(int argc, char **argv)
 {
     ros::init(argc, argv, "Can_node");
     ros::NodeHandle nh;
-    odom_pub = nh.advertise<nav_msgs::Odometry>("odom", 10);
+    odom_pub = nh.advertise<nav_msgs::Odometry>("wheel_odom", 10);
     ros::Time lasttime = ros::Time::now();
-    pub = nh.advertise<utils::pose_robot>("pose_robot", 10);
+    imu_pub = nh.advertise<sensor_msgs::Imu>("imu", 10);
 
     can.open();
     can.start_receive_loop([&](uint16_t can_id, const std::vector<uint8_t>& data) {
