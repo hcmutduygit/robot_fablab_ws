@@ -36,24 +36,24 @@ inline void updateOdometry(float vel_left, float vel_right, float& x, float& y, 
     // Robot velocities
     float v = (vel_right + vel_left) / 2.0;
     // std::cout << "v: " << v << "\n";
-    float omega = (vel_right - vel_left) / 0.59;
+    float omega = (vel_right - vel_left) / 0.58;
     // std::cout << "omega: " << omega << "\n";
 
     // // Fuse IMU yaw if available
     // float yaw_enc = yaw_prev + omega * dt;
     // yaw_enc = atan2(sin(yaw_enc), cos(yaw_enc));
-    // float alpha = 0.98;  // 0.9–0.99: tin encoder nhiều hơn
+    // float alpha = 0.5;  // 0.9–0.99: tin encoder nhiều hơn
     // float yaw_temp = alpha * yaw_enc + (1 - alpha) * yaw_imu;
     // yaw = atan2(sin(yaw_temp), cos(yaw_temp));
     // std::cout << "fused_yaw: " << yaw << "\n";
 
-    // Use only yaw from encoder
-    float yaw_enc = yaw_prev + omega*dt;
-    yaw_enc = atan2(sin(yaw_enc), cos(yaw_enc));
-    yaw = yaw_enc;
-    std::cout << "yaw_encoder = " << yaw * 180 / PI << "\n";
+    // // Use only yaw from encoder
+    // float yaw_enc = yaw_prev + omega*dt;
+    // yaw_enc = atan2(sin(yaw_enc), cos(yaw_enc));
+    // yaw = yaw_enc;
+    // std::cout << "yaw_encoder = " << yaw * 180 / PI << "\n";
 
-    // yaw = yaw_imu;
+    yaw = yaw_imu;
 
     // Integrate position
     // float dyaw = (yaw_prev == 0) ? 0.001 : (yaw - yaw_prev);

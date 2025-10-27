@@ -116,8 +116,8 @@ void CallBackWp(const utils::waypoints::ConstPtr& msg) {
 void ControlVel(const ros::TimerEvent& event){
     utils::cmd_vel cmd;
     tranfer_wp();
-    double v_left = linear_x - (angular_z * 0.59 / 2);
-    double v_right = linear_x + (angular_z * 0.59 / 2);
+    double v_left = linear_x - (angular_z * 0.58 / 2);
+    double v_right = linear_x + (angular_z * 0.58 / 2);
     
     // cmd.linear.x  = linear_x;        
     // cmd.angular.z = angular_z; 

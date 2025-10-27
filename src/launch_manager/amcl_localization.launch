@@ -97,8 +97,8 @@
             <param name="drive" value="1"/>
             <param name="direct" value="1"/>
             <param name="min_speed_linear" value="0.2"/>
-            <param name="waypoints_x" value="8.43370545973, -0.763184245733" />
-            <param name="waypoints_y" value="15.9036135775, 21.8033194612" />
+            <param name="waypoints_x" value="8.43370545973, -0.944272611617, -1.02582621629, -5.14741795585" />
+            <param name="waypoints_y" value="15.9036135775, 21.7211835314, 24.8810294018, 27.6081660781" />
         </node>
     </group>
 </launch>
