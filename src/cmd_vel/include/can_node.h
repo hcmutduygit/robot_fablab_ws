@@ -4,6 +4,7 @@
 #include <ros/ros.h>
 #include <utils/pose_robot.h>
 #include <utils/cmd_vel.h>
+#include <nav_msgs/Odometry.h>
 #include <string>
 #include <vector>
 #include <thread>
@@ -300,6 +301,7 @@ private:
  ros::Publisher pub_vel_stm;
  ros::Publisher odom_pub;
  ros::Subscriber sub;
+ ros::Subscriber ekf_sub;
  ros::Timer loopControl;
  ros::Timer cnt_byte;
  int number, new_number, calib ;
