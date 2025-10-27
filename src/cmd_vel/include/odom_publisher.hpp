@@ -8,7 +8,7 @@
 #include <mutex>
 #define PI 3.14159265358979323846
 
-extern float x, y, yaw, yaw_offset, yaw_prev, yaw_imu;
+extern float x, y, yaw, yaw_offset, yaw_prev, yaw_angle;
 extern std::mutex odom_mutex;
 extern bool initialized;
 extern int odom_count;
@@ -17,7 +17,7 @@ inline void updateOdometry(float vel_left, float vel_right, ros::Publisher& odom
     std::lock_guard<std::mutex> lock(odom_mutex);
     odom_count += 1;
     // std::cout << "odom_count" << odom_count << "\n";
-    yaw_imu = -yaw_imu * PI / 180;
+    float yaw_imu = -yaw_angle * PI / 180;
     // if (!initialized) {
     //     yaw_offset = imu_yaw;  // Hướng ban đầu
     //     initialized = true;
