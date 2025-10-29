@@ -28,7 +28,7 @@ int odom_count = 0;
 
 static volatile int g_should_exit = 0;
 
-WaveshareCAN can("/dev/usbcan", 2000000, 2.0);
+WaveshareCAN can("/dev/ttyUSB1", 2000000, 2.0);
 
 // RFID database - mapping RFID data to user info
 static const std::map<std::vector<uint8_t>, std::pair<std::string, std::string>> rfid_database = {
