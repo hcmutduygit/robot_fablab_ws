@@ -16,26 +16,26 @@ extern int odom_count;
 inline void updateOdometry(float vel_left, float vel_right, ros::Publisher& odom_pub, ros::Time& lasttime) {
     std::lock_guard<std::mutex> lock(odom_mutex);
     odom_count += 1;
-    // std::cout << "odom_count" << odom_count << "\n";
+    std::cout << "odom_count" << odom_count << "\n";
     // float yaw_imu = -yaw_angle * PI / 180 + 2.615;
     // if ((yaw_imu + 2.615) > PI) yaw_imu = yaw_imu + 2.615 - 2*PI;
     // else yaw_imu = yaw_imu + 2.615;
     float yaw_imu = -yaw_angle * PI / 180;
     std::cout << "yaw_imu: " << yaw_imu << "\n";
 
-    vel_left = -vel_left/20;
-    vel_right = vel_right/20;
-    vel_left = (std::abs(vel_left) < 5e-4) ? 0.0 : vel_left; 
-    vel_right = (std::abs(vel_right) < 5e-4) ? 0.0 : vel_right; 
+    float left_wheel = -vel_left/20;
+    float right_wheel = vel_right/20;
+    left_wheel = (std::abs(left_wheel) < 5e-4) ? 0.0 : left_wheel; 
+    right_wheel = (std::abs(right_wheel) < 5e-4) ? 0.0 : right_wheel; 
 
     ros::Time cur_time = ros::Time::now();
     float dt = (cur_time - lasttime).toSec();
     lasttime = cur_time;
 
     // Robot velocities
-    float v = (vel_right + vel_left) / 2.0;
+    float v = (right_wheel + left_wheel) / 2.0;
     // std::cout << "v: " << v << "\n";
-    float omega = (vel_right - vel_left) / 0.58;
+    float omega = (right_wheel - left_wheel) / 0.58;
     // std::cout << "omega: " << omega << "\n";
 
     // // Fuse IMU yaw if available
@@ -110,7 +110,7 @@ inline void updateOdometry(float vel_left, float vel_right, ros::Publisher& odom
     odom_broadcaster.sendTransform(odom_tf);
 
     std::cout << "yaw: " << yaw << "\n";
-    std::cout << "v_left odom =" << vel_left << "(m/s), v_right odom =" << vel_right << "(m/s)\n";
+    std::cout << "v_left odom =" << left_wheel << "(m/s), v_right odom =" << right_wheel << "(m/s)\n";
     // std::cout << "current_time: " << cur_time << "\n";
     // std::cout << "dt: " << dt << "\n";
     // std::cout << "v: " << v << "\n";
