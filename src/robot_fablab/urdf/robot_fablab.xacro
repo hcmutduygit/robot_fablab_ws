@@ -5,15 +5,13 @@
 
   <xacro:include filename="$(find robot_fablab)/urdf/robot_fablab.gazebo"/>
 
-
-<link name="base_footprint">
-  <visual>
-    <geometry>
-      <box size="0.001 0.001 0.001"/>
-    </geometry>
-  </visual>
-</link>
-
+  <link name="base_footprint">
+    <visual>
+      <geometry>
+        <box size="0.001 0.001 0.001"/>
+      </geometry>
+    </visual>
+  </link>
 
   <joint name="base_footprint_joint" type="fixed">
     <parent link="base_footprint"/>
