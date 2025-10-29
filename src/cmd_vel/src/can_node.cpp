@@ -85,6 +85,37 @@ float ConvertVelocityFromPulse(int pulse)
     return velocity_mps;
 }
 
+void send_vel(WaveshareCAN &can) //0x013
+{
+    try
+    {
+        // Get integer velocities
+        int right_vel = right_wheel_velocity;
+        int left_vel = left_wheel_velocity;
+     
+        // Create 8-byte data array: first 4 bytes for left wheel, last 4 bytes for right wheel
+        uint8_t data[8];
+
+        // Convert left velocity to bytes (first 4 bytes)
+        std::memcpy(data, &left_vel, sizeof(int));
+
+        // Convert right velocity to bytes (last 4 bytes)
+        std::memcpy(data + 4, &right_vel, sizeof(int));
+
+        // Create data vector
+        std::vector<uint8_t> velocity_data(data, data + 8);
+
+        // Send both velocities to single ID 0x013
+        can.send(0x010, velocity_data);
+        cnt_send++;
+        std::cout << "Sent left velocity " << left_vel << " and right velocity " << right_vel << " to ID 0x013" << std::endl;
+    }
+    catch (const std::exception &e)
+    {
+        std::cerr << "Invalid velocity input: " << e.what() << std::endl;
+    }
+}
+
 void CallBackVel(const utils::cmd_vel::ConstPtr &cmd_vel)
 {
     float v_left = cmd_vel->v_left;
@@ -97,6 +128,10 @@ void CallBackVel(const utils::cmd_vel::ConstPtr &cmd_vel)
 
     left_wheel_velocity = ConvertPulse(v_left);
     right_wheel_velocity = ConvertPulse(v_right);
+
+    if (number==2) {
+        send_vel(can);
+    }
 }
 
 void CallBackAMCL(const geometry_msgs::PoseWithCovarianceStamped::ConstPtr& msg) {
@@ -316,39 +351,6 @@ void process_frame(uint16_t can_id, const std::vector<uint8_t> &data, ros::Publi
     }
 }
 
-void send_vel(WaveshareCAN &can) //0x013
-{
-    try
-    {
-        // Get integer velocities
-        int right_vel = right_wheel_velocity;
-        int left_vel = left_wheel_velocity;
-     
-        // Create 8-byte data array: first 4 bytes for left wheel, last 4 bytes for right wheel
-        uint8_t data[8];
-
-        // Convert left velocity to bytes (first 4 bytes)
-        std::memcpy(data, &left_vel, sizeof(int));
-
-        // Convert right velocity to bytes (last 4 bytes)
-        std::memcpy(data + 4, &right_vel, sizeof(int));
-
-        // Create data vector
-        std::vector<uint8_t> velocity_data(data, data + 8);
-
-        // Send both velocities to single ID 0x013
-        can.send(0x013, velocity_data);
-        cnt_send++;
-        std::cout << "Sent left velocity " << left_vel << " and right velocity " << right_vel << " to ID 0x013" << std::endl;
-    }
-    catch (const std::exception &e)
-    {
-        std::cerr << "Invalid velocity input: " << e.what() << std::endl;
-    }
-}
-
-
-
 // void CntBytes(const ros::TimerEvent &event)
 // {
 
@@ -376,10 +378,6 @@ void TransmitSTM(ros::Publisher& odom_pub, ros::Time& lasttime)
     // ROS_INFO("yaw_angle = %f", yaw_angle);
     // publish_yaw(yaw_angle);
     // updateOdometry(left_mps, right_mps, x, y, odom_pub, lasttime, yaw_offset, initialized, yaw_prev, yaw_angle);
-    
-    if (number==2) {
-        send_vel(can);
-    }
 
     utils::cmd_vel vel;
     vel.v_left_stm = left_mps;
@@ -421,7 +419,7 @@ int main(int argc, char **argv)
         std::cout << "send 2" << "\n";
     } 
 
-    sub = nh.subscribe("Cmd_vel", 10, CallBackVel);
+    sub = nh.subscribe("Cmd_vel", 1, CallBackVel);
     // amcl_sub = nh.subscribe("amcl_pose", 10, CallBackAMCL);
     // cnt_byte = nh.createTimer(ros::Duration(1), CntBytes);
     loopControl = nh.createTimer(
