@@ -106,7 +106,7 @@ void send_vel(WaveshareCAN &can) //0x013
         std::vector<uint8_t> velocity_data(data, data + 8);
 
         // Send both velocities to single ID 0x013
-        can.send(0x010, velocity_data);
+        can.send(0x030, velocity_data);
         cnt_send++;
         std::cout << "Sent left velocity " << left_vel << " and right velocity " << right_vel << " to ID 0x013" << std::endl;
     }

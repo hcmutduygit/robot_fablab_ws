@@ -92,9 +92,9 @@ inline void updateOdometry(float vel_left, float vel_right, ros::Publisher& odom
 
     // covariance (optional but useful for AMCL)
     for (int i = 0; i < 36; i++) odom.pose.covariance[i] = 0.0;
-    odom.pose.covariance[0]  = 0.01;
-    odom.pose.covariance[7]  = 0.01; 
-    odom.pose.covariance[35] = 0.02;
+    odom.pose.covariance[0]  = 0.02;
+    odom.pose.covariance[7]  = 0.02; 
+    odom.pose.covariance[35] = 0.05;
     odom_pub.publish(odom);
 
     // Broadcast TF
