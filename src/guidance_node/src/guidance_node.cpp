@@ -70,17 +70,37 @@ void control_los(float goal_x, float goal_y, float previous_x, float previous_y)
 }
 
 void tranfer_wp() {
+    ROS_INFO_THROTTLE(2, "=== tranfer_wp DEBUG === wp.size=%zu, cnt=%d, robot=(%.2f, %.2f)", wp.size(), cnt, x, y);
+    
+    if (wp.size() == 0) {
+        ROS_WARN_THROTTLE(5, "No waypoints received yet!");
+        linear_x = 0.0;
+        angular_z = 0.0;
+        return;
+    }
+    
+    if (wp.size() == 1) {
+        ROS_WARN_THROTTLE(5, "Only 1 waypoint! Need at least 2 for navigation. Current wp[0]=(%.2f, %.2f)", 
+                         wp[0].first, wp[0].second);
+        linear_x = 0.0;
+        angular_z = 0.0;
+        return;
+    }
+    
     if (cnt + 1 >= (wp.size())) {
-        // ROS_INFO ("Stopping Robot");
+        ROS_INFO_THROTTLE(2, "✓ Reached final waypoint #%d - Stopping Robot", cnt);
         linear_x = 0.0;
         angular_z = 0.0;
     }
     else {
+        ROS_INFO_THROTTLE(2, "→ Moving to waypoint #%d: (%.2f, %.2f) from wp[%d]=(%.2f, %.2f)", 
+                         cnt+1, wp[cnt+1].first, wp[cnt+1].second, 
+                         cnt, wp[cnt].first, wp[cnt].second);
         control_los(wp[cnt+1].first, wp[cnt+1].second, wp[cnt].first, wp[cnt].second);
     }
 
     if (dist_to_goal <= GOAL_RADIUS) {
-        // ROS_INFO("Reached wp(%.2f, %.2f)",wp[cnt+1].first,wp[cnt+1].second);
+        ROS_INFO("✓✓✓ Reached waypoint #%d: (%.2f, %.2f) ✓✓✓", cnt+1, wp[cnt+1].first, wp[cnt+1].second);
         cnt +=1;
     }
 }
@@ -109,8 +129,26 @@ void CallBackPose(const geometry_msgs::PoseWithCovarianceStamped::ConstPtr& msg)
 }
 
 void CallBackWp(const utils::waypoints::ConstPtr& msg) {
+    // Neu day la waypoint dau tien tu MQTT, them vi tri hien tai lam diem xuat phat
+    if (wp.size() == 0) {
+        double current_x = x;
+        double current_y = y;
+        wp.push_back({current_x, current_y});
+        ROS_WARN("✓✓✓ Added STARTING position as wp[0]: (%.3f, %.3f) ✓✓✓", current_x, current_y);
+    }
+    
     wp.push_back({msg->direction_x, msg->direction_y});
-    ROS_INFO("=== Received waypoint #%zu: (%.3f, %.3f) ===", wp.size(), msg->direction_x, msg->direction_y);
+    ROS_INFO("✓ Received waypoint #%zu: (%.3f, %.3f)", wp.size()-1, msg->direction_x, msg->direction_y);
+    
+    // In ra tat ca cac waypoint hien tai
+    ROS_INFO("    Total waypoints: %zu", wp.size());
+    for (size_t i = 0; i < wp.size(); i++) {
+        if (i == 0) {
+            ROS_INFO("      wp[%zu] = (%.3f, %.3f) <- STARTING POSITION", i, wp[i].first, wp[i].second);
+        } else {
+            ROS_INFO("      wp[%zu] = (%.3f, %.3f) <- GOAL", i, wp[i].first, wp[i].second);
+        }
+    }
 }
 
 void ControlVel(const ros::TimerEvent& event){
@@ -170,6 +208,13 @@ int main(int argc, char **argv){
         
         std::string waypoints_x_str, waypoints_y_str;
         if (arg_nh.getParam("waypoints_x", waypoints_x_str) && arg_nh.getParam("waypoints_y", waypoints_y_str)) {
+            
+            // THEM DIEM XUAT PHAT (vi tri hien tai cua robot) - GIONG NHU FILE CU
+            double current_x = x;
+            double current_y = y;
+            wp.push_back({current_x, current_y});
+            ROS_WARN("✓ Added STARTING position as wp[0]: (%.3f, %.3f)", current_x, current_y);
+            
             std::vector<double> waypoints_x_temp;
             std::vector<double> waypoints_y_temp;
             
@@ -188,9 +233,11 @@ int main(int argc, char **argv){
             if (waypoints_x_temp.size() == waypoints_y_temp.size()) {
                 for (size_t i = 0; i < waypoints_x_temp.size(); ++i) {
                     wp.push_back({waypoints_x_temp[i], waypoints_y_temp[i]});
-                    ROS_INFO("Loaded waypoint #%zu from param: (%.3f, %.3f)", wp.size(), waypoints_x_temp[i], waypoints_y_temp[i]);
+                    ROS_INFO("Loaded waypoint #%zu from param: (%.3f, %.3f)", wp.size()-1, waypoints_x_temp[i], waypoints_y_temp[i]);
                 }
             }
+            
+            ROS_WARN("Total waypoints loaded: %zu (including starting position)", wp.size());
         } else {
             ROS_WARN("waypoint_mode=0 but no waypoints_x/waypoints_y params found!");
         }
