@@ -17,7 +17,7 @@ MQTT_TOPIC = "robot/waypoints"
 # --- Callback function when received MQTT message ---
 def on_message(mosq, obj, msg):
     try:
-        # rospy.loginfo("Receive mesage from topic: %s", msg.topic)
+        rospy.loginfo("=== Received MQTT message from topic: %s ===", msg.topic)
         payload = msg.payload.decode("utf-8")
         data = json.loads(payload)
 
@@ -29,7 +29,7 @@ def on_message(mosq, obj, msg):
                     wp.direction_x = point["x"]
                     wp.direction_y = point["y"]
                     pub.publish(wp)
-                    # rospy.loginfo("Published waypoint: x=%.2f, y=%.2f", wp.direction_x, wp.direction_y)
+                    rospy.loginfo("=== Published waypoint: x=%.2f, y=%.2f ===", wp.direction_x, wp.direction_y)
         
         # One waypoint {"x":..,"y":..}
         elif isinstance(data, dict) and "x" in data and "y" in data:
@@ -37,7 +37,7 @@ def on_message(mosq, obj, msg):
             wp.direction_x = data["x"]
             wp.direction_y = data["y"]
             pub.publish(wp)
-            # rospy.loginfo("Publish waypoint: x=%.2f, y=%.2f", wp.direction_x, wp.direction_y)
+            rospy.loginfo("=== Published waypoint: x=%.2f, y=%.2f ===", wp.direction_x, wp.direction_y)
 
         else:
             rospy.logwarn("Unvalid JSON data: %s", payload)
@@ -57,7 +57,10 @@ def on_subscribe(mosq, obj, mid, granted_qos):
 # --- Main function ---
 if __name__ == '__main__':
     rospy.init_node('mqtt_waypoint_subscriber', anonymous=True)
-    pub = rospy.Publisher('waypoints', waypoints, queue_size=10)
+    
+    # Use latch=True to keep last message for late subscribers
+    pub = rospy.Publisher('waypoints', waypoints, queue_size=10, latch=True)
+    rospy.loginfo("=== Waypoints publisher created (latched) ===")
 
     # Create client MQTT
     mqttc = mqtt.Client()
