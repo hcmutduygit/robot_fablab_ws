@@ -88,20 +88,38 @@ void tranfer_wp() {
     }
     
     if (cnt + 1 >= (wp.size())) {
-        ROS_INFO_THROTTLE(2, "✓ Reached final waypoint #%d - Stopping Robot", cnt);
+        // ROS_INFO_THROTTLE(2, "Reached final waypoint #%d - Stopping Robot", cnt);
         linear_x = 0.0;
         angular_z = 0.0;
     }
     else {
-        ROS_INFO_THROTTLE(2, "→ Moving to waypoint #%d: (%.2f, %.2f) from wp[%d]=(%.2f, %.2f)", 
-                         cnt+1, wp[cnt+1].first, wp[cnt+1].second, 
-                         cnt, wp[cnt].first, wp[cnt].second);
+        // ROS_INFO_THROTTLE(2, "Moving to waypoint #%d: (%.2f, %.2f) from wp[%d]=(%.2f, %.2f)", 
+        //                  cnt+1, wp[cnt+1].first, wp[cnt+1].second, 
+        //                  cnt, wp[cnt].first, wp[cnt].second);
         control_los(wp[cnt+1].first, wp[cnt+1].second, wp[cnt].first, wp[cnt].second);
     }
 
     if (dist_to_goal <= GOAL_RADIUS) {
-        ROS_INFO("✓✓✓ Reached waypoint #%d: (%.2f, %.2f) ✓✓✓", cnt+1, wp[cnt+1].first, wp[cnt+1].second);
+        // ROS_INFO("Reached waypoint #%d: (%.2f, %.2f) ✓✓✓", cnt+1, wp[cnt+1].first, wp[cnt+1].second);
         cnt +=1;
+        
+        // Neu da den waypoint cuoi cung, publish MQTT arrival
+        if (cnt + 1 >= wp.size()) {
+            ROS_WARN("========================================");
+            ROS_WARN("✓✓✓ REACHED FINAL DESTINATION ✓✓✓");
+            ROS_WARN("Publishing arrival status to MQTT...");
+            ROS_WARN("========================================");
+            
+            // Goi Python script de publish MQTT
+            std::string script_path = "python /home/jetson/robot_fablab_ws/src/MQTT/publish_arrival.py";
+            int result = system(script_path.c_str());
+            
+            if (result == 0) {
+                ROS_INFO("Successfully published arrival status to MQTT");
+            } else {
+                ROS_ERROR("Failed to publish arrival status (exit code: %d)", result);
+            }
+        }
     }
 }
 
