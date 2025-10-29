@@ -50,7 +50,7 @@ void control_los(float goal_x, float goal_y, float previous_x, float previous_y)
 
     ROS_INFO("CrossTrack = %.2f, LongTrack = %.2f, HeadingDesire = %.2f, HeadingErr = %.2f, Theta = %.2f",cross_track, long_track,target_heading,heading_error,theta);
 
-    filtered_angular_z = pid_controller.pid(heading_error, KP, ANGULAR_SPEED);
+    filtered_angular_z = pid_controller.pid(heading_error, KP, 0.3);
     // filtered_angular_z = limit(filtered_angular_z, -MAX_ANGULAR_SPEED, ANGULAR_SPEED);
     filtered_angular_z = limit(filtered_angular_z, -MAX_ANGULAR_SPEED, MAX_ANGULAR_SPEED);
 
@@ -58,8 +58,8 @@ void control_los(float goal_x, float goal_y, float previous_x, float previous_y)
     perc_dist = abs(s_k_1 - long_track)/s_k_1;
 
     if (abs(heading_error) > 0.1){
-        linear_x = MAX_LINEAR_SPEED/2;
-        // linear_x = limit(MAX_LINEAR_SPEED * exp(-3 * abs(heading_error)), min_speed, MAX_LINEAR_SPEED);
+        // linear_x = MAX_LINEAR_SPEED/2;
+        linear_x = limit(MAX_LINEAR_SPEED * exp(-3 * abs(heading_error)), min_speed, MAX_LINEAR_SPEED);
     }
     else {
         linear_x = limit(LINEAR_SPEED*perc_dist, min_speed, MAX_LINEAR_SPEED);
@@ -110,14 +110,14 @@ void CallBackPose(const geometry_msgs::PoseWithCovarianceStamped::ConstPtr& msg)
 
 void CallBackWp(const utils::waypoints::ConstPtr& msg) {
     wp.push_back({msg->direction_x, msg->direction_y});
-    ROS_INFO("=== Received waypoint #%zu: (%.3f, %.3f) ===", wp.size(), msg->direction_x, msg->direction_y);
+    ROS_INFO("Đã đọc được %zu waypoint.", wp.size());
 }
 
 void ControlVel(const ros::TimerEvent& event){
     utils::cmd_vel cmd;
     tranfer_wp();
-    double v_left = linear_x - (angular_z * 0.58 / 2);
-    double v_right = linear_x + (angular_z * 0.58 / 2);
+    double v_left = linear_x - (angular_z * 0.57 / 2);
+    double v_right = linear_x + (angular_z * 0.57 / 2);
     
     // cmd.linear.x  = linear_x;        
     // cmd.angular.z = angular_z; 
@@ -153,70 +153,41 @@ int main(int argc, char **argv){
     pub = nh.advertise<utils::cmd_vel>("Cmd_vel", 1);
     // sub = nh.subscribe("pose_robot", 10, CallBackYaw);
     sub_amcl = nh.subscribe("amcl_pose", 10, CallBackPose); //theo topic
-
-    // ========================================================================
-    // CHON CHE DO DOC WAYPOINTS
-    // ========================================================================
-    // waypoint_mode = 0: Doc tu PARAM (cach cu)
-    // waypoint_mode = 1: Doc tu TOPIC (cach moi - MQTT)
-    int waypoint_mode = 1; // Mac dinh dung topic
-    arg_nh.getParam("waypoint_mode", waypoint_mode);
-
-    if (waypoint_mode == 0) {
-        // ========================================================================
-        // TRUONG HOP 1: Doc waypoints tu LAUNCH FILE PARAMS - Cach cu
-        // ========================================================================
-        ROS_INFO("=== WAYPOINT MODE: Reading from LAUNCH FILE PARAMS ===");
-        
-        std::string waypoints_x_str, waypoints_y_str;
-        if (arg_nh.getParam("waypoints_x", waypoints_x_str) && arg_nh.getParam("waypoints_y", waypoints_y_str)) {
-            std::vector<double> waypoints_x_temp;
-            std::vector<double> waypoints_y_temp;
-            
-            std::stringstream ss_x(waypoints_x_str);
-            std::stringstream ss_y(waypoints_y_str);
-            std::string segment;
-
-            while(std::getline(ss_x, segment, ',')) {
-                waypoints_x_temp.push_back(std::stod(segment));
-            }
-
-            while(std::getline(ss_y, segment, ',')) {
-                waypoints_y_temp.push_back(std::stod(segment));
-            }
-
-            if (waypoints_x_temp.size() == waypoints_y_temp.size()) {
-                for (size_t i = 0; i < waypoints_x_temp.size(); ++i) {
-                    wp.push_back({waypoints_x_temp[i], waypoints_y_temp[i]});
-                    ROS_INFO("Loaded waypoint #%zu from param: (%.3f, %.3f)", wp.size(), waypoints_x_temp[i], waypoints_y_temp[i]);
-                }
-            }
-        } else {
-            ROS_WARN("waypoint_mode=0 but no waypoints_x/waypoints_y params found!");
-        }
-    } 
-    else if (waypoint_mode == 1) {
-        // ========================================================================
-        // TRUONG HOP 2: Doc waypoints tu TOPIC (MQTT) - Cach moi
-        // ========================================================================
-        ROS_INFO("=== WAYPOINT MODE: Reading from TOPIC (MQTT) ===");
-        
-        std::string waypoints_topic = "waypoints";
-        arg_nh.getParam("waypoints_topic", waypoints_topic);
-        sub_wp = nh.subscribe(waypoints_topic, 100, CallBackWp);
-        ROS_INFO("Subscribed to waypoints topic: %s", waypoints_topic.c_str());
-        ROS_INFO("Waiting for waypoints from topic...");
-    }
-    else {
-        ROS_ERROR("Invalid waypoint_mode=%d! Use 0 (param) or 1 (topic)", waypoint_mode);
-    }
-    
-    // ========================================================================
-    // Start control loop
-    // ========================================================================
+    // sub_wp = nh.subscribe("waypoints", 10, CallBackWp);
     loopControl = nh.createTimer(ros::Duration(cycle), ControlVel);
+    std::string waypoints_x_str, waypoints_y_str;
     
-    ROS_INFO("=== Guidance node ready ===");
+    if (arg_nh.getParam("waypoints_x", waypoints_x_str) && arg_nh.getParam("waypoints_y", waypoints_y_str)) {
+        
+        double current_x = x;
+        double current_y = y;
+        wp.push_back({current_x, current_y});
+
+        std::vector<double> waypoints_x_temp;
+        std::vector<double> waypoints_y_temp;
+        
+        std::stringstream ss_x(waypoints_x_str);
+        std::stringstream ss_y(waypoints_y_str);
+        std::string segment;
+
+        while(std::getline(ss_x, segment, ',')) {
+            waypoints_x_temp.push_back(std::stod(segment));
+        }
+
+        while(std::getline(ss_y, segment, ',')) {
+            waypoints_y_temp.push_back(std::stod(segment));
+        }
+
+        if (waypoints_x_temp.size() == waypoints_y_temp.size()) {
+            for (size_t i = 0; i < waypoints_x_temp.size(); ++i) {
+                wp.push_back({waypoints_x_temp[i], waypoints_y_temp[i]});
+            }
+        } 
+    //     // ROS_INFO("Đã đọc được %zu waypoint.", wp.size());
+    //     // for (size_t i = 0; i < wp.size(); ++i) {
+    //     //     ROS_INFO("Waypoint %zu: (%f, %f)", i, wp[i].first, wp[i].second);
+    //     // }
+    } 
     ros::spin();
     return 0;
 

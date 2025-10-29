@@ -51,7 +51,7 @@
         <param name="odom_alpha2"               value="0.040"/>
         <!-- translation std dev, m -->
         <param name="odom_alpha3"               value="0.004"/>
-        <param name="odom_alpha4"               value="0.025"/>
+        <param name="odom_alpha4"               value="0.025"/>*
         <param name="laser_z_hit"               value="0.9"/>
         <param name="laser_z_short"             value="0.05"/>
         <param name="laser_z_max"               value="0.05"/>
@@ -62,7 +62,7 @@
         <!-- <param name="laser_model_type" value="beam"/> -->
         <param name="laser_likelihood_max_dist" value="4.0"/>
         <param name="update_min_d"              value="0.1"/>
-        <param name="update_min_a"              value="0.1"/>
+        <param name="update_min_a"              value="0.05"/>
         <param name="odom_frame_id"             value="$(arg odom_frame_id)"/> 
         <param name="base_frame_id"             value="$(arg base_frame_id)"/> 
         <param name="global_frame_id"           value="$(arg global_frame_id)"/>
@@ -89,17 +89,17 @@
     <group if="$(arg guidance_enabled)">
         <node pkg = "guidance_node" type = "guidance_node" name = "Guidance" output = "screen">
             <param name="linear_speed" value="0.4"/>
-            <param name="angular_speed" value="0.6"/>
-            <param name="goal_radius" value="0.3"/>
+            <param name="angular_speed" value="0.3"/>
+            <param name="goal_radius" value="0.5"/>
             <param name="cycle" value="0.1"/>
             <param name="angular_speed_max" value="1.2"/>
             <param name="linear_speed_max" value="0.5"/>
-            <param name="KP" value="1"/>
+            <param name="KP" value="0.9"/>
             <param name="drive" value="1"/>
             <param name="direct" value="1"/>
             <param name="min_speed_linear" value="0.2"/>
-            <param name="waypoints_x" value="8.43370545973, -0.944272611617, -1.02582621629, -5.14741795585" />
-            <param name="waypoints_y" value="15.9036135775, 21.7211835314, 24.8810294018, 27.6081660781" />
+            <param name="waypoints_x" value="8.43370545973, -1.5463915164, -1.02582621629, -5.14741795585" />
+            <param name="waypoints_y" value="15.9036135775,  20.7209453062, 24.8810294018, 27.6081660781" />
         </node>
     </group>
 </launch>
