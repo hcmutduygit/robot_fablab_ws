@@ -70,29 +70,39 @@ void control_los(float goal_x, float goal_y, float previous_x, float previous_y)
 }
 
 void tranfer_wp() {
+    // Need at least 2 waypoints: starting position + 1 goal
+    if (wp.size() < 2) {
+        ROS_WARN_THROTTLE(5, "Not enough waypoints! Current: %zu, Need: >= 2 (start + goal)", wp.size());
+        linear_x = 0.0;
+        angular_z = 0.0;
+        return;
+    }
+    
     if (cnt + 1 >= (wp.size())) {
-        // ROS_INFO ("Stopping Robot");
+        ROS_INFO_THROTTLE(2, "All waypoints reached! Stopping robot.");
         linear_x = 0.0;
         angular_z = 0.0;
     }
     else {
+        ROS_INFO_THROTTLE(1, "Moving to waypoint #%d: (%.2f, %.2f), Current pos: (%.2f, %.2f)", 
+                          cnt+1, wp[cnt+1].first, wp[cnt+1].second, x, y);
         control_los(wp[cnt+1].first, wp[cnt+1].second, wp[cnt].first, wp[cnt].second);
     }
 
     if (dist_to_goal <= GOAL_RADIUS) {
-        // ROS_INFO("Reached wp(%.2f, %.2f)",wp[cnt+1].first,wp[cnt+1].second);
+        ROS_INFO("✓ Reached waypoint #%d: (%.2f, %.2f)", cnt+1, wp[cnt+1].first, wp[cnt+1].second);
         cnt +=1;
     }
 }
 
-// void CallBackYaw (const utils::pose_robot::ConstPtr& msg){
-//     // x = msg->x;
-//     // y = msg->y;
-//     float theta_temp = (-(msg->yaw)*PI)/180;
-//     if ((theta_temp + 2.615) > PI) theta = theta_temp + 2.615 - 2*PI;
-//     else theta = theta_temp + 2.615;
-//     std::cout << "theta = " << theta << "\n";
-// }
+void CallBackYaw (const utils::pose_robot::ConstPtr& msg){
+    // x = msg->x;
+    // y = msg->y;
+    float theta_temp = (-(msg->yaw)*PI)/180;
+    if ((theta_temp + 2.615) > PI) theta = theta_temp + 2.615 - 2*PI;
+    else theta = theta_temp + 2.615;
+    std::cout << "theta = " << theta << "\n";
+}
 
 void CallBackPose(const geometry_msgs::PoseWithCovarianceStamped::ConstPtr& msg){
     x = msg->pose.pose.position.x;
@@ -103,21 +113,28 @@ void CallBackPose(const geometry_msgs::PoseWithCovarianceStamped::ConstPtr& msg)
     double orientation_w = msg->pose.pose.orientation.w;
 
     tf::Quaternion q(orientation_x, orientation_y, orientation_z, orientation_w);
-    double roll, pitch, amcl_yaw;
-    tf::Matrix3x3(q).getRPY(roll, pitch, amcl_yaw);
-    theta = amcl_yaw;
+    double roll, pitch, yaw;
+    tf::Matrix3x3(q).getRPY(roll, pitch, yaw);
+    // theta = yaw;
 }
 
 void CallBackWp(const utils::waypoints::ConstPtr& msg) {
     wp.push_back({msg->direction_x, msg->direction_y});
-    ROS_INFO("Đã đọc được %zu waypoint.", wp.size());
+    ROS_INFO("✓ Received waypoint #%zu: (%.2f, %.2f) | Total waypoints: %zu", 
+             wp.size(), msg->direction_x, msg->direction_y, wp.size());
+    
+    // Show all waypoints when new one is added
+    if (wp.size() >= 2) {
+        ROS_INFO("→ Robot will now move from (%.2f, %.2f) to (%.2f, %.2f)", 
+                 wp[0].first, wp[0].second, wp[wp.size()-1].first, wp[wp.size()-1].second);
+    }
 }
 
 void ControlVel(const ros::TimerEvent& event){
     utils::cmd_vel cmd;
     tranfer_wp();
-    double v_left = linear_x - (angular_z * 0.58 / 2);
-    double v_right = linear_x + (angular_z * 0.58 / 2);
+    double v_left = linear_x - (angular_z * 0.513 / 2);
+    double v_right = linear_x + (angular_z * 0.513 / 2);
     
     // cmd.linear.x  = linear_x;        
     // cmd.angular.z = angular_z; 
@@ -150,11 +167,27 @@ int main(int argc, char **argv){
     ROS_INFO("Linear_speed_max = %.2f, Angular_speed_max= %.2f, goal_radius= %.2f. KP = %.2f",MAX_LINEAR_SPEED,MAX_ANGULAR_SPEED,GOAL_RADIUS,KP);
     ros::NodeHandle nh;
 
-    pub = nh.advertise<utils::cmd_vel>("Cmd_vel", 1);
-    // sub = nh.subscribe("pose_robot", 10, CallBackYaw);
+    pub = nh.advertise<utils::cmd_vel >("Cmd_vel", 1);
+    sub = nh.subscribe("pose_robot", 10, CallBackYaw);
     sub_amcl = nh.subscribe("amcl_pose", 10, CallBackPose); //theo topic
-    // sub_wp = nh.subscribe("waypoints", 10, CallBackWp);
+    sub_wp = nh.subscribe("waypoints", 10, CallBackWp);  // ENABLE waypoint subscriber from MQTT
+    
+    // Wait for initial pose before starting control loop
+    ROS_INFO("Waiting for initial pose from AMCL...");
+    ros::Rate wait_rate(10);
+    while (ros::ok() && (x == 0.0 && y == 0.0)) {
+        ros::spinOnce();
+        wait_rate.sleep();
+    }
+    
+    // Add current position as first waypoint (starting point)
+    wp.push_back({x, y});
+    ROS_INFO("Starting position: (%.2f, %.2f)", x, y);
+    
     loopControl = nh.createTimer(ros::Duration(cycle), ControlVel);
+    
+    // ===== WAYPOINTS FROM LAUNCH FILE (COMMENTED - USING MQTT INSTEAD) =====
+    /*
     std::string waypoints_x_str, waypoints_y_str;
     
     if (arg_nh.getParam("waypoints_x", waypoints_x_str) && arg_nh.getParam("waypoints_y", waypoints_y_str)) {
@@ -187,7 +220,10 @@ int main(int argc, char **argv){
         // for (size_t i = 0; i < wp.size(); ++i) {
         //     ROS_INFO("Waypoint %zu: (%f, %f)", i, wp[i].first, wp[i].second);
         // }
-    } 
+    }
+    */
+    
+    ROS_INFO("✓ Guidance node ready! Waiting for waypoints from MQTT...");
     ros::spin();
     return 0;
 
