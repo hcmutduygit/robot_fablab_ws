@@ -108,14 +108,7 @@ void CallBackAMCL(const geometry_msgs::PoseWithCovarianceStamped::ConstPtr& msg)
     tf::Quaternion q(orientation_x, orientation_y, orientation_z, orientation_w);
     double roll, pitch, yaw_amcl;
     tf::Matrix3x3(q).getRPY(roll, pitch, yaw_amcl);
-    yaw = yaw_amcl;
-}
-
-void ControlStm(const ros::TimerEvent &event)
-{
-    utils::pose_robot pose;
-    pose.yaw = yaw_angle; // cập nhật yaw
-    pub.publish(pose);
+    // yaw = yaw_amcl;
 }
 
 // Convert two bytes to a signed 16-bit integer
@@ -153,7 +146,7 @@ void process_frame(uint16_t can_id, const std::vector<uint8_t> &data, ros::Publi
     switch (can_id)
     {
     // RFID
-    case 0x010:
+    case 0x40:
     {
         std::cout << "ID 0x" << std::hex << can_id << std::dec << " receive RFID hex: ";
         for (uint8_t b : data)
@@ -187,7 +180,7 @@ void process_frame(uint16_t can_id, const std::vector<uint8_t> &data, ros::Publi
         break;
     }
     // CO2 Sensor
-    case 0x011:
+    case 0x41:
     {
         cnt_receive++;
         break;
@@ -236,18 +229,18 @@ void process_frame(uint16_t can_id, const std::vector<uint8_t> &data, ros::Publi
         break;
     }
     // IMU Gyro
-    case 0x013:
+    case 0x42:
     {
         cnt_receive++;
         break;
     }
     // IMU Accel
-    case 0x014:
+    case 0x43:
     {
         cnt_receive++;
         break;
     }
-    case 0x016:
+    case 0x16:
     {
         // Ensure the data has exactly 8 bytes
         if (data.size() != 8)
@@ -276,12 +269,12 @@ void process_frame(uint16_t can_id, const std::vector<uint8_t> &data, ros::Publi
         cnt_receive++;
         break;
     }
-    case 0x030:
+    case 0x11://encoder 
     {
         // Ensure the data has exactly 8 bytes
         if (data.size() != 8)
         {
-            std::cerr << "Error: Expected 8 bytes for ID 0x017, but received " << data.size() << " bytes.\n";
+            std::cerr << "Error: Expected 8 bytes for ID 0x011, but received " << data.size() << " bytes.\n";
             return;
         }
 
@@ -323,7 +316,7 @@ void process_frame(uint16_t can_id, const std::vector<uint8_t> &data, ros::Publi
     }
 }
 
-void send_vel(WaveshareCAN &can)
+void send_vel(WaveshareCAN &can) //0x013
 {
     try
     {
@@ -393,7 +386,7 @@ void TransmitSTM(ros::Publisher& odom_pub, ros::Time& lasttime)
     vel.v_right_stm = right_mps;
     // ROS_INFO("lef = %f", left_mps);
     // ROS_INFO("rig = %f", right_mps);
-    pub_vel_stm.publish(vel);
+    // pub_vel_stm.publish(vel);
     // can.send(0x050, {1, 0, 0, 0, 0, 0, 0, 0}); 
 }
 
@@ -429,7 +422,7 @@ int main(int argc, char **argv)
     } 
 
     sub = nh.subscribe("Cmd_vel", 10, CallBackVel);
-    amcl_sub = nh.subscribe("amcl_pose", 10, CallBackAMCL);
+    // amcl_sub = nh.subscribe("amcl_pose", 10, CallBackAMCL);
     // cnt_byte = nh.createTimer(ros::Duration(1), CntBytes);
     loopControl = nh.createTimer(
         ros::Duration(cycle_transmit),
