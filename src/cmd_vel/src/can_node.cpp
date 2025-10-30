@@ -28,7 +28,7 @@ int odom_count = 0;
 
 static volatile int g_should_exit = 0;
 
-WaveshareCAN can("/dev/ttyUSB1", 2000000, 2.0);
+WaveshareCAN can("/dev/usbcan", 2000000, 2.0);
 
 // RFID database - mapping RFID data to user info
 static const std::map<std::vector<uint8_t>, std::pair<std::string, std::string>> rfid_database = {
@@ -106,7 +106,7 @@ void send_vel(WaveshareCAN &can) //0x013
         std::vector<uint8_t> velocity_data(data, data + 8);
 
         // Send both velocities to single ID 0x013
-        can.send(0x010, velocity_data);
+        can.send(0x030, velocity_data);
         cnt_send++;
         std::cout << "Sent left velocity " << left_vel << " and right velocity " << right_vel << " to ID 0x013" << std::endl;
     }
@@ -181,45 +181,45 @@ void process_frame(uint16_t can_id, const std::vector<uint8_t> &data, ros::Publi
     switch (can_id)
     {
     // RFID
-    case 0x40:
-    {
-        std::cout << "ID 0x" << std::hex << can_id << std::dec << " receive RFID hex: ";
-        for (uint8_t b : data)
-        {
-            std::cout << std::hex << std::setw(2) << std::setfill('0') << (int)b << " ";
-        }
-        std::cout << std::dec << std::endl;
+    // case 0x40:
+    // {
+    //     std::cout << "ID 0x" << std::hex << can_id << std::dec << " receive RFID hex: ";
+    //     for (uint8_t b : data)
+    //     {
+    //         std::cout << std::hex << std::setw(2) << std::setfill('0') << (int)b << " ";
+    //     }
+    //     std::cout << std::dec << std::endl;
 
-        // Lookup RFID in database
-        auto it = rfid_database.find(data);
-        if (it != rfid_database.end())
-        {
-            const std::string &full_name = it->second.first;
-            const std::string &short_name = it->second.second;
+    //     // Lookup RFID in database
+    //     auto it = rfid_database.find(data);
+    //     if (it != rfid_database.end())
+    //     {
+    //         const std::string &full_name = it->second.first;
+    //         const std::string &short_name = it->second.second;
 
-            auto now = std::chrono::system_clock::now();
-            std::time_t now_time = std::chrono::system_clock::to_time_t(now);
+    //         auto now = std::chrono::system_clock::now();
+    //         std::time_t now_time = std::chrono::system_clock::to_time_t(now);
 
-            std::stringstream ss;
-            ss << std::put_time(std::localtime(&now_time), "%H:%M:%S");
-            std::string timestamp = ss.str();
+    //         std::stringstream ss;
+    //         ss << std::put_time(std::localtime(&now_time), "%H:%M:%S");
+    //         std::string timestamp = ss.str();
 
-            std::cout << "RFID detected: " << full_name << std::endl;
-            publishMQTTMessage(full_name, short_name, timestamp);
-        }
-        else
-        {
-            std::cout << "Unknown RFID data" << std::endl;
-        }
+    //         std::cout << "RFID detected: " << full_name << std::endl;
+    //         publishMQTTMessage(full_name, short_name, timestamp);
+    //     }
+    //     else
+    //     {
+    //         std::cout << "Unknown RFID data" << std::endl;
+    //     }
 
-        break;
-    }
-    // CO2 Sensor
-    case 0x41:
-    {
-        cnt_receive++;
-        break;
-    }
+    //     break;
+    // }
+    // // CO2 Sensor
+    // case 0x41:
+    // {
+    //     cnt_receive++;
+    //     break;
+    // }
     // IMU Angle
     case 0x12:
     {
@@ -263,47 +263,47 @@ void process_frame(uint16_t can_id, const std::vector<uint8_t> &data, ros::Publi
         cnt_receive++;
         break;
     }
-    // IMU Gyro
-    case 0x42:
-    {
-        cnt_receive++;
-        break;
-    }
-    // IMU Accel
-    case 0x43:
-    {
-        cnt_receive++;
-        break;
-    }
-    case 0x16:
-    {
-        // Ensure the data has exactly 8 bytes
-        if (data.size() != 8)
-        {
-            std::cerr << "Error: Expected 8 bytes for ID 0x016, but received " << data.size() << " bytes.\n";
-            return;
-        }
-        // Split the 8 bytes into 4 groups of 2 bytes and convert to integers
-        int group1 = (data[0] << 8) | data[1]; // Combine bytes 0 and 1
-        int group2 = (data[2] << 8) | data[3]; // Combine bytes 2 and 3
-        int group3 = (data[4] << 8) | data[5]; // Combine bytes 4 and 5
-        int group4 = (data[6] << 8) | data[7]; // Combine bytes 6 and 7
+    // // IMU Gyro
+    // case 0x42:
+    // {
+    //     cnt_receive++;
+    //     break;
+    // }
+    // // IMU Accel
+    // case 0x43:
+    // {
+    //     cnt_receive++;
+    //     break;
+    // }
+    // case 0x16:
+    // {
+    //     // Ensure the data has exactly 8 bytes
+    //     if (data.size() != 8)
+    //     {
+    //         std::cerr << "Error: Expected 8 bytes for ID 0x016, but received " << data.size() << " bytes.\n";
+    //         return;
+    //     }
+    //     // Split the 8 bytes into 4 groups of 2 bytes and convert to integers
+    //     int group1 = (data[0] << 8) | data[1]; // Combine bytes 0 and 1
+    //     int group2 = (data[2] << 8) | data[3]; // Combine bytes 2 and 3
+    //     int group3 = (data[4] << 8) | data[5]; // Combine bytes 4 and 5
+    //     int group4 = (data[6] << 8) | data[7]; // Combine bytes 6 and 7
 
-        // // Print the results
-        // std::cout << "ID 0x016 received: ";
-        // for (uint8_t b : data)
-        // {
-        //     std::cout << std::hex << std::setw(2) << std::setfill('0') << (int)b << " ";
-        // }
-        // std::cout << std::dec << "\n";
+    //     // // Print the results
+    //     // std::cout << "ID 0x016 received: ";
+    //     // for (uint8_t b : data)
+    //     // {
+    //     //     std::cout << std::hex << std::setw(2) << std::setfill('0') << (int)b << " ";
+    //     // }
+    //     // std::cout << std::dec << "\n";
 
-        // std::cout << "Truoc: " << group1 << "\n";
-        // std::cout << "Phai: " << group2 << "\n";
-        // std::cout << "Trai: " << group3 << "\n";
-        // std::cout << "Sau: " << group4 << "\n";
-        cnt_receive++;
-        break;
-    }
+    //     // std::cout << "Truoc: " << group1 << "\n";
+    //     // std::cout << "Phai: " << group2 << "\n";
+    //     // std::cout << "Trai: " << group3 << "\n";
+    //     // std::cout << "Sau: " << group4 << "\n";
+    //     cnt_receive++;
+    //     break;
+    // }
     case 0x11://encoder 
     {
         // Ensure the data has exactly 8 bytes
@@ -345,7 +345,7 @@ void process_frame(uint16_t can_id, const std::vector<uint8_t> &data, ros::Publi
     }
     default:
         // Handle unknown CAN IDs
-        // std::cout << "Unknown CAN ID: 0x" << std::hex << can_id << std::dec << std::endl;
+        std::cout << "Unknown CAN ID: 0x" << std::hex << can_id << std::dec << std::endl;
         cnt_receive++;
         break;
     }
