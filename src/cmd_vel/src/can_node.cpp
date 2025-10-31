@@ -384,7 +384,7 @@ void TransmitSTM(ros::Publisher& odom_pub, ros::Time& lasttime)
     vel.v_right_stm = right_mps;
     // ROS_INFO("lef = %f", left_mps);
     // ROS_INFO("rig = %f", right_mps);
-    // pub_vel_stm.publish(vel);
+    pub_vel_stm.publish(vel);
     // can.send(0x050, {1, 0, 0, 0, 0, 0, 0, 0}); 
 }
 
@@ -395,6 +395,7 @@ int main(int argc, char **argv)
     odom_pub = nh.advertise<nav_msgs::Odometry>("odom", 10);
     ros::Time lasttime = ros::Time::now();
     pub = nh.advertise<utils::pose_robot>("pose_robot", 10);
+    pub_vel_stm = nh.advertise<utils::cmd_vel>("Guidance", 10);
 
     can.open();
     can.start_receive_loop([&](uint16_t can_id, const std::vector<uint8_t>& data) {
