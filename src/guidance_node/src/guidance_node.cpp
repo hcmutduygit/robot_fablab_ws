@@ -215,7 +215,7 @@ int main(int argc, char **argv){
     // ========================================================================
     // waypoint_mode = 0: Doc tu PARAM (cach cu)
     // waypoint_mode = 1: Doc tu TOPIC (cach moi - MQTT)
-    int waypoint_mode = 1; // Mac dinh dung topic
+    int waypoint_mode = 0; // Mac dinh dung topic
     arg_nh.getParam("waypoint_mode", waypoint_mode);
 
     if (waypoint_mode == 0) {

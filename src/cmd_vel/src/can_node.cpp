@@ -181,39 +181,39 @@ void process_frame(uint16_t can_id, const std::vector<uint8_t> &data, ros::Publi
     switch (can_id)
     {
     // RFID
-    // case 0x40:
-    // {
-    //     std::cout << "ID 0x" << std::hex << can_id << std::dec << " receive RFID hex: ";
-    //     for (uint8_t b : data)
-    //     {
-    //         std::cout << std::hex << std::setw(2) << std::setfill('0') << (int)b << " ";
-    //     }
-    //     std::cout << std::dec << std::endl;
+    case 0x15:
+    {
+        std::cout << "ID 0x" << std::hex << can_id << std::dec << " receive RFID hex: ";
+        for (uint8_t b : data)
+        {
+            std::cout << std::hex << std::setw(2) << std::setfill('0') << (int)b << " ";
+        }
+        std::cout << std::dec << std::endl;
 
-    //     // Lookup RFID in database
-    //     auto it = rfid_database.find(data);
-    //     if (it != rfid_database.end())
-    //     {
-    //         const std::string &full_name = it->second.first;
-    //         const std::string &short_name = it->second.second;
+        // Lookup RFID in database
+        auto it = rfid_database.find(data);
+        if (it != rfid_database.end())
+        {
+            const std::string &full_name = it->second.first;
+            const std::string &short_name = it->second.second;
 
-    //         auto now = std::chrono::system_clock::now();
-    //         std::time_t now_time = std::chrono::system_clock::to_time_t(now);
+            auto now = std::chrono::system_clock::now();
+            std::time_t now_time = std::chrono::system_clock::to_time_t(now);
 
-    //         std::stringstream ss;
-    //         ss << std::put_time(std::localtime(&now_time), "%H:%M:%S");
-    //         std::string timestamp = ss.str();
+            std::stringstream ss;
+            ss << std::put_time(std::localtime(&now_time), "%H:%M:%S");
+            std::string timestamp = ss.str();
 
-    //         std::cout << "RFID detected: " << full_name << std::endl;
-    //         publishMQTTMessage(full_name, short_name, timestamp);
-    //     }
-    //     else
-    //     {
-    //         std::cout << "Unknown RFID data" << std::endl;
-    //     }
+            std::cout << "RFID detected: " << full_name << std::endl;
+            publishMQTTMessage(full_name, short_name, timestamp);
+        }
+        else
+        {
+            std::cout << "Unknown RFID data" << std::endl;
+        }
 
-    //     break;
-    // }
+        break;
+    }
     // // CO2 Sensor
     // case 0x41:
     // {
