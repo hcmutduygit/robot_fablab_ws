@@ -50,13 +50,22 @@ void publishMQTTLocation(double x, double y, double theta) {
     
 }
 
-void CallBackYaw (const utils::pose_robot::ConstPtr& msg){
-        theta = msg->yaw;
-}
+// void CallBackYaw (const utils::pose_robot::ConstPtr& msg){
+//     theta = msg->yaw;
+// }
 
 void CallBackPose(const geometry_msgs::PoseWithCovarianceStamped::ConstPtr& msg){
-        pos_x = msg->pose.pose.position.x;
-        pos_y = msg->pose.pose.position.y;
+    pos_x = msg->pose.pose.position.x;
+    pos_y = msg->pose.pose.position.y;
+    double orientation_x = msg->pose.pose.orientation.x;
+    double orientation_y = msg->pose.pose.orientation.y;
+    double orientation_z = msg->pose.pose.orientation.z;
+    double orientation_w = msg->pose.pose.orientation.w;
+
+    tf::Quaternion q(orientation_x, orientation_y, orientation_z, orientation_w);
+    double roll, pitch, amcl_yaw;
+    tf::Matrix3x3(q).getRPY(roll, pitch, amcl_yaw);
+    theta = amcl_yaw;
 }
 
 void CallBackVel_stm (const utils::cmd_vel::ConstPtr& vel){
@@ -72,7 +81,7 @@ void publishMqtt(const ros::TimerEvent &event){
 int main(int argc, char **argv){
     ros::init(argc,argv,"Mqtt");
     ros::NodeHandle nh;
-    sub_yaw = nh.subscribe("pose_robot",10, CallBackYaw);
+    // sub_yaw = nh.subscribe("pose_robot",10, CallBackYaw);
     sub_pose = nh.subscribe("amcl_pose",10, CallBackPose);
     sub_vel = nh.subscribe("Guidance",10, CallBackVel_stm);
     loopMqtt = nh.createTimer(ros::Duration(0.5), publishMqtt);
