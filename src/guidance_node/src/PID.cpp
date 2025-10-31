@@ -7,7 +7,8 @@ double PID::pid(double error, float kp, float kd) {
     // derivate = (dt > 0) ? (error - last_value)/dt : 0.0;
     if (dt < 0.001) dt = 0.001;
     derivate = (error - last_value) / dt;
-    
+    double alpha_d=0.2;
+    filter_derivate=alpha_d*derivate+(1-alpha_d)*filter_derivate;
     last_value = error;
     last_time = current_time;
     // return   ki * error + kp * derivate;
