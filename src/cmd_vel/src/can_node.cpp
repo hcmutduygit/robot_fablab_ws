@@ -412,9 +412,9 @@ int main(int argc, char **argv)
     loopControl = nh.createTimer(
         ros::Duration(cycle_transmit),
         [&](const ros::TimerEvent&) {
-            TransmitSTM(odom_pub, lasttime);
-            can.send(0x050, {1, 0, 0, 0, 0, 0, 0, 0}); // slave master
+            can.send(0x050, {1, 0, 0, 0, 0, 0, 0, 0}); // slave master - gửi trước
             cnt_send++;
+            TransmitSTM(odom_pub, lasttime); // publish sau
         }
     );
 
