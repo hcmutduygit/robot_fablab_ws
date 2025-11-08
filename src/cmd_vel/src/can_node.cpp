@@ -353,9 +353,9 @@ void process_frame(uint16_t can_id, const std::vector<uint8_t> &data, ros::Publi
 
 void CntBytes(const ros::TimerEvent &event)
 {
-    ROS_INFO("Receive Packages = %d Pkg/s", cnt_receive);
+    ROS_WARN("Receive Packages = %d Pkg/s", cnt_receive);
     cnt_receive = 0;
-    ROS_INFO("Send Packages = %d Pkg/s", cnt_send);
+    ROS_WARN("Send Packages = %d Pkg/s", cnt_send);
     cnt_send = 0;
 }
 
