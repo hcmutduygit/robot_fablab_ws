@@ -121,7 +121,7 @@ void CallBackVel(const utils::cmd_vel::ConstPtr &cmd_vel)
     float v_left = cmd_vel->v_left;
     float v_right = cmd_vel->v_right;
 
-    ROS_INFO("vel_left guidance = %f, vel_right guidance = %f", v_left, v_right);
+    // ROS_INFO("vel_left guidance = %f, vel_right guidance = %f", v_left, v_right);
 
     v_left *= 20;
     v_right *= 20;
@@ -258,7 +258,7 @@ void process_frame(uint16_t can_id, const std::vector<uint8_t> &data, ros::Publi
         // publish_yaw(yaw);
         // std::cout << "roll_degree: " << roll << "\n";
         // std::cout << "pitch_degree: " << pitch << "\n";
-        std::cout << "Yaw_degree: " << raw_yaw << "\n";
+        // std::cout << "Yaw_degree: " << raw_yaw << "\n";
         updateOdometry(left_mps, right_mps, odom_pub, lasttime);
         cnt_receive++;
         break;
@@ -408,12 +408,13 @@ int main(int argc, char **argv)
 
     sub = nh.subscribe("Cmd_vel", 1, CallBackVel);
     // amcl_sub = nh.subscribe("amcl_pose", 10, CallBackAMCL);
-    cnt_byte = nh.createTimer(ros::Duration(1), CntBytes);
+    cnt_byte = nh.createTimer(ros::Duration(10), CntBytes);
     loopControl = nh.createTimer(
         ros::Duration(cycle_transmit),
         [&](const ros::TimerEvent&) {
             TransmitSTM(odom_pub, lasttime);
             can.send(0x050, {1, 0, 0, 0, 0, 0, 0, 0}); // slave master
+            cnt_send++;
         }
     );
 

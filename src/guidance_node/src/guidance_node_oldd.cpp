@@ -48,7 +48,7 @@ void control_los(float goal_x, float goal_y, float previous_x, float previous_y)
     target_heading = normalize_angle(alpha_k + atan(-cross_track/delta));
     heading_error  = normalize_angle(target_heading - theta);
 
-    ROS_INFO("CrossTrack = %.2f, LongTrack = %.2f, HeadingDesire = %.2f, HeadingErr = %.2f, Theta = %.2f",cross_track, long_track,target_heading,heading_error,theta);
+    // ROS_INFO("CrossTrack = %.2f, LongTrack = %.2f, HeadingDesire = %.2f, HeadingErr = %.2f, Theta = %.2f",cross_track, long_track,target_heading,heading_error,theta);
 
     filtered_angular_z = pid_controller.pid(heading_error, KP, 0.3);
     // filtered_angular_z = limit(filtered_angular_z, -MAX_ANGULAR_SPEED, ANGULAR_SPEED);
@@ -125,7 +125,7 @@ void ControlVel(const ros::TimerEvent& event){
     cmd.v_left = -v_left*drive; 
     cmd.v_right = v_right*drive; 
    
-    ROS_INFO("v_left = %.2f, v_right = %.2f, ANGULAR = %.2f", cmd.v_left, cmd.v_right, angular_z);
+    // ROS_INFO("v_left = %.2f, v_right = %.2f, ANGULAR = %.2f", cmd.v_left, cmd.v_right, angular_z);
     pub.publish(cmd);
 }
 
@@ -147,7 +147,7 @@ int main(int argc, char **argv){
 
 
 
-    ROS_INFO("Linear_speed_max = %.2f, Angular_speed_max= %.2f, goal_radius= %.2f. KP = %.2f",MAX_LINEAR_SPEED,MAX_ANGULAR_SPEED,GOAL_RADIUS,KP);
+    // ROS_INFO("Linear_speed_max = %.2f, Angular_speed_max= %.2f, goal_radius= %.2f. KP = %.2f",MAX_LINEAR_SPEED,MAX_ANGULAR_SPEED,GOAL_RADIUS,KP);
     ros::NodeHandle nh;
 
     pub = nh.advertise<utils::cmd_vel>("Cmd_vel", 1);
