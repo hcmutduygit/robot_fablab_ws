@@ -16,12 +16,12 @@ extern int odom_count;
 inline void updateOdometry(float vel_left, float vel_right, ros::Publisher& odom_pub, ros::Time& lasttime) {
     std::lock_guard<std::mutex> lock(odom_mutex);
     odom_count += 1;
-    std::cout << "odom_count" << odom_count << "\n";
+    // std::cout << "odom_count" << odom_count << "\n";
     // float yaw_imu = -yaw_angle * PI / 180 + 2.615;
     // if ((yaw_imu + 2.615) > PI) yaw_imu = yaw_imu + 2.615 - 2*PI;
     // else yaw_imu = yaw_imu + 2.615;
     float yaw_imu = -yaw_angle * PI / 180;
-    std::cout << "yaw_imu: " << yaw_imu << "\n";
+    // std::cout << "yaw_imu: " << yaw_imu << "\n";
 
     float left_wheel = -vel_left/20;
     float right_wheel = vel_right/20;
@@ -110,7 +110,7 @@ inline void updateOdometry(float vel_left, float vel_right, ros::Publisher& odom
     odom_broadcaster.sendTransform(odom_tf);
 
     std::cout << "yaw: " << yaw << "\n";
-    std::cout << "v_left odom =" << left_wheel << "(m/s), v_right odom =" << right_wheel << "(m/s)\n";
+    // std::cout << "v_left odom =" << left_wheel << "(m/s), v_right odom =" << right_wheel << "(m/s)\n";
     // std::cout << "current_time: " << cur_time << "\n";
     // std::cout << "dt: " << dt << "\n";
     // std::cout << "v: " << v << "\n";

@@ -408,7 +408,7 @@ int main(int argc, char **argv)
 
     sub = nh.subscribe("Cmd_vel", 1, CallBackVel);
     // amcl_sub = nh.subscribe("amcl_pose", 10, CallBackAMCL);
-    cnt_byte = nh.createTimer(ros::Duration(cycle_transmit), CntBytes);
+    cnt_byte = nh.createTimer(ros::Duration(1), CntBytes);
     loopControl = nh.createTimer(
         ros::Duration(cycle_transmit),
         [&](const ros::TimerEvent&) {
