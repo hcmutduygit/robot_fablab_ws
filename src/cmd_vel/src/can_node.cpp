@@ -343,34 +343,21 @@ void process_frame(uint16_t can_id, const std::vector<uint8_t> &data, ros::Publi
         cnt_receive++;
         break;
     }
-    // default:
+    default:
     //     // Handle unknown CAN IDs
     //     std::cout << "Unknown CAN ID: 0x" << std::hex << can_id << std::dec << std::endl;
     //     cnt_receive++;
-    //     break;
+        break;
     }
 }
 
-// void CntBytes(const ros::TimerEvent &event)
-// {
-
-//     // ROS_INFO("Receive Packages = %d Pkg/s", cnt_receive);
-//     cnt_receive = 0;
-//     // ROS_INFO("Send Packages = %d Pkg/s", cnt_send);
-//     cnt_send = 0;
-// }
-
-// Signal handling for graceful shutdown
-// static void handle_signal(int)
-// {
-//     g_should_exit = 1;
-    
-//     // Kill any remaining Python MQTT processes
-//     std::system("pkill -f 'python2.*mqtt' > /dev/null 2>&1");
-//     std::system("pkill -f 'location_publisher.py' > /dev/null 2>&1");
-//     std::system("pkill -f 'velocity_publisher.py' > /dev/null 2>&1");
-//     std::system("pkill -f 'name_publisher.py' > /dev/null 2>&1");
-// }
+void CntBytes(const ros::TimerEvent &event)
+{
+    ROS_INFO("Receive Packages = %d Pkg/s", cnt_receive);
+    cnt_receive = 0;
+    ROS_INFO("Send Packages = %d Pkg/s", cnt_send);
+    cnt_send = 0;
+}
 
 void TransmitSTM(ros::Publisher& odom_pub, ros::Time& lasttime)
 {
@@ -421,12 +408,12 @@ int main(int argc, char **argv)
 
     sub = nh.subscribe("Cmd_vel", 1, CallBackVel);
     // amcl_sub = nh.subscribe("amcl_pose", 10, CallBackAMCL);
-    // cnt_byte = nh.createTimer(ros::Duration(1), CntBytes);
+    cnt_byte = nh.createTimer(ros::Duration(cycle_transmit), CntBytes);
     loopControl = nh.createTimer(
         ros::Duration(cycle_transmit),
         [&](const ros::TimerEvent&) {
             TransmitSTM(odom_pub, lasttime);
-            can.send(0x050, {1, 0, 0, 0, 0, 0, 0, 0}); 
+            can.send(0x050, {1, 0, 0, 0, 0, 0, 0, 0}); // slave master
         }
     );
 
