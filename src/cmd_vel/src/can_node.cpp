@@ -343,11 +343,11 @@ void process_frame(uint16_t can_id, const std::vector<uint8_t> &data, ros::Publi
         cnt_receive++;
         break;
     }
-    default:
-        // Handle unknown CAN IDs
-        std::cout << "Unknown CAN ID: 0x" << std::hex << can_id << std::dec << std::endl;
-        cnt_receive++;
-        break;
+    // default:
+    //     // Handle unknown CAN IDs
+    //     std::cout << "Unknown CAN ID: 0x" << std::hex << can_id << std::dec << std::endl;
+    //     cnt_receive++;
+    //     break;
     }
 }
 
@@ -385,7 +385,6 @@ void TransmitSTM(ros::Publisher& odom_pub, ros::Time& lasttime)
     // ROS_INFO("lef = %f", left_mps);
     // ROS_INFO("rig = %f", right_mps);
     pub_vel_stm.publish(vel);
-    // can.send(0x050, {1, 0, 0, 0, 0, 0, 0, 0}); 
 }
 
 int main(int argc, char **argv)
@@ -427,6 +426,7 @@ int main(int argc, char **argv)
         ros::Duration(cycle_transmit),
         [&](const ros::TimerEvent&) {
             TransmitSTM(odom_pub, lasttime);
+            can.send(0x050, {1, 0, 0, 0, 0, 0, 0, 0}); 
         }
     );
 

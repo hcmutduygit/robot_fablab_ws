@@ -1,5 +1,8 @@
 #include <mqtt.h>
 #include <geometry_msgs/PoseWithCovarianceStamped.h>
+#include <tf/transform_broadcaster.h>
+#include <geometry_msgs/TransformStamped.h>
+#include <tf/transform_datatypes.h>
 
 static volatile int g_should_exit = 0;
 
