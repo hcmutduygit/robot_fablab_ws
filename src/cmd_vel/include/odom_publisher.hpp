@@ -35,7 +35,7 @@ inline void updateOdometry(float vel_left, float vel_right, ros::Publisher& odom
     // Robot velocities
     float v = (right_wheel + left_wheel) / 2.0;
     // std::cout << "v: " << v << "\n";
-    float omega = (right_wheel - left_wheel) / 0.58;
+    float omega = (right_wheel - left_wheel) / 0.57;
     // std::cout << "omega: " << omega << "\n";
 
     // // Fuse IMU yaw if available
@@ -109,7 +109,7 @@ inline void updateOdometry(float vel_left, float vel_right, ros::Publisher& odom
     odom_tf.transform.rotation = tf::createQuaternionMsgFromYaw(yaw);
     odom_broadcaster.sendTransform(odom_tf);
 
-    // std::cout << "yaw: " << yaw << "\n";
+   // std::cout << "yaw: " << yaw << "\n";
     // std::cout << "v_left odom =" << left_wheel << "(m/s), v_right odom =" << right_wheel << "(m/s)\n";
     // std::cout << "current_time: " << cur_time << "\n";
     // std::cout << "dt: " << dt << "\n";
