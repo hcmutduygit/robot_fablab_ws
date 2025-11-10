@@ -1,0 +1,34 @@
+<launch>
+    <!-- Lidar driver -->
+    <include file="$(find rplidar_ros)/launch/rplidar_s2.launch"/>
+
+    <!-- RViz -->
+    <arg name="rvizconfig" default="$(find rviz)/amcl.rviz"/>
+    <node name="rviz" pkg="rviz" type="rviz" args="-d $(arg rvizconfig)"/>
+
+    <node pkg = "cmd_vel" type = "can_node" name = "Cmd_vel" output = "screen">
+        <param name="mode" value="1"/> 
+        <param name="calib" value="0"/>
+        <param name="cycle_transmit" value="0.05"/>
+    </node>
+
+    <!-- Static TF: base_footprint -> laser -->
+    <node pkg="tf" type="static_transform_publisher" name="basefootprint_to_laser"
+            args="0 0 0 0 0 0 base_footprint laser 50" />
+
+    <node name="cartographer_node" pkg="cartographer_ros"
+        type="cartographer_node" args="
+            -configuration_directory $(find slam)/lua
+            -configuration_basename my_robot.lua"
+        output="screen">
+        <remap from="scan" to="scan" />
+        <remap from="odom" to="odom" />
+    </node>
+
+    <arg name="publish_period_sec" default="1.0" />
+    <arg name="use_sim_time" default="false" />
+    <arg name="use_rviz" default="true" />
+  
+    <node name="cartographer_occupancy_grid_node" pkg="cartographer_ros"
+        type="cartographer_occupancy_grid_node" args="-resolution 0.05 -publish_period_sec 1.0" />
+</launch>
