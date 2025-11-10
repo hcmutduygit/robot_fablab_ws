@@ -53,6 +53,7 @@ TRAJECTORY_BUILDER_2D.real_time_correlative_scan_matcher.linear_search_window = 
 TRAJECTORY_BUILDER_2D.real_time_correlative_scan_matcher.translation_delta_cost_weight = 10.
 TRAJECTORY_BUILDER_2D.real_time_correlative_scan_matcher.rotation_delta_cost_weight = 1e-1
 TRAJECTORY_BUILDER_2D.motion_filter.max_angle_radians = math.rad(0.2)
+TRAJECTORY_BUILDER_2D.submaps.grid_options_2d.resolution = 0.03
 -- for current lidar only 1 is good value
 TRAJECTORY_BUILDER_2D.num_accumulated_range_data = 1
 
@@ -60,5 +61,7 @@ POSE_GRAPH.constraint_builder.min_score = 0.65
 POSE_GRAPH.constraint_builder.global_localization_min_score = 0.65
 POSE_GRAPH.optimization_problem.huber_scale = 1e2
 POSE_GRAPH.optimize_every_n_nodes = 35
+POSE_GRAPH.optimization_problem.odometry_translation_weight = 0.5
+POSE_GRAPH.optimization_problem.odometry_rotation_weight = 0.5
 
 return options

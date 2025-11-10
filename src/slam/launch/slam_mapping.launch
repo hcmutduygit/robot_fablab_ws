@@ -18,7 +18,7 @@
 
     <node name="cartographer_node" pkg="cartographer_ros"
         type="cartographer_node" args="
-            -configuration_directory $(find slam)/lua
+            -configuration_directory $(find slam)/config
             -configuration_basename my_robot.lua"
         output="screen">
         <remap from="scan" to="scan" />
