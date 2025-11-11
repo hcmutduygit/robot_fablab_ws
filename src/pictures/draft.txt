@@ -1,36 +1,96 @@
-process[cartographer_node-6]: started with pid [17204]
-process[cartographer_occupancy_grid_node-7]: started with pid [17216]
-_IceTransSocketUNIXConnect: Cannot connect to non-local host localhost.localdomain
-_IceTransSocketUNIXConnect: Cannot connect to non-local host localhost.localdomain
-Qt: Session management error: Could not open network socket
-[ INFO] [1762859093.072918915]: I1111 18:04:53.000000 17204 configuration_file_resolver.cc:41] Found '/home/nvidia/robot_fablab_ws/src/slam/config/my_robot.lua' for 'my_robot.lua'.
-[ INFO] [1762859093.113329578]: I1111 18:04:53.000000 17204 configuration_file_resolver.cc:41] Found '/opt/ros/melodic/share/cartographer/configuration_files/map_builder.lua' for 'map_builder.lua'.
-[ INFO] [1762859093.113462187]: I1111 18:04:53.000000 17204 configuration_file_resolver.cc:41] Found '/opt/ros/melodic/share/cartographer/configuration_files/map_builder.lua' for 'map_builder.lua'.
-[ INFO] [1762859093.113635725]: I1111 18:04:53.000000 17204 configuration_file_resolver.cc:41] Found '/opt/ros/melodic/share/cartographer/configuration_files/pose_graph.lua' for 'pose_graph.lua'.
-[ INFO] [1762859093.113728365]: I1111 18:04:53.000000 17204 configuration_file_resolver.cc:41] Found '/opt/ros/melodic/share/cartographer/configuration_files/pose_graph.lua' for 'pose_graph.lua'.
-[ INFO] [1762859093.114085168]: I1111 18:04:53.000000 17204 configuration_file_resolver.cc:41] Found '/opt/ros/melodic/share/cartographer/configuration_files/trajectory_builder.lua' for 'trajectory_builder.lua'.
-[ INFO] [1762859093.114169585]: I1111 18:04:53.000000 17204 configuration_file_resolver.cc:41] Found '/opt/ros/melodic/share/cartographer/configuration_files/trajectory_builder.lua' for 'trajectory_builder.lua'.
-[ INFO] [1762859093.114302354]: I1111 18:04:53.000000 17204 configuration_file_resolver.cc:41] Found '/opt/ros/melodic/share/cartographer/configuration_files/trajectory_builder_2d.lua' for 'trajectory_builder_2d.lua'.
-[ INFO] [1762859093.114395059]: I1111 18:04:53.000000 17204 configuration_file_resolver.cc:41] Found '/opt/ros/melodic/share/cartographer/configuration_files/trajectory_builder_2d.lua' for 'trajectory_builder_2d.lua'.
-[ INFO] [1762859093.114655829]: I1111 18:04:53.000000 17204 configuration_file_resolver.cc:41] Found '/opt/ros/melodic/share/cartographer/configuration_files/trajectory_builder_3d.lua' for 'trajectory_builder_3d.lua'.
-[ INFO] [1762859093.114734869]: I1111 18:04:53.000000 17204 configuration_file_resolver.cc:41] Found '/opt/ros/melodic/share/cartographer/configuration_files/trajectory_builder_3d.lua' for 'trajectory_builder_3d.lua'.
-[ INFO] [1762859093.197688532]: I1111 18:04:53.000000 17204 submap_2d.cc:187] Added submap 1
-[ INFO] [1762859093.197892182]: I1111 18:04:53.000000 17204 map_builder_bridge.cc:130] Added trajectory with ID '0'.
-[ INFO] [1762859094.804836954]: set lidar scan frequency to 10.0 Hz(600.0 Rpm) 
-[ INFO] [1762859094.896112220]: I1111 18:04:54.000000 17204 ordered_multi_queue.cc:172] All sensor data for trajectory 0 is available starting at '638984558948943767'.
-[ INFO] [1762859094.933335273]: I1111 18:04:54.000000 17204 local_trajectory_builder_2d.cc:295] Extrapolator not yet initialized.
-[ INFO] [1762859094.933907470]: I1111 18:04:54.000000 17204 local_trajectory_builder_2d.cc:138] Extrapolator is still initializing.
-[ WARN] [1762859102.680795211]: Receive Packages = 198 Pkg/s
-[ WARN] [1762859102.680916652]: Send Packages = 199 Pkg/s
-QObject::connect: Cannot queue arguments of type 'QVector<int>'
-(Make sure 'QVector<int>' is registered using qRegisterMetaType().)
-QObject::connect: Cannot queue arguments of type 'QVector<int>'
-(Make sure 'QVector<int>' is registered using qRegisterMetaType().)
-[ INFO] [1762859108.231946786]: I1111 18:05:08.000000 17204 collated_trajectory_builder.cc:72] odom rate: 19.92 Hz 5.02e-02 s +/- 3.10e-03 s (pulsed at 99.63% real time)
-[ INFO] [1762859108.232085795]: I1111 18:05:08.000000 17204 collated_trajectory_builder.cc:72] scan rate: 10.01 Hz 9.99e-02 s +/- 1.47e-03 s (pulsed at 99.92% real time)
-[ WARN] [1762859112.680956401]: Receive Packages = 200 Pkg/s
-[ WARN] [1762859112.681250387]: Send Packages = 200 Pkg/s
-[ WARN] [1762859122.680836557]: Receive Packages = 200 Pkg/s
-[ WARN] [1762859122.681072047]: Send Packages = 200 Pkg/s
-[ INFO] [1762859123.270548477]: I1111 18:05:23.000000 17204 collated_trajectory_builder.cc:72] odom rate: 20.00 Hz 5.00e-02 s +/- 1.89e-04 s (pulsed at 99.77% real time)
-[ INFO] [1762859123.271057634]: I1111 18:05:23.000000 17204 collated_trajectory_builder.cc:72] scan rate: 10.01 Hz 9.99e-02 s +/- 5.49e-04 s (pulsed at 100.22% real time)
+nvidia@linux:~/robot_fablab_ws$ rosrun tf tf_echo 
+map base_footprint
+At time 1762860211.503
+- Translation: [-0.002, 0.006, 0.000]
+- Rotation: in Quaternion [0.000, 0.000, 0.001, 1.000]
+            in RPY (radian) [0.000, -0.000, 0.001]
+            in RPY (degree) [0.000, -0.000, 0.078]
+At time 1762860212.232
+- Translation: [-0.002, 0.006, 0.000]
+- Rotation: in Quaternion [0.000, 0.000, 0.001, 1.000]
+            in RPY (radian) [0.000, -0.000, 0.001]
+            in RPY (degree) [0.000, -0.000, 0.083]
+At time 1762860213.232
+- Translation: [-0.002, 0.006, 0.000]
+- Rotation: in Quaternion [0.000, 0.000, 0.001, 1.000]
+            in RPY (radian) [0.000, -0.000, 0.001]
+            in RPY (degree) [0.000, -0.000, 0.071]
+At time 1762860214.235
+- Translation: [-0.002, 0.004, 0.000]
+- Rotation: in Quaternion [0.000, 0.000, 0.001, 1.000]
+            in RPY (radian) [0.000, -0.000, 0.001]
+            in RPY (degree) [0.000, -0.000, 0.081]
+At time 1762860215.103
+- Translation: [-0.002, 0.005, 0.000]
+- Rotation: in Quaternion [0.000, 0.000, 0.001, 1.000]
+            in RPY (radian) [0.000, -0.000, 0.001]
+            in RPY (degree) [0.000, -0.000, 0.070]
+At time 1762860216.235
+- Translation: [-0.002, 0.004, 0.000]
+- Rotation: in Quaternion [0.000, 0.000, 0.001, 1.000]
+            in RPY (radian) [0.000, -0.000, 0.001]
+            in RPY (degree) [0.000, -0.000, 0.065]
+At time 1762860217.103
+- Translation: [-0.001, 0.005, 0.000]
+- Rotation: in Quaternion [0.000, 0.000, 0.001, 1.000]
+            in RPY (radian) [0.000, -0.000, 0.001]
+            in RPY (degree) [0.000, -0.000, 0.068]
+At time 1762860218.233
+- Translation: [-0.002, 0.004, 0.000]
+- Rotation: in Quaternion [0.000, 0.000, 0.001, 1.000]
+            in RPY (radian) [0.000, -0.000, 0.001]
+            in RPY (degree) [0.000, -0.000, 0.070]
+At time 1762860219.232
+- Translation: [-0.002, 0.004, 0.000]
+- Rotation: in Quaternion [0.000, 0.000, 0.001, 1.000]
+            in RPY (radian) [0.000, -0.000, 0.002]
+            in RPY (degree) [0.000, -0.000, 0.087]
+            
+
+nvidia@linux:~/robot_fablab_ws$ rosrun tf tf_echo 
+odom base_footprint
+At time 1762860275.926
+- Translation: [0.000, -0.001, 0.000]
+- Rotation: in Quaternion [0.000, 0.000, 0.890, 0.456]
+            in RPY (radian) [0.000, -0.000, 2.195]
+            in RPY (degree) [0.000, -0.000, 125.750]
+At time 1762860276.626
+- Translation: [0.000, -0.001, 0.000]
+- Rotation: in Quaternion [0.000, 0.000, 0.890, 0.456]
+            in RPY (radian) [0.000, -0.000, 2.195]
+            in RPY (degree) [0.000, -0.000, 125.750]
+At time 1762860277.626
+- Translation: [0.000, -0.001, 0.000]
+- Rotation: in Quaternion [0.000, 0.000, 0.890, 0.456]
+            in RPY (radian) [0.000, -0.000, 2.195]
+            in RPY (degree) [0.000, -0.000, 125.750]
+At time 1762860278.626
+- Translation: [0.000, -0.001, 0.000]
+- Rotation: in Quaternion [0.000, 0.000, 0.890, 0.456]
+            in RPY (radian) [0.000, -0.000, 2.195]
+            in RPY (degree) [0.000, -0.000, 125.750]
+At time 1762860279.626
+- Translation: [0.000, -0.001, 0.000]
+- Rotation: in Quaternion [0.000, 0.000, 0.890, 0.456]
+            in RPY (radian) [0.000, -0.000, 2.195]
+            in RPY (degree) [0.000, -0.000, 125.750]
+At time 1762860280.626
+- Translation: [0.000, -0.001, 0.000]
+- Rotation: in Quaternion [0.000, 0.000, 0.890, 0.456]
+            in RPY (radian) [0.000, -0.000, 2.195]
+            in RPY (degree) [0.000, -0.000, 125.750]
+At time 1762860281.626
+- Translation: [0.000, -0.001, 0.000]
+- Rotation: in Quaternion [0.000, 0.000, 0.890, 0.456]
+            in RPY (radian) [0.000, -0.000, 2.195]
+            in RPY (degree) [0.000, -0.000, 125.750]
+At time 1762860282.626
+- Translation: [0.000, -0.001, 0.000]
+- Rotation: in Quaternion [0.000, 0.000, 0.890, 0.456]
+            in RPY (radian) [0.000, -0.000, 2.195]
+            in RPY (degree) [0.000, -0.000, 125.750]
+At time 1762860283.626
+- Translation: [0.000, -0.001, 0.000]
+- Rotation: in Quaternion [0.000, 0.000, 0.890, 0.456]
+            in RPY (radian) [0.000, -0.000, 2.195]
+            in RPY (degree) [0.000, -0.000, 125.750]
