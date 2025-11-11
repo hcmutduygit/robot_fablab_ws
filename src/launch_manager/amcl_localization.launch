@@ -9,7 +9,7 @@
     <arg name="base_frame_id"   default="base_footprint"/>
     <arg name="global_frame_id" default="map"/>
 
-    <arg name="mqtt_enabled" default="true" />
+    <arg name="mqtt_enabled" default="false" />
 
     <!-- Lidar driver -->
     <include file="$(find rplidar_ros)/launch/rplidar_s2.launch"/>
@@ -98,8 +98,8 @@
             <param name="drive" value="1"/>
             <param name="direct" value="1"/>
             <param name="min_speed_linear" value="0.3"/>
-            <param name="waypoints_x" value="8.43370545973, -1.5463915164, -1.02582621629, -5.14741795585, -10.2078468764" />
-            <param name="waypoints_y" value="15.9036135775,  21.4933550528, 24.8810294018, 27.6081660781, 29.7301846772" />
+            <param name="waypoints_x" value="8.43370545973, -1.5463915164, -1.02582621629, -5.14741795585, -10.2078468764, -5.14741795585, -1.02582621, -1.5463915, 8.43370545" />
+            <param name="waypoints_y" value="15.9036135775,  21.4933550528, 24.8810294018, 27.6081660781, 29.7301846772, 27.6081660781, 24.8810294, 21.4933550, 15.9036135" />
         </node>
     </group>
 </launch>

@@ -1,7 +1,9 @@
 digraph G {
-"base_footprint" -> "laser"[label="Broadcaster: /basefootprint_to_laser\nAverage rate: 20.106 Hz\nMost recent transform: 1758534942.440 ( -0.019 sec old)\nBuffer length: 4.924 sec\n"];
+"base_footprint" -> "laser"[label="Broadcaster: /basefootprint_to_laser\nAverage rate: 20.149 Hz\nMost recent transform: 1762858019.182 ( -0.017 sec old)\nBuffer length: 4.864 sec\n"];
+"odom" -> "base_footprint"[label="Broadcaster: /cartographer_node\nAverage rate: 40.217 Hz\nMost recent transform: 1762858019.144 ( 0.021 sec old)\nBuffer length: 4.874 sec\n"];
+"map" -> "odom"[label="Broadcaster: /cartographer_node\nAverage rate: 20.206 Hz\nMost recent transform: 1762858019.144 ( 0.021 sec old)\nBuffer length: 4.850 sec\n"];
 edge [style=invis];
  subgraph cluster_legend { style=bold; color=black; label ="view_frames Result";
-"Recorded at time: 1758534942.421"[ shape=plaintext ] ;
- }->"base_footprint";
+"Recorded at time: 1762858019.165"[ shape=plaintext ] ;
+ }->"map";
 }

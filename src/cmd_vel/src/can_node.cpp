@@ -107,8 +107,8 @@ void send_vel(WaveshareCAN &can) //0x013
 
         // Send both velocities to single ID 0x013
         can.send(0x030, velocity_data);
-        cnt_send++;
-        std::cout << "Sent left velocity " << left_vel << " and right velocity " << right_vel << " to ID 0x013" << std::endl;
+        // cnt_send++;
+        // std::cout << "Sent left velocity " << left_vel << " and right velocity " << right_vel << " to ID 0x013" << std::endl;
     }
     catch (const std::exception &e)
     {
@@ -260,7 +260,7 @@ void process_frame(uint16_t can_id, const std::vector<uint8_t> &data, ros::Publi
         // std::cout << "pitch_degree: " << pitch << "\n";
         // std::cout << "Yaw_degree: " << raw_yaw << "\n";
         updateOdometry(left_mps, right_mps, odom_pub, lasttime);
-        cnt_receive++;
+        // cnt_receive++;
         break;
     }
     // // IMU Gyro
