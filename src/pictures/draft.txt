@@ -1,96 +1,363 @@
-nvidia@linux:~/robot_fablab_ws$ rosrun tf tf_echo 
-map base_footprint
-At time 1762860211.503
-- Translation: [-0.002, 0.006, 0.000]
-- Rotation: in Quaternion [0.000, 0.000, 0.001, 1.000]
-            in RPY (radian) [0.000, -0.000, 0.001]
-            in RPY (degree) [0.000, -0.000, 0.078]
-At time 1762860212.232
-- Translation: [-0.002, 0.006, 0.000]
-- Rotation: in Quaternion [0.000, 0.000, 0.001, 1.000]
-            in RPY (radian) [0.000, -0.000, 0.001]
-            in RPY (degree) [0.000, -0.000, 0.083]
-At time 1762860213.232
-- Translation: [-0.002, 0.006, 0.000]
-- Rotation: in Quaternion [0.000, 0.000, 0.001, 1.000]
-            in RPY (radian) [0.000, -0.000, 0.001]
-            in RPY (degree) [0.000, -0.000, 0.071]
-At time 1762860214.235
-- Translation: [-0.002, 0.004, 0.000]
-- Rotation: in Quaternion [0.000, 0.000, 0.001, 1.000]
-            in RPY (radian) [0.000, -0.000, 0.001]
-            in RPY (degree) [0.000, -0.000, 0.081]
-At time 1762860215.103
-- Translation: [-0.002, 0.005, 0.000]
-- Rotation: in Quaternion [0.000, 0.000, 0.001, 1.000]
-            in RPY (radian) [0.000, -0.000, 0.001]
-            in RPY (degree) [0.000, -0.000, 0.070]
-At time 1762860216.235
-- Translation: [-0.002, 0.004, 0.000]
-- Rotation: in Quaternion [0.000, 0.000, 0.001, 1.000]
-            in RPY (radian) [0.000, -0.000, 0.001]
-            in RPY (degree) [0.000, -0.000, 0.065]
-At time 1762860217.103
-- Translation: [-0.001, 0.005, 0.000]
-- Rotation: in Quaternion [0.000, 0.000, 0.001, 1.000]
-            in RPY (radian) [0.000, -0.000, 0.001]
-            in RPY (degree) [0.000, -0.000, 0.068]
-At time 1762860218.233
-- Translation: [-0.002, 0.004, 0.000]
-- Rotation: in Quaternion [0.000, 0.000, 0.001, 1.000]
-            in RPY (radian) [0.000, -0.000, 0.001]
-            in RPY (degree) [0.000, -0.000, 0.070]
-At time 1762860219.232
-- Translation: [-0.002, 0.004, 0.000]
-- Rotation: in Quaternion [0.000, 0.000, 0.001, 1.000]
-            in RPY (radian) [0.000, -0.000, 0.002]
-            in RPY (degree) [0.000, -0.000, 0.087]
-            
+ from authority "unknown_publisher" with frame_id and child_frame_id  "odom" because they are the same
 
-nvidia@linux:~/robot_fablab_ws$ rosrun tf tf_echo 
-odom base_footprint
-At time 1762860275.926
-- Translation: [0.000, -0.001, 0.000]
-- Rotation: in Quaternion [0.000, 0.000, 0.890, 0.456]
-            in RPY (radian) [0.000, -0.000, 2.195]
-            in RPY (degree) [0.000, -0.000, 125.750]
-At time 1762860276.626
-- Translation: [0.000, -0.001, 0.000]
-- Rotation: in Quaternion [0.000, 0.000, 0.890, 0.456]
-            in RPY (radian) [0.000, -0.000, 2.195]
-            in RPY (degree) [0.000, -0.000, 125.750]
-At time 1762860277.626
-- Translation: [0.000, -0.001, 0.000]
-- Rotation: in Quaternion [0.000, 0.000, 0.890, 0.456]
-            in RPY (radian) [0.000, -0.000, 2.195]
-            in RPY (degree) [0.000, -0.000, 125.750]
-At time 1762860278.626
-- Translation: [0.000, -0.001, 0.000]
-- Rotation: in Quaternion [0.000, 0.000, 0.890, 0.456]
-            in RPY (radian) [0.000, -0.000, 2.195]
-            in RPY (degree) [0.000, -0.000, 125.750]
-At time 1762860279.626
-- Translation: [0.000, -0.001, 0.000]
-- Rotation: in Quaternion [0.000, 0.000, 0.890, 0.456]
-            in RPY (radian) [0.000, -0.000, 2.195]
-            in RPY (degree) [0.000, -0.000, 125.750]
-At time 1762860280.626
-- Translation: [0.000, -0.001, 0.000]
-- Rotation: in Quaternion [0.000, 0.000, 0.890, 0.456]
-            in RPY (radian) [0.000, -0.000, 2.195]
-            in RPY (degree) [0.000, -0.000, 125.750]
-At time 1762860281.626
-- Translation: [0.000, -0.001, 0.000]
-- Rotation: in Quaternion [0.000, 0.000, 0.890, 0.456]
-            in RPY (radian) [0.000, -0.000, 2.195]
-            in RPY (degree) [0.000, -0.000, 125.750]
-At time 1762860282.626
-- Translation: [0.000, -0.001, 0.000]
-- Rotation: in Quaternion [0.000, 0.000, 0.890, 0.456]
-            in RPY (radian) [0.000, -0.000, 2.195]
-            in RPY (degree) [0.000, -0.000, 125.750]
-At time 1762860283.626
-- Translation: [0.000, -0.001, 0.000]
-- Rotation: in Quaternion [0.000, 0.000, 0.890, 0.456]
-            in RPY (radian) [0.000, -0.000, 2.195]
-            in RPY (degree) [0.000, -0.000, 125.750]
+ nvidia@linux:~/robot_fablab_ws$ rosrun tf view_frames
+Listening to /tf for 5.0 seconds
+Error:   TF_SELF_TRANSFORM: Ignoring transform from authority "/cartographer_node" with frame_id and child_frame_id  "odom" because they are the same
+         at line 221 in /tmp/binarydeb/ros-melodic-tf2-0.6.5/src/buffer_core.cpp
+Error:   TF_SELF_TRANSFORM: Ignoring transform from authority "/cartographer_node" with frame_id and child_frame_id  "odom" because they are the same
+         at line 221 in /tmp/binarydeb/ros-melodic-tf2-0.6.5/src/buffer_core.cpp
+Error:   TF_SELF_TRANSFORM: Ignoring transform from authority "/cartographer_node" with frame_id and child_frame_id  "odom" because they are the same
+         at line 221 in /tmp/binarydeb/ros-melodic-tf2-0.6.5/src/buffer_core.cpp
+Error:   TF_SELF_TRANSFORM: Ignoring transform from authority "/cartographer_node" with frame_id and child_frame_id  "odom" because they are the same
+         at line 221 in /tmp/binarydeb/ros-melodic-tf2-0.6.5/src/buffer_core.cpp
+Error:   TF_SELF_TRANSFORM: Ignoring transform from authority "/cartographer_node" with frame_id and child_frame_id  "odom" because they are the same
+         at line 221 in /tmp/binarydeb/ros-melodic-tf2-0.6.5/src/buffer_core.cpp
+Error:   TF_SELF_TRANSFORM: Ignoring transform from authority "/cartographer_node" with frame_id and child_frame_id  "odom" because they are the same
+         at line 221 in /tmp/binarydeb/ros-melodic-tf2-0.6.5/src/buffer_core.cpp
+Error:   TF_SELF_TRANSFORM: Ignoring transform from authority "/cartographer_node" with frame_id and child_frame_id  "odom" because they are the same
+         at line 221 in /tmp/binarydeb/ros-melodic-tf2-0.6.5/src/buffer_core.cpp
+Error:   TF_SELF_TRANSFORM: Ignoring transform from authority "/cartographer_node" with frame_id and child_frame_id  "odom" because they are the same
+         at line 221 in /tmp/binarydeb/ros-melodic-tf2-0.6.5/src/buffer_core.cpp
+Error:   TF_SELF_TRANSFORM: Ignoring transform from authority "/cartographer_node" with frame_id and child_frame_id  "odom" because they are the same
+         at line 221 in /tmp/binarydeb/ros-melodic-tf2-0.6.5/src/buffer_core.cpp
+Error:   TF_SELF_TRANSFORM: Ignoring transform from authority "/cartographer_node" with frame_id and child_frame_id  "odom" because they are the same
+         at line 221 in /tmp/binarydeb/ros-melodic-tf2-0.6.5/src/buffer_core.cpp
+Error:   TF_SELF_TRANSFORM: Ignoring transform from authority "/cartographer_node" with frame_id and child_frame_id  "odom" because they are the same
+         at line 221 in /tmp/binarydeb/ros-melodic-tf2-0.6.5/src/buffer_core.cpp
+Error:   TF_SELF_TRANSFORM: Ignoring transform from authority "/cartographer_node" with frame_id and child_frame_id  "odom" because they are the same
+         at line 221 in /tmp/binarydeb/ros-melodic-tf2-0.6.5/src/buffer_core.cpp
+Error:   TF_SELF_TRANSFORM: Ignoring transform from authority "/cartographer_node" with frame_id and child_frame_id  "odom" because they are the same
+         at line 221 in /tmp/binarydeb/ros-melodic-tf2-0.6.5/src/buffer_core.cpp
+Error:   TF_SELF_TRANSFORM: Ignoring transform from authority "/cartographer_node" with frame_id and child_frame_id  "odom" because they are the same
+         at line 221 in /tmp/binarydeb/ros-melodic-tf2-0.6.5/src/buffer_core.cpp
+Error:   TF_SELF_TRANSFORM: Ignoring transform from authority "/cartographer_node" with frame_id and child_frame_id  "odom" because they are the same
+         at line 221 in /tmp/binarydeb/ros-melodic-tf2-0.6.5/src/buffer_core.cpp
+Error:   TF_SELF_TRANSFORM: Ignoring transform from authority "/cartographer_node" with frame_id and child_frame_id  "odom" because they are the same
+         at line 221 in /tmp/binarydeb/ros-melodic-tf2-0.6.5/src/buffer_core.cpp
+Error:   TF_SELF_TRANSFORM: Ignoring transform from authority "/cartographer_node" with frame_id and child_frame_id  "odom" because they are the same
+         at line 221 in /tmp/binarydeb/ros-melodic-tf2-0.6.5/src/buffer_core.cpp
+Error:   TF_SELF_TRANSFORM: Ignoring transform from authority "/cartographer_node" with frame_id and child_frame_id  "odom" because they are the same
+         at line 221 in /tmp/binarydeb/ros-melodic-tf2-0.6.5/src/buffer_core.cpp
+Error:   TF_SELF_TRANSFORM: Ignoring transform from authority "/cartographer_node" with frame_id and child_frame_id  "odom" because they are the same
+         at line 221 in /tmp/binarydeb/ros-melodic-tf2-0.6.5/src/buffer_core.cpp
+Error:   TF_SELF_TRANSFORM: Ignoring transform from authority "/cartographer_node" with frame_id and child_frame_id  "odom" because they are the same
+         at line 221 in /tmp/binarydeb/ros-melodic-tf2-0.6.5/src/buffer_core.cpp
+Error:   TF_SELF_TRANSFORM: Ignoring transform from authority "/cartographer_node" with frame_id and child_frame_id  "odom" because they are the same
+         at line 221 in /tmp/binarydeb/ros-melodic-tf2-0.6.5/src/buffer_core.cpp
+Error:   TF_SELF_TRANSFORM: Ignoring transform from authority "/cartographer_node" with frame_id and child_frame_id  "odom" because they are the same
+         at line 221 in /tmp/binarydeb/ros-melodic-tf2-0.6.5/src/buffer_core.cpp
+Error:   TF_SELF_TRANSFORM: Ignoring transform from authority "/cartographer_node" with frame_id and child_frame_id  "odom" because they are the same
+         at line 221 in /tmp/binarydeb/ros-melodic-tf2-0.6.5/src/buffer_core.cpp
+Error:   TF_SELF_TRANSFORM: Ignoring transform from authority "/cartographer_node" with frame_id and child_frame_id  "odom" because they are the same
+         at line 221 in /tmp/binarydeb/ros-melodic-tf2-0.6.5/src/buffer_core.cpp
+Error:   TF_SELF_TRANSFORM: Ignoring transform from authority "/cartographer_node" with frame_id and child_frame_id  "odom" because they are the same
+         at line 221 in /tmp/binarydeb/ros-melodic-tf2-0.6.5/src/buffer_core.cpp
+Error:   TF_SELF_TRANSFORM: Ignoring transform from authority "/cartographer_node" with frame_id and child_frame_id  "odom" because they are the same
+         at line 221 in /tmp/binarydeb/ros-melodic-tf2-0.6.5/src/buffer_core.cpp
+Error:   TF_SELF_TRANSFORM: Ignoring transform from authority "/cartographer_node" with frame_id and child_frame_id  "odom" because they are the same
+         at line 221 in /tmp/binarydeb/ros-melodic-tf2-0.6.5/src/buffer_core.cpp
+Error:   TF_SELF_TRANSFORM: Ignoring transform from authority "/cartographer_node" with frame_id and child_frame_id  "odom" because they are the same
+         at line 221 in /tmp/binarydeb/ros-melodic-tf2-0.6.5/src/buffer_core.cpp
+Error:   TF_SELF_TRANSFORM: Ignoring transform from authority "/cartographer_node" with frame_id and child_frame_id  "odom" because they are the same
+         at line 221 in /tmp/binarydeb/ros-melodic-tf2-0.6.5/src/buffer_core.cpp
+Error:   TF_SELF_TRANSFORM: Ignoring transform from authority "/cartographer_node" with frame_id and child_frame_id  "odom" because they are the same
+         at line 221 in /tmp/binarydeb/ros-melodic-tf2-0.6.5/src/buffer_core.cpp
+Error:   TF_SELF_TRANSFORM: Ignoring transform from authority "/cartographer_node" with frame_id and child_frame_id  "odom" because they are the same
+         at line 221 in /tmp/binarydeb/ros-melodic-tf2-0.6.5/src/buffer_core.cpp
+Error:   TF_SELF_TRANSFORM: Ignoring transform from authority "/cartographer_node" with frame_id and child_frame_id  "odom" because they are the same
+         at line 221 in /tmp/binarydeb/ros-melodic-tf2-0.6.5/src/buffer_core.cpp
+Error:   TF_SELF_TRANSFORM: Ignoring transform from authority "/cartographer_node" with frame_id and child_frame_id  "odom" because they are the same
+         at line 221 in /tmp/binarydeb/ros-melodic-tf2-0.6.5/src/buffer_core.cpp
+Error:   TF_SELF_TRANSFORM: Ignoring transform from authority "/cartographer_node" with frame_id and child_frame_id  "odom" because they are the same
+         at line 221 in /tmp/binarydeb/ros-melodic-tf2-0.6.5/src/buffer_core.cpp
+Error:   TF_SELF_TRANSFORM: Ignoring transform from authority "/cartographer_node" with frame_id and child_frame_id  "odom" because they are the same
+         at line 221 in /tmp/binarydeb/ros-melodic-tf2-0.6.5/src/buffer_core.cpp
+Error:   TF_SELF_TRANSFORM: Ignoring transform from authority "/cartographer_node" with frame_id and child_frame_id  "odom" because they are the same
+         at line 221 in /tmp/binarydeb/ros-melodic-tf2-0.6.5/src/buffer_core.cpp
+Error:   TF_SELF_TRANSFORM: Ignoring transform from authority "/cartographer_node" with frame_id and child_frame_id  "odom" because they are the same
+         at line 221 in /tmp/binarydeb/ros-melodic-tf2-0.6.5/src/buffer_core.cpp
+Error:   TF_SELF_TRANSFORM: Ignoring transform from authority "/cartographer_node" with frame_id and child_frame_id  "odom" because they are the same
+         at line 221 in /tmp/binarydeb/ros-melodic-tf2-0.6.5/src/buffer_core.cpp
+Error:   TF_SELF_TRANSFORM: Ignoring transform from authority "/cartographer_node" with frame_id and child_frame_id  "odom" because they are the same
+         at line 221 in /tmp/binarydeb/ros-melodic-tf2-0.6.5/src/buffer_core.cpp
+Error:   TF_SELF_TRANSFORM: Ignoring transform from authority "/cartographer_node" with frame_id and child_frame_id  "odom" because they are the same
+         at line 221 in /tmp/binarydeb/ros-melodic-tf2-0.6.5/src/buffer_core.cpp
+Error:   TF_SELF_TRANSFORM: Ignoring transform from authority "/cartographer_node" with frame_id and child_frame_id  "odom" because they are the same
+         at line 221 in /tmp/binarydeb/ros-melodic-tf2-0.6.5/src/buffer_core.cpp
+Error:   TF_SELF_TRANSFORM: Ignoring transform from authority "/cartographer_node" with frame_id and child_frame_id  "odom" because they are the same
+         at line 221 in /tmp/binarydeb/ros-melodic-tf2-0.6.5/src/buffer_core.cpp
+Error:   TF_SELF_TRANSFORM: Ignoring transform from authority "/cartographer_node" with frame_id and child_frame_id  "odom" because they are the same
+         at line 221 in /tmp/binarydeb/ros-melodic-tf2-0.6.5/src/buffer_core.cpp
+Error:   TF_SELF_TRANSFORM: Ignoring transform from authority "/cartographer_node" with frame_id and child_frame_id  "odom" because they are the same
+         at line 221 in /tmp/binarydeb/ros-melodic-tf2-0.6.5/src/buffer_core.cpp
+Error:   TF_SELF_TRANSFORM: Ignoring transform from authority "/cartographer_node" with frame_id and child_frame_id  "odom" because they are the same
+         at line 221 in /tmp/binarydeb/ros-melodic-tf2-0.6.5/src/buffer_core.cpp
+Error:   TF_SELF_TRANSFORM: Ignoring transform from authority "/cartographer_node" with frame_id and child_frame_id  "odom" because they are the same
+         at line 221 in /tmp/binarydeb/ros-melodic-tf2-0.6.5/src/buffer_core.cpp
+Error:   TF_SELF_TRANSFORM: Ignoring transform from authority "/cartographer_node" with frame_id and child_frame_id  "odom" because they are the same
+         at line 221 in /tmp/binarydeb/ros-melodic-tf2-0.6.5/src/buffer_core.cpp
+Error:   TF_SELF_TRANSFORM: Ignoring transform from authority "/cartographer_node" with frame_id and child_frame_id  "odom" because they are the same
+         at line 221 in /tmp/binarydeb/ros-melodic-tf2-0.6.5/src/buffer_core.cpp
+Error:   TF_SELF_TRANSFORM: Ignoring transform from authority "/cartographer_node" with frame_id and child_frame_id  "odom" because they are the same
+         at line 221 in /tmp/binarydeb/ros-melodic-tf2-0.6.5/src/buffer_core.cpp
+Error:   TF_SELF_TRANSFORM: Ignoring transform from authority "/cartographer_node" with frame_id and child_frame_id  "odom" because they are the same
+         at line 221 in /tmp/binarydeb/ros-melodic-tf2-0.6.5/src/buffer_core.cpp
+Error:   TF_SELF_TRANSFORM: Ignoring transform from authority "/cartographer_node" with frame_id and child_frame_id  "odom" because they are the same
+         at line 221 in /tmp/binarydeb/ros-melodic-tf2-0.6.5/src/buffer_core.cpp
+Error:   TF_SELF_TRANSFORM: Ignoring transform from authority "/cartographer_node" with frame_id and child_frame_id  "odom" because they are the same
+         at line 221 in /tmp/binarydeb/ros-melodic-tf2-0.6.5/src/buffer_core.cpp
+Error:   TF_SELF_TRANSFORM: Ignoring transform from authority "/cartographer_node" with frame_id and child_frame_id  "odom" because they are the same
+         at line 221 in /tmp/binarydeb/ros-melodic-tf2-0.6.5/src/buffer_core.cpp
+Error:   TF_SELF_TRANSFORM: Ignoring transform from authority "/cartographer_node" with frame_id and child_frame_id  "odom" because they are the same
+         at line 221 in /tmp/binarydeb/ros-melodic-tf2-0.6.5/src/buffer_core.cpp
+Error:   TF_SELF_TRANSFORM: Ignoring transform from authority "/cartographer_node" with frame_id and child_frame_id  "odom" because they are the same
+         at line 221 in /tmp/binarydeb/ros-melodic-tf2-0.6.5/src/buffer_core.cpp
+Error:   TF_SELF_TRANSFORM: Ignoring transform from authority "/cartographer_node" with frame_id and child_frame_id  "odom" because they are the same
+         at line 221 in /tmp/binarydeb/ros-melodic-tf2-0.6.5/src/buffer_core.cpp
+Error:   TF_SELF_TRANSFORM: Ignoring transform from authority "/cartographer_node" with frame_id and child_frame_id  "odom" because they are the same
+         at line 221 in /tmp/binarydeb/ros-melodic-tf2-0.6.5/src/buffer_core.cpp
+Error:   TF_SELF_TRANSFORM: Ignoring transform from authority "/cartographer_node" with frame_id and child_frame_id  "odom" because they are the same
+         at line 221 in /tmp/binarydeb/ros-melodic-tf2-0.6.5/src/buffer_core.cpp
+Error:   TF_SELF_TRANSFORM: Ignoring transform from authority "/cartographer_node" with frame_id and child_frame_id  "odom" because they are the same
+         at line 221 in /tmp/binarydeb/ros-melodic-tf2-0.6.5/src/buffer_core.cpp
+Error:   TF_SELF_TRANSFORM: Ignoring transform from authority "/cartographer_node" with frame_id and child_frame_id  "odom" because they are the same
+         at line 221 in /tmp/binarydeb/ros-melodic-tf2-0.6.5/src/buffer_core.cpp
+Error:   TF_SELF_TRANSFORM: Ignoring transform from authority "/cartographer_node" with frame_id and child_frame_id  "odom" because they are the same
+         at line 221 in /tmp/binarydeb/ros-melodic-tf2-0.6.5/src/buffer_core.cpp
+Error:   TF_SELF_TRANSFORM: Ignoring transform from authority "/cartographer_node" with frame_id and child_frame_id  "odom" because they are the same
+         at line 221 in /tmp/binarydeb/ros-melodic-tf2-0.6.5/src/buffer_core.cpp
+Error:   TF_SELF_TRANSFORM: Ignoring transform from authority "/cartographer_node" with frame_id and child_frame_id  "odom" because they are the same
+         at line 221 in /tmp/binarydeb/ros-melodic-tf2-0.6.5/src/buffer_core.cpp
+Error:   TF_SELF_TRANSFORM: Ignoring transform from authority "/cartographer_node" with frame_id and child_frame_id  "odom" because they are the same
+         at line 221 in /tmp/binarydeb/ros-melodic-tf2-0.6.5/src/buffer_core.cpp
+Error:   TF_SELF_TRANSFORM: Ignoring transform from authority "/cartographer_node" with frame_id and child_frame_id  "odom" because they are the same
+         at line 221 in /tmp/binarydeb/ros-melodic-tf2-0.6.5/src/buffer_core.cpp
+Error:   TF_SELF_TRANSFORM: Ignoring transform from authority "/cartographer_node" with frame_id and child_frame_id  "odom" because they are the same
+         at line 221 in /tmp/binarydeb/ros-melodic-tf2-0.6.5/src/buffer_core.cpp
+Error:   TF_SELF_TRANSFORM: Ignoring transform from authority "/cartographer_node" with frame_id and child_frame_id  "odom" because they are the same
+         at line 221 in /tmp/binarydeb/ros-melodic-tf2-0.6.5/src/buffer_core.cpp
+Error:   TF_SELF_TRANSFORM: Ignoring transform from authority "/cartographer_node" with frame_id and child_frame_id  "odom" because they are the same
+         at line 221 in /tmp/binarydeb/ros-melodic-tf2-0.6.5/src/buffer_core.cpp
+Error:   TF_SELF_TRANSFORM: Ignoring transform from authority "/cartographer_node" with frame_id and child_frame_id  "odom" because they are the same
+         at line 221 in /tmp/binarydeb/ros-melodic-tf2-0.6.5/src/buffer_core.cpp
+Error:   TF_SELF_TRANSFORM: Ignoring transform from authority "/cartographer_node" with frame_id and child_frame_id  "odom" because they are the same
+         at line 221 in /tmp/binarydeb/ros-melodic-tf2-0.6.5/src/buffer_core.cpp
+Error:   TF_SELF_TRANSFORM: Ignoring transform from authority "/cartographer_node" with frame_id and child_frame_id  "odom" because they are the same
+         at line 221 in /tmp/binarydeb/ros-melodic-tf2-0.6.5/src/buffer_core.cpp
+Error:   TF_SELF_TRANSFORM: Ignoring transform from authority "/cartographer_node" with frame_id and child_frame_id  "odom" because they are the same
+         at line 221 in /tmp/binarydeb/ros-melodic-tf2-0.6.5/src/buffer_core.cpp
+Error:   TF_SELF_TRANSFORM: Ignoring transform from authority "/cartographer_node" with frame_id and child_frame_id  "odom" because they are the same
+         at line 221 in /tmp/binarydeb/ros-melodic-tf2-0.6.5/src/buffer_core.cpp
+Error:   TF_SELF_TRANSFORM: Ignoring transform from authority "/cartographer_node" with frame_id and child_frame_id  "odom" because they are the same
+         at line 221 in /tmp/binarydeb/ros-melodic-tf2-0.6.5/src/buffer_core.cpp
+Error:   TF_SELF_TRANSFORM: Ignoring transform from authority "/cartographer_node" with frame_id and child_frame_id  "odom" because they are the same
+         at line 221 in /tmp/binarydeb/ros-melodic-tf2-0.6.5/src/buffer_core.cpp
+Error:   TF_SELF_TRANSFORM: Ignoring transform from authority "/cartographer_node" with frame_id and child_frame_id  "odom" because they are the same
+         at line 221 in /tmp/binarydeb/ros-melodic-tf2-0.6.5/src/buffer_core.cpp
+Error:   TF_SELF_TRANSFORM: Ignoring transform from authority "/cartographer_node" with frame_id and child_frame_id  "odom" because they are the same
+         at line 221 in /tmp/binarydeb/ros-melodic-tf2-0.6.5/src/buffer_core.cpp
+Error:   TF_SELF_TRANSFORM: Ignoring transform from authority "/cartographer_node" with frame_id and child_frame_id  "odom" because they are the same
+         at line 221 in /tmp/binarydeb/ros-melodic-tf2-0.6.5/src/buffer_core.cpp
+Error:   TF_SELF_TRANSFORM: Ignoring transform from authority "/cartographer_node" with frame_id and child_frame_id  "odom" because they are the same
+         at line 221 in /tmp/binarydeb/ros-melodic-tf2-0.6.5/src/buffer_core.cpp
+Error:   TF_SELF_TRANSFORM: Ignoring transform from authority "/cartographer_node" with frame_id and child_frame_id  "odom" because they are the same
+         at line 221 in /tmp/binarydeb/ros-melodic-tf2-0.6.5/src/buffer_core.cpp
+Error:   TF_SELF_TRANSFORM: Ignoring transform from authority "/cartographer_node" with frame_id and child_frame_id  "odom" because they are the same
+         at line 221 in /tmp/binarydeb/ros-melodic-tf2-0.6.5/src/buffer_core.cpp
+Error:   TF_SELF_TRANSFORM: Ignoring transform from authority "/cartographer_node" with frame_id and child_frame_id  "odom" because they are the same
+         at line 221 in /tmp/binarydeb/ros-melodic-tf2-0.6.5/src/buffer_core.cpp
+Error:   TF_SELF_TRANSFORM: Ignoring transform from authority "/cartographer_node" with frame_id and child_frame_id  "odom" because they are the same
+         at line 221 in /tmp/binarydeb/ros-melodic-tf2-0.6.5/src/buffer_core.cpp
+Error:   TF_SELF_TRANSFORM: Ignoring transform from authority "/cartographer_node" with frame_id and child_frame_id  "odom" because they are the same
+         at line 221 in /tmp/binarydeb/ros-melodic-tf2-0.6.5/src/buffer_core.cpp
+Error:   TF_SELF_TRANSFORM: Ignoring transform from authority "/cartographer_node" with frame_id and child_frame_id  "odom" because they are the same
+         at line 221 in /tmp/binarydeb/ros-melodic-tf2-0.6.5/src/buffer_core.cpp
+Error:   TF_SELF_TRANSFORM: Ignoring transform from authority "/cartographer_node" with frame_id and child_frame_id  "odom" because they are the same
+         at line 221 in /tmp/binarydeb/ros-melodic-tf2-0.6.5/src/buffer_core.cpp
+Error:   TF_SELF_TRANSFORM: Ignoring transform from authority "/cartographer_node" with frame_id and child_frame_id  "odom" because they are the same
+         at line 221 in /tmp/binarydeb/ros-melodic-tf2-0.6.5/src/buffer_core.cpp
+Error:   TF_SELF_TRANSFORM: Ignoring transform from authority "/cartographer_node" with frame_id and child_frame_id  "odom" because they are the same
+         at line 221 in /tmp/binarydeb/ros-melodic-tf2-0.6.5/src/buffer_core.cpp
+Error:   TF_SELF_TRANSFORM: Ignoring transform from authority "/cartographer_node" with frame_id and child_frame_id  "odom" because they are the same
+         at line 221 in /tmp/binarydeb/ros-melodic-tf2-0.6.5/src/buffer_core.cpp
+Error:   TF_SELF_TRANSFORM: Ignoring transform from authority "/cartographer_node" with frame_id and child_frame_id  "odom" because they are the same
+         at line 221 in /tmp/binarydeb/ros-melodic-tf2-0.6.5/src/buffer_core.cpp
+Error:   TF_SELF_TRANSFORM: Ignoring transform from authority "/cartographer_node" with frame_id and child_frame_id  "odom" because they are the same
+         at line 221 in /tmp/binarydeb/ros-melodic-tf2-0.6.5/src/buffer_core.cpp
+Error:   TF_SELF_TRANSFORM: Ignoring transform from authority "/cartographer_node" with frame_id and child_frame_id  "odom" because they are the same
+         at line 221 in /tmp/binarydeb/ros-melodic-tf2-0.6.5/src/buffer_core.cpp
+Error:   TF_SELF_TRANSFORM: Ignoring transform from authority "/cartographer_node" with frame_id and child_frame_id  "odom" because they are the same
+         at line 221 in /tmp/binarydeb/ros-melodic-tf2-0.6.5/src/buffer_core.cpp
+Error:   TF_SELF_TRANSFORM: Ignoring transform from authority "/cartographer_node" with frame_id and child_frame_id  "odom" because they are the same
+         at line 221 in /tmp/binarydeb/ros-melodic-tf2-0.6.5/src/buffer_core.cpp
+Error:   TF_SELF_TRANSFORM: Ignoring transform from authority "/cartographer_node" with frame_id and child_frame_id  "odom" because they are the same
+         at line 221 in /tmp/binarydeb/ros-melodic-tf2-0.6.5/src/buffer_core.cpp
+Error:   TF_SELF_TRANSFORM: Ignoring transform from authority "/cartographer_node" with frame_id and child_frame_id  "odom" because they are the same
+         at line 221 in /tmp/binarydeb/ros-melodic-tf2-0.6.5/src/buffer_core.cpp
+Done Listening
+dot - graphviz version 2.40.1 (20161225.0304)
+
+Detected dot version 2.40
+Error:   TF_SELF_TRANSFORM: Ignoring transform from authority "/cartographer_node" with frame_id and child_frame_id  "odom" because they are the same
+         at line 221 in /tmp/binarydeb/ros-melodic-tf2-0.6.5/src/buffer_core.cpp
+Error:   TF_SELF_TRANSFORM: Ignoring transform from authority "/cartographer_node" with frame_id and child_frame_id  "odom" because they are the same
+         at line 221 in /tmp/binarydeb/ros-melodic-tf2-0.6.5/src/buffer_core.cpp
+Error:   TF_SELF_TRANSFORM: Ignoring transform from authority "/cartographer_node" with frame_id and child_frame_id  "odom" because they are the same
+         at line 221 in /tmp/binarydeb/ros-melodic-tf2-0.6.5/src/buffer_core.cpp
+frames.pdf generated
+
+nvidia@linux:~/robot_fablab_ws$ rosrun tf tf_echo map odom
+Error:   TF_SELF_TRANSFORM: Ignoring transform from authority "unknown_publisher" with frame_id and child_frame_id  "odom" because they are the same
+         at line 221 in /tmp/binarydeb/ros-melodic-tf2-0.6.5/src/buffer_core.cpp
+Error:   TF_SELF_TRANSFORM: Ignoring transform from authority "unknown_publisher" with frame_id and child_frame_id  "odom" because they are the same
+         at line 221 in /tmp/binarydeb/ros-melodic-tf2-0.6.5/src/buffer_core.cpp
+At time 1762860769.663
+- Translation: [0.000, 0.000, 0.000]
+- Rotation: in Quaternion [0.000, 0.000, 0.000, 1.000]
+            in RPY (radian) [0.000, -0.000, 0.000]
+            in RPY (degree) [0.000, -0.000, 0.000]
+Error:   TF_SELF_TRANSFORM: Ignoring transform from authority "unknown_publisher" with frame_id and child_frame_id  "odom" because they are the same
+         at line 221 in /tmp/binarydeb/ros-melodic-tf2-0.6.5/src/buffer_core.cpp
+Error:   TF_SELF_TRANSFORM: Ignoring transform from authority "unknown_publisher" with frame_id and child_frame_id  "odom" because they are the same
+         at line 221 in /tmp/binarydeb/ros-melodic-tf2-0.6.5/src/buffer_core.cpp
+Error:   TF_SELF_TRANSFORM: Ignoring transform from authority "unknown_publisher" with frame_id and child_frame_id  "odom" because they are the same
+         at line 221 in /tmp/binarydeb/ros-melodic-tf2-0.6.5/src/buffer_core.cpp
+Error:   TF_SELF_TRANSFORM: Ignoring transform from authority "unknown_publisher" with frame_id and child_frame_id  "odom" because they are the same
+         at line 221 in /tmp/binarydeb/ros-melodic-tf2-0.6.5/src/buffer_core.cpp
+Error:   TF_SELF_TRANSFORM: Ignoring transform from authority "unknown_publisher" with frame_id and child_frame_id  "odom" because they are the same
+         at line 221 in /tmp/binarydeb/ros-melodic-tf2-0.6.5/src/buffer_core.cpp
+Error:   TF_SELF_TRANSFORM: Ignoring transform from authority "unknown_publisher" with frame_id and child_frame_id  "odom" because they are the same
+         at line 221 in /tmp/binarydeb/ros-melodic-tf2-0.6.5/src/buffer_core.cpp
+Error:   TF_SELF_TRANSFORM: Ignoring transform from authority "unknown_publisher" with frame_id and child_frame_id  "odom" because they are the same
+         at line 221 in /tmp/binarydeb/ros-melodic-tf2-0.6.5/src/buffer_core.cpp
+Error:   TF_SELF_TRANSFORM: Ignoring transform from authority "unknown_publisher" with frame_id and child_frame_id  "odom" because they are the same
+         at line 221 in /tmp/binarydeb/ros-melodic-tf2-0.6.5/src/buffer_core.cpp
+Error:   TF_SELF_TRANSFORM: Ignoring transform from authority "unknown_publisher" with frame_id and child_frame_id  "odom" because they are the same
+         at line 221 in /tmp/binarydeb/ros-melodic-tf2-0.6.5/src/buffer_core.cpp
+Error:   TF_SELF_TRANSFORM: Ignoring transform from authority "unknown_publisher" with frame_id and child_frame_id  "odom" because they are the same
+         at line 221 in /tmp/binarydeb/ros-melodic-tf2-0.6.5/src/buffer_core.cpp
+Error:   TF_SELF_TRANSFORM: Ignoring transform from authority "unknown_publisher" with frame_id and child_frame_id  "odom" because they are the same
+         at line 221 in /tmp/binarydeb/ros-melodic-tf2-0.6.5/src/buffer_core.cpp
+Error:   TF_SELF_TRANSFORM: Ignoring transform from authority "unknown_publisher" with frame_id and child_frame_id  "odom" because they are the same
+         at line 221 in /tmp/binarydeb/ros-melodic-tf2-0.6.5/src/buffer_core.cpp
+Error:   TF_SELF_TRANSFORM: Ignoring transform from authority "unknown_publisher" with frame_id and child_frame_id  "odom" because they are the same
+         at line 221 in /tmp/binarydeb/ros-melodic-tf2-0.6.5/src/buffer_core.cpp
+Error:   TF_SELF_TRANSFORM: Ignoring transform from authority "unknown_publisher" with frame_id and child_frame_id  "odom" because they are the same
+         at line 221 in /tmp/binarydeb/ros-melodic-tf2-0.6.5/src/buffer_core.cpp
+At time 1762860770.357
+- Translation: [0.000, 0.000, 0.000]
+- Rotation: in Quaternion [0.000, 0.000, 0.000, 1.000]
+            in RPY (radian) [0.000, -0.000, 0.000]
+            in RPY (degree) [0.000, -0.000, 0.000]
+
+nvidia@linux:~/robot_fablab_ws$ rosrun tf tf_echo odom base_footprint
+At time 1762860796.007
+- Translation: [-0.000, 0.000, 0.000]
+- Rotation: in Quaternion [0.000, 0.000, 0.889, 0.457]
+            in RPY (radian) [0.000, -0.000, 2.192]
+            in RPY (degree) [0.000, -0.000, 125.570]
+Error:   TF_SELF_TRANSFORM: Ignoring transform from authority "unknown_publisher" with frame_id and child_frame_id  "odom" because they are the same
+         at line 221 in /tmp/binarydeb/ros-melodic-tf2-0.6.5/src/buffer_core.cpp
+Error:   TF_SELF_TRANSFORM: Ignoring transform from authority "unknown_publisher" with frame_id and child_frame_id  "odom" because they are the same
+         at line 221 in /tmp/binarydeb/ros-melodic-tf2-0.6.5/src/buffer_core.cpp
+Error:   TF_SELF_TRANSFORM: Ignoring transform from authority "unknown_publisher" with frame_id and child_frame_id  "odom" because they are the same
+         at line 221 in /tmp/binarydeb/ros-melodic-tf2-0.6.5/src/buffer_core.cpp
+Error:   TF_SELF_TRANSFORM: Ignoring transform from authority "unknown_publisher" with frame_id and child_frame_id  "odom" because they are the same
+         at line 221 in /tmp/binarydeb/ros-melodic-tf2-0.6.5/src/buffer_core.cpp
+Error:   TF_SELF_TRANSFORM: Ignoring transform from authority "unknown_publisher" with frame_id and child_frame_id  "odom" because they are the same
+         at line 221 in /tmp/binarydeb/ros-melodic-tf2-0.6.5/src/buffer_core.cpp
+Error:   TF_SELF_TRANSFORM: Ignoring transform from authority "unknown_publisher" with frame_id and child_frame_id  "odom" because they are the same
+         at line 221 in /tmp/binarydeb/ros-melodic-tf2-0.6.5/src/buffer_core.cpp
+Error:   TF_SELF_TRANSFORM: Ignoring transform from authority "unknown_publisher" with frame_id and child_frame_id  "odom" because they are the same
+         at line 221 in /tmp/binarydeb/ros-melodic-tf2-0.6.5/src/buffer_core.cpp
+Error:   TF_SELF_TRANSFORM: Ignoring transform from authority "unknown_publisher" with frame_id and child_frame_id  "odom" because they are the same
+         at line 221 in /tmp/binarydeb/ros-melodic-tf2-0.6.5/src/buffer_core.cpp
+Error:   TF_SELF_TRANSFORM: Ignoring transform from authority "unknown_publisher" with frame_id and child_frame_id  "odom" because they are the same
+         at line 221 in /tmp/binarydeb/ros-melodic-tf2-0.6.5/src/buffer_core.cpp
+Error:   TF_SELF_TRANSFORM: Ignoring transform from authority "unknown_publisher" with frame_id and child_frame_id  "odom" because they are the same
+         at line 221 in /tmp/binarydeb/ros-melodic-tf2-0.6.5/src/buffer_core.cpp
+Error:   TF_SELF_TRANSFORM: Ignoring transform from authority "unknown_publisher" with frame_id and child_frame_id  "odom" because they are the same
+         at line 221 in /tmp/binarydeb/ros-melodic-tf2-0.6.5/src/buffer_core.cpp
+Error:   TF_SELF_TRANSFORM: Ignoring transform from authority "unknown_publisher" with frame_id and child_frame_id  "odom" because they are the same
+         at line 221 in /tmp/binarydeb/ros-melodic-tf2-0.6.5/src/buffer_core.cpp
+Error:   TF_SELF_TRANSFORM: Ignoring transform from authority "unknown_publisher" with frame_id and child_frame_id  "odom" because they are the same
+         at line 221 in /tmp/binarydeb/ros-melodic-tf2-0.6.5/src/buffer_core.cpp
+Error:   TF_SELF_TRANSFORM: Ignoring transform from authority "unknown_publisher" with frame_id and child_frame_id  "odom" because they are the same
+         at line 221 in /tmp/binarydeb/ros-melodic-tf2-0.6.5/src/buffer_core.cpp
+Error:   TF_SELF_TRANSFORM: Ignoring transform from authority "unknown_publisher" with frame_id and child_frame_id  "odom" because they are the same
+         at line 221 in /tmp/binarydeb/ros-melodic-tf2-0.6.5/src/buffer_core.cpp
+Error:   TF_SELF_TRANSFORM: Ignoring transform from authority "unknown_publisher" with frame_id and child_frame_id  "odom" because they are the same
+         at line 221 in /tmp/binarydeb/ros-melodic-tf2-0.6.5/src/buffer_core.cpp
+At time 1762860796.707
+- Translation: [-0.000, 0.000, 0.000]
+- Rotation: in Quaternion [0.000, 0.000, 0.889, 0.457]
+            in RPY (radian) [0.000, -0.000, 2.192]
+            in RPY (degree) [0.000, -0.000, 125.570]
+Error:   TF_SELF_TRANSFORM: Ignoring transform from authority "unknown_publisher" with frame_id and child_frame_id  "odom" because they are the same
+         at line 221 in /tmp/binarydeb/ros-melodic-tf2-0.6.5/src/buffer_core.cpp
+Error:   TF_SELF_TRANSFORM: Ignoring transform from authority "unknown_publisher" with frame_id and child_frame_id  "odom" because they are the same
+         at line 221 in /tmp/binarydeb/ros-melodic-tf2-0.6.5/src/buffer_core.cpp
+Error:   TF_SELF_TRANSFORM: Ignoring transform from authority "unknown_publisher" with frame_id and child_frame_id  "odom" because they are the same
+         at line 221 in /tmp/binarydeb/ros-melodic-tf2-0.6.5/src/buffer_core.cpp
+Error:   TF_SELF_TRANSFORM: Ignoring transform from authority "unknown_publisher" with frame_id and child_frame_id  "odom" because they are the same
+         at line 221 in /tmp/binarydeb/ros-melodic-tf2-0.6.5/src/buffer_core.cpp
+Error:   TF_SELF_TRANSFORM: Ignoring transform from authority "unknown_publisher" with frame_id and child_frame_id  "odom" because they are the same
+         at line 221 in /tmp/binarydeb/ros-melodic-tf2-0.6.5/src/buffer_core.cpp
+
+nvidia@linux:~/robot_fablab_ws$ rosrun tf tf_echo map base_footprint
+Error:   TF_SELF_TRANSFORM: Ignoring transform from authority "unknown_publisher" with frame_id and child_frame_id  "odom" because they are the same
+         at line 221 in /tmp/binarydeb/ros-melodic-tf2-0.6.5/src/buffer_core.cpp
+Error:   TF_SELF_TRANSFORM: Ignoring transform from authority "unknown_publisher" with frame_id and child_frame_id  "odom" because they are the same
+         at line 221 in /tmp/binarydeb/ros-melodic-tf2-0.6.5/src/buffer_core.cpp
+At time 1762860826.842
+- Translation: [-0.000, 0.000, 0.000]
+- Rotation: in Quaternion [0.000, 0.000, 0.889, 0.457]
+            in RPY (radian) [0.000, -0.000, 2.192]
+            in RPY (degree) [0.000, -0.000, 125.570]
+Error:   TF_SELF_TRANSFORM: Ignoring transform from authority "unknown_publisher" with frame_id and child_frame_id  "odom" because they are the same
+         at line 221 in /tmp/binarydeb/ros-melodic-tf2-0.6.5/src/buffer_core.cpp
+Error:   TF_SELF_TRANSFORM: Ignoring transform from authority "unknown_publisher" with frame_id and child_frame_id  "odom" because they are the same
+         at line 221 in /tmp/binarydeb/ros-melodic-tf2-0.6.5/src/buffer_core.cpp
+Error:   TF_SELF_TRANSFORM: Ignoring transform from authority "unknown_publisher" with frame_id and child_frame_id  "odom" because they are the same
+         at line 221 in /tmp/binarydeb/ros-melodic-tf2-0.6.5/src/buffer_core.cpp
+Error:   TF_SELF_TRANSFORM: Ignoring transform from authority "unknown_publisher" with frame_id and child_frame_id  "odom" because they are the same
+         at line 221 in /tmp/binarydeb/ros-melodic-tf2-0.6.5/src/buffer_core.cpp
+Error:   TF_SELF_TRANSFORM: Ignoring transform from authority "unknown_publisher" with frame_id and child_frame_id  "odom" because they are the same
+         at line 221 in /tmp/binarydeb/ros-melodic-tf2-0.6.5/src/buffer_core.cpp
+Error:   TF_SELF_TRANSFORM: Ignoring transform from authority "unknown_publisher" with frame_id and child_frame_id  "odom" because they are the same
+         at line 221 in /tmp/binarydeb/ros-melodic-tf2-0.6.5/src/buffer_core.cpp
+Error:   TF_SELF_TRANSFORM: Ignoring transform from authority "unknown_publisher" with frame_id and child_frame_id  "odom" because they are the same
+         at line 221 in /tmp/binarydeb/ros-melodic-tf2-0.6.5/src/buffer_core.cpp
+Error:   TF_SELF_TRANSFORM: Ignoring transform from authority "unknown_publisher" with frame_id and child_frame_id  "odom" because they are the same
+         at line 221 in /tmp/binarydeb/ros-melodic-tf2-0.6.5/src/buffer_core.cpp
+Error:   TF_SELF_TRANSFORM: Ignoring transform from authority "unknown_publisher" with frame_id and child_frame_id  "odom" because they are the same
+         at line 221 in /tmp/binarydeb/ros-melodic-tf2-0.6.5/src/buffer_core.cpp
+Error:   TF_SELF_TRANSFORM: Ignoring transform from authority "unknown_publisher" with frame_id and child_frame_id  "odom" because they are the same
+         at line 221 in /tmp/binarydeb/ros-melodic-tf2-0.6.5/src/buffer_core.cpp
+Error:   TF_SELF_TRANSFORM: Ignoring transform from authority "unknown_publisher" with frame_id and child_frame_id  "odom" because they are the same
+         at line 221 in /tmp/binarydeb/ros-melodic-tf2-0.6.5/src/buffer_core.cpp
+Error:   TF_SELF_TRANSFORM: Ignoring transform from authority "unknown_publisher" with frame_id and child_frame_id  "odom" because they are the same
+         at line 221 in /tmp/binarydeb/ros-melodic-tf2-0.6.5/src/buffer_core.cpp
+At time 1762860827.489
+- Translation: [-0.000, 0.000, 0.000]
+- Rotation: in Quaternion [0.000, 0.000, 0.889, 0.457]
+            in RPY (radian) [0.000, -0.000, 2.192]
+            in RPY (degree) [0.000, -0.000, 125.570]
+Error:   TF_SELF_TRANSFORM: Ignoring transform from authority "unknown_publisher" with frame_id and child_frame_id  "odom" because they are the same
+         at line 221 in /tmp/binarydeb/ros-melodic-tf2-0.6.5/src/buffer_core.cpp
+Error:   TF_SELF_TRANSFORM: Ignoring transform from authority "unknown_publisher" with frame_id and child_frame_id  "odom" because they are the same
+         at line 221 in /tmp/binarydeb/ros-melodic-tf2-0.6.5/src/buffer_core.cpp
+Error:   TF_SELF_TRANSFORM: Ignoring transform from authority "unknown_publisher" with frame_id and child_frame_id  "odom" because they are the same
+         at line 221 in /tmp/binarydeb/ros-melodic-tf2-0.6.5/src/buffer_core.cpp
+Error:   TF_SELF_TRANSFORM: Ignoring transform from authority "unknown_publisher" with frame_id and child_frame_id  "odom" because they are the same
+         at line 221 in /tmp/binarydeb/ros-melodic-tf2-0.6.5/src/buffer_core.cpp
+Error:   TF_SELF_TRANSFORM: Ignoring transform from authority "unknown_publisher" with frame_id and child_frame_id  "odom" because they are the same
+         at line 221 in /tmp/binarydeb/ros-melodic-tf2-0.6.5/src/buffer_core.cpp
+Error:   TF_SELF_TRANSFORM: Ignoring transform from authority "unknown_publisher" with frame_id and child_frame_id  "odom" because they are the same
+         at line 221 in /tmp/binarydeb/ros-melodic-tf2-0.6.5/src/buffer_core.cpp
+Error:   TF_SELF_TRANSFORM: Ignoring transform from authority "unknown_publisher" with frame_id and child_frame_id  "odom" because they are the same
+         at line 221 in /tmp/binarydeb/ros-melodic-tf2-0.6.5/src/buffer_core.cpp
+Error:   TF_SELF_TRANSFORM: Ignoring transform from authority "unknown_publisher" with frame_id and child_frame_id  "odom" because they are the same
+         at line 221 in /tmp/binarydeb/ros-melodic-tf2-0.6.5/src/buffer_core.cpp
+Error:   TF_SELF_TRANSFORM: Ignoring transform from authority "unknown_publisher" with frame_id and child_frame_id  "odom" because they are the same
+         at line 221 in /tmp/binarydeb/ros-melodic-tf2-0.6.5/src/buffer_core.cpp
