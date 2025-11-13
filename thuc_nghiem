@@ -1,0 +1,6 @@
+Thực nghiệm độ chính xác của map tạo được với thuật toán cartographer
+Thực nghiệm độ chính xác định vị dựa trên map có sẵn của thuật toán AMCL
+Thực nghiệm quỹ đạo di chuyển thực tế so với quỹ đạo di chuyển từ thuật toán LOS
+Thực nghiệm tỷ lệ mất gói dữ liệu
+
+
