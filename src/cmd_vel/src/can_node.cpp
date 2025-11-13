@@ -93,6 +93,8 @@ void send_vel(WaveshareCAN &can) //0x013
         // Get integer velocities
         int right_vel = right_wheel_velocity;
         int left_vel = left_wheel_velocity;
+        // int right_vel = 0;
+        // int left_vel = 0;
      
         // Create 8-byte data array: first 4 bytes for left wheel, last 4 bytes for right wheel
         uint8_t data[8];
@@ -133,6 +135,7 @@ void CallBackVel(const utils::cmd_vel::ConstPtr &cmd_vel)
     if (number==2) {
         send_vel(can);
     }
+    // send_vel(can);
 }
 
 void CallBackAMCL(const geometry_msgs::PoseWithCovarianceStamped::ConstPtr& msg) {
@@ -423,14 +426,14 @@ int main(int argc, char **argv)
         }
     );
     
-    // Master request 
-    loopControl2 = nh.createTimer(
-        ros::Duration(0.4),
-        [&](const ros::TimerEvent&) {
-            can.send(0x051, {1, 0, 0, 0, 0, 0, 0, 0});
-            cnt_send++;
-        }
-    );
+    // // Master request 
+    // loopControl2 = nh.createTimer(
+    //     ros::Duration(0.1),
+    //     [&](const ros::TimerEvent&) {
+    //         can.send(0x030, {1, 0, 0, 0, 0, 0, 0, 0});
+    //         cnt_send++;
+    //     }
+    // );
 
      // Thêm biến mới để kiểm tra runtime thay đổi mode
     new_number = number;
