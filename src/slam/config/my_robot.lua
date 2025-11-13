@@ -58,7 +58,7 @@ POSE_GRAPH.optimization_problem.odometry_rotation_weight = 0.5
 pure_localization_trimmer = {
   max_submaps_to_keep = 3,
 }
-TRAJECTORY_BUILDER.pure_localization = true
+TRAJECTORY_BUILDER.pure_localization = false
 
 POSE_GRAPH.optimize_every_n_nodes = 30
 
