@@ -49,8 +49,8 @@ TRAJECTORY_BUILDER_2D.use_online_correlative_scan_matching = true
 TRAJECTORY_BUILDER_2D.submaps.grid_options_2d.resolution = 0.03
 TRAJECTORY_BUILDER_2D.use_imu_data = false
 TRAJECTORY_BUILDER_2D.num_accumulated_range_data = 2  -- Giảm từ 2 xuống 1
-TRAJECTORY_BUILDER_2D.min_range = 0.15  -- Thêm min range
-TRAJECTORY_BUILDER_2D.max_range = 12.0  -- Thêm max range
+TRAJECTORY_BUILDER_2D.min_range = 0.25  -- Thêm min range
+TRAJECTORY_BUILDER_2D.max_range = 8.0  -- Thêm max range
 POSE_GRAPH.optimization_problem.odometry_translation_weight = 0.5
 POSE_GRAPH.optimization_problem.odometry_rotation_weight = 0.5
 
