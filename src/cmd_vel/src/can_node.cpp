@@ -297,11 +297,11 @@ void process_frame(uint16_t can_id, const std::vector<uint8_t> &data, ros::Publi
     //     // }
     //     // std::cout << std::dec << "\n";
 
-    //     // std::cout << "Truoc: " << group1 << "\n";
-    //     // std::cout << "Phai: " << group2 << "\n";
-    //     // std::cout << "Trai: " << group3 << "\n";
-    //     // std::cout << "Sau: " << group4 << "\n";
-    //     cnt_receive++;
+    //     std::cout << "Truoc: " << group1 << "\n";
+    //     std::cout << "Phai: " << group2 << "\n";
+    //     std::cout << "Trai: " << group3 << "\n";
+    //     std::cout << "Sau: " << group4 << "\n";
+    //     // cnt_receive++;
     //     break;
     // }
     case 0x11://encoder 

@@ -20,6 +20,7 @@
 
     <!-- Load map (yaml file, không dùng .pbstream) -->
     <arg name="map_file" default="$(find robot_fablab)/maps/map_fablab.yaml" />
+    <!-- <arg name="map_file" default="$(find robot_fablab)/maps/my_map.yaml" /> -->
     <node name="map_server" pkg="map_server" type="map_server" args="$(arg map_file)" />
 
     <group if="$(arg can_enabled)">
