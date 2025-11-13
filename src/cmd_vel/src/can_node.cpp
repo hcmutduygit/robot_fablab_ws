@@ -37,7 +37,8 @@ static const std::map<std::vector<uint8_t>, std::pair<std::string, std::string>>
     {{0xfa, 0xdc, 0x02, 0xcd, 0xe9, 0x55, 0xaa, 0xc8}, {"QUANG DUY", "Duy"}},
     {{0xef, 0xa8, 0x98, 0x1e, 0xc1, 0x55, 0xaa, 0xc8}, {"CHI THIEN", "Thien"}},
     {{0xb6, 0x87, 0x13, 0x2b, 0x09, 0x55, 0xaa, 0xc8}, {"VAN LOI", "Loi"}},
-    {{0xc2, 0xbf, 0xb0, 0x2e, 0xe3, 0x55, 0xaa, 0xc8}, {"BACH THU", "Thu"}}};
+    {{0xc2, 0xbf, 0xb0, 0x2e, 0xe3, 0x55, 0xaa, 0xc8}, {"BACH THU", "Thu"}},
+    {{0xd2, 0xb8, 0x3d, 0x04, 0x5b, 0x55, 0xaa, 0xc8}, {"DINH HUY", "Huy"}}};
 
 // Simple function to publish MQTT message via Python script
 void publishMQTTMessage(const std::string &user_name, const std::string &mqtt_msg, const std::string &timestamp)
@@ -260,7 +261,7 @@ void process_frame(uint16_t can_id, const std::vector<uint8_t> &data, ros::Publi
         // std::cout << "pitch_degree: " << pitch << "\n";
         // std::cout << "Yaw_degree: " << raw_yaw << "\n";
         updateOdometry(left_mps, right_mps, odom_pub, lasttime);
-        // cnt_receive++;
+        cnt_receive_imu++;
         break;
     }
     // // IMU Gyro
@@ -297,11 +298,11 @@ void process_frame(uint16_t can_id, const std::vector<uint8_t> &data, ros::Publi
     //     // }
     //     // std::cout << std::dec << "\n";
 
-    //     std::cout << "Truoc: " << group1 << "\n";
-    //     std::cout << "Phai: " << group2 << "\n";
-    //     std::cout << "Trai: " << group3 << "\n";
-    //     std::cout << "Sau: " << group4 << "\n";
-    //     // cnt_receive++;
+    //     // std::cout << "Truoc: " << group1 << "\n";
+    //     // std::cout << "Phai: " << group2 << "\n";
+    //     // std::cout << "Trai: " << group3 << "\n";
+    //     // std::cout << "Sau: " << group4 << "\n";
+    //     cnt_receive++;
     //     break;
     // }
     case 0x11://encoder 
@@ -340,7 +341,7 @@ void process_frame(uint16_t can_id, const std::vector<uint8_t> &data, ros::Publi
         // std::cout << "Converted Left Velocity (m/s): " << left_mps << "\n";
         // std::cout << "Converted Right Velocity (m/s): " << right_mps << "\n";
         // updateOdometry(left_mps, right_mps, x, y, odom_pub, lasttime, yaw_offset, initialized, yaw_angle);
-        cnt_receive++;
+        cnt_receive_odom++;
         break;
     }
     default:
@@ -353,8 +354,10 @@ void process_frame(uint16_t can_id, const std::vector<uint8_t> &data, ros::Publi
 
 void CntBytes(const ros::TimerEvent &event)
 {
-    ROS_WARN("Receive Packages = %d Pkg/s", cnt_receive);
-    cnt_receive = 0;
+    ROS_WARN("Receive IMU Packages = %d Pkg/s", cnt_receive_imu);
+    cnt_receive_imu = 0;
+    ROS_WARN("Receive Odom Packages = %d Pkg/s", cnt_receive_odom);
+    cnt_receive_odom = 0;
     ROS_WARN("Send Packages = %d Pkg/s", cnt_send);
     cnt_send = 0;
 }
@@ -409,12 +412,23 @@ int main(int argc, char **argv)
     sub = nh.subscribe("Cmd_vel", 1, CallBackVel);
     // amcl_sub = nh.subscribe("amcl_pose", 10, CallBackAMCL);
     cnt_byte = nh.createTimer(ros::Duration(10), CntBytes);
+    
+    // Master request 
     loopControl = nh.createTimer(
         ros::Duration(cycle_transmit),
         [&](const ros::TimerEvent&) {
             can.send(0x050, {1, 0, 0, 0, 0, 0, 0, 0}); // slave master - gửi trước
             cnt_send++;
             TransmitSTM(odom_pub, lasttime); // publish sau
+        }
+    );
+    
+    // Master request 
+    loopControl2 = nh.createTimer(
+        ros::Duration(0.4),
+        [&](const ros::TimerEvent&) {
+            can.send(0x051, {1, 0, 0, 0, 0, 0, 0, 0});
+            cnt_send++;
         }
     );
 
