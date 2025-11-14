@@ -92,10 +92,10 @@ void send_vel(WaveshareCAN &can) //0x013
     try
     {
         // Get integer velocities
-        int right_vel = right_wheel_velocity;
-        int left_vel = left_wheel_velocity;
-        // int right_vel = 0;
-        // int left_vel = 0;
+        // int right_vel = right_wheel_velocity;
+        // int left_vel = left_wheel_velocity;
+        int right_vel = 0;
+        int left_vel = 0;
      
         // Create 8-byte data array: first 4 bytes for left wheel, last 4 bytes for right wheel
         uint8_t data[8];
@@ -133,10 +133,10 @@ void CallBackVel(const utils::cmd_vel::ConstPtr &cmd_vel)
     left_wheel_velocity = ConvertPulse(v_left);
     right_wheel_velocity = ConvertPulse(v_right);
 
-    if (number==2) {
-        send_vel(can);
-    }
-    // send_vel(can);
+    // if (number==2) {
+    //     send_vel(can);
+    // }
+    send_vel(can);
 }
 
 void CallBackAMCL(const geometry_msgs::PoseWithCovarianceStamped::ConstPtr& msg) {
@@ -363,7 +363,7 @@ std::string generateCSVFileName()
     std::time_t now_time = std::chrono::system_clock::to_time_t(now);
     
     std::stringstream filename;
-    filename << "/home/duybuntu/robot_fablab_ws/src/cmd_vel/csv_data/can_data_";
+    filename << "/home/nvidia/robot_fablab_ws/src/cmd_vel/csv_data/can_data_";
     filename << std::put_time(std::localtime(&now_time), "%Y%m%d_%H%M%S");
     filename << ".csv";
     
