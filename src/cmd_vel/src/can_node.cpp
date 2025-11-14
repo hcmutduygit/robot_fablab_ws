@@ -8,6 +8,7 @@
 #include <chrono> // For time measurement
 #include <ctime>
 #include <iomanip>
+#include <fstream>
 #include <sensor_msgs/Imu.h>
 #define PI 3.14159265358979323846
 
@@ -355,13 +356,77 @@ void process_frame(uint16_t can_id, const std::vector<uint8_t> &data, ros::Publi
     }
 }
 
+std::string generateCSVFileName() 
+{
+    // Tạo tên file dựa trên timestamp khi bắt đầu chương trình
+    auto now = std::chrono::system_clock::now();
+    std::time_t now_time = std::chrono::system_clock::to_time_t(now);
+    
+    std::stringstream filename;
+    filename << "/home/duybuntu/robot_fablab_ws/src/cmd_vel/csv_data/can_data_";
+    filename << std::put_time(std::localtime(&now_time), "%Y%m%d_%H%M%S");
+    filename << ".csv";
+    
+    return filename.str();
+}
+
+void saveDataToCSV(int imu_packages, int odom_packages, int send_packages)
+{
+    // Tạo timestamp cho dữ liệu
+    auto now = std::chrono::system_clock::now();
+    std::time_t now_time = std::chrono::system_clock::to_time_t(now);
+    auto ms = std::chrono::duration_cast<std::chrono::milliseconds>(
+        now.time_since_epoch()) % 1000;
+    
+    std::stringstream timestamp;
+    timestamp << std::put_time(std::localtime(&now_time), "%Y-%m-%d %H:%M:%S");
+    timestamp << "." << std::setfill('0') << std::setw(3) << ms.count();
+    
+    // Biến static để lưu tên file - chỉ tạo 1 lần khi chương trình bắt đầu
+    static std::string csv_file_path = generateCSVFileName();
+    static bool is_first_write = true;
+    
+    // Thông báo tên file khi lần đầu ghi
+    if (is_first_write) {
+        ROS_INFO("CSV file created: %s", csv_file_path.c_str());
+        is_first_write = false;
+    }
+    
+    // Kiểm tra xem file có tồn tại không để thêm header
+    bool file_exists = std::ifstream(csv_file_path).good();
+    
+    std::ofstream csv_file(csv_file_path, std::ios::app);
+    if (csv_file.is_open()) {
+        // Thêm header nếu file mới tạo
+        if (!file_exists) {
+            csv_file << "Timestamp,IMU_Packages_per_sec,Odom_Packages_per_sec,Send_Packages_per_sec\n";
+        }
+        
+        // Ghi dữ liệu
+        csv_file << timestamp.str() << "," 
+                 << imu_packages << "," 
+                 << odom_packages << "," 
+                 << send_packages << "\n";
+        csv_file.close();
+        
+        ROS_INFO("Data saved: IMU=%d, Odom=%d, Send=%d", imu_packages, odom_packages, send_packages);
+    } else {
+        ROS_ERROR("Cannot open CSV file: %s", csv_file_path.c_str());
+    }
+}
+
 void CntBytes(const ros::TimerEvent &event)
 {
     ROS_WARN("Receive IMU Packages = %d Pkg/s", cnt_receive_imu);
-    cnt_receive_imu = 0;
     ROS_WARN("Receive Odom Packages = %d Pkg/s", cnt_receive_odom);
-    cnt_receive_odom = 0;
     ROS_WARN("Send Packages = %d Pkg/s", cnt_send);
+    
+    // Lưu dữ liệu vào CSV trước khi reset
+    saveDataToCSV(cnt_receive_imu, cnt_receive_odom, cnt_send);
+    
+    // Reset counters
+    cnt_receive_imu = 0;
+    cnt_receive_odom = 0;
     cnt_send = 0;
 }
 
