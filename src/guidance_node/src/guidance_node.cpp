@@ -251,7 +251,7 @@ int main(int argc, char **argv){
             if (waypoints_x_temp.size() == waypoints_y_temp.size()) {
                 for (size_t i = 0; i < waypoints_x_temp.size(); ++i) {
                     wp.push_back({waypoints_x_temp[i], waypoints_y_temp[i]});
-                    ROS_INFO("Loaded waypoint #%zu from param: (%.3f, %.3f)", wp.size()-1, waypoints_x_temp[i], waypoints_y_temp[i]);
+                    // ROS_INFO("Loaded waypoint #%zu from param: (%.3f, %.3f)", wp.size()-1, waypoints_x_temp[i], waypoints_y_temp[i]);
                 }
             }
             
