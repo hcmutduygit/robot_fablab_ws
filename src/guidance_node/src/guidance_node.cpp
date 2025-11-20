@@ -103,23 +103,23 @@ void tranfer_wp() {
         // ROS_INFO("Reached waypoint #%d: (%.2f, %.2f) ✓✓✓", cnt+1, wp[cnt+1].first, wp[cnt+1].second);
         cnt +=1;
         
-        // // Neu da den waypoint cuoi cung, publish MQTT arrival
-        // if (cnt + 1 >= wp.size()) {
-        //     ROS_WARN("========================================");
-        //     ROS_WARN("✓✓✓ REACHED FINAL DESTINATION ✓✓✓");
-        //     ROS_WARN("Publishing arrival status to MQTT...");
-        //     ROS_WARN("========================================");
+        // Neu da den waypoint cuoi cung, publish MQTT arrival
+        if (cnt + 1 >= wp.size()) {
+            ROS_WARN("========================================");
+            ROS_WARN("✓✓✓ REACHED FINAL DESTINATION ✓✓✓");
+            ROS_WARN("Publishing arrival status to MQTT...");
+            ROS_WARN("========================================");
             
-        //     // Goi Python script de publish MQTT
-        //     std::string script_path = "python /home/nvidia/robot_fablab_ws/src/MQTT/publish_arrival.py";
-        //     int result = system(script_path.c_str());
+            // Goi Python script de publish MQTT
+            std::string script_path = "python /home/nvidia/robot_fablab_ws/src/MQTT/publish_arrival.py";
+            int result = system(script_path.c_str());
             
-        //     if (result == 0) {
-        //         ROS_INFO("Successfully published arrival status to MQTT");
-        //     } else {
-        //         ROS_ERROR("Failed to publish arrival status (exit code: %d)", result);
-        //     }
-        // }
+            if (result == 0) {
+                ROS_WARN("Successfully published arrival status to MQTT");
+            } else {
+                ROS_ERROR("Failed to publish arrival status (exit code: %d)", result);
+            }
+        }
     }
 }
 
@@ -215,7 +215,7 @@ int main(int argc, char **argv){
     // ========================================================================
     // waypoint_mode = 0: Doc tu PARAM (cach cu)
     // waypoint_mode = 1: Doc tu TOPIC (cach moi - MQTT)
-    int waypoint_mode = 0; // Mac dinh dung topic
+    int waypoint_mode = 1; // Mac dinh dung topic
     arg_nh.getParam("waypoint_mode", waypoint_mode);
 
     if (waypoint_mode == 0) {
