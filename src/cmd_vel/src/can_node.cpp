@@ -3,6 +3,7 @@
 #include "odom_publisher.hpp"
 #include <cstdlib>
 #include <string>
+#include <sstream>
 #include <map>
 #include <vector>
 #include <chrono> // For time measurement
@@ -423,6 +424,20 @@ void CntBytes(const ros::TimerEvent &event)
     
     // Lưu dữ liệu vào CSV trước khi reset
     saveDataToCSV(cnt_receive_imu, cnt_receive_odom, cnt_send);
+    
+    // Publish telemetry data to MQTT (non-blocking, low overhead)
+    if (!g_should_exit) {
+        std::string python_script = "/home/nvidia/robot_fablab_ws/src/MQTT/telemetry_publisher.py";
+        std::stringstream command;
+        // Sử dụng nohup để tránh zombie processes
+        command << "nohup python2 " << python_script << " " 
+                << cnt_receive_imu << " " 
+                << cnt_receive_odom << " " 
+                << cnt_send << " >/dev/null 2>&1 &";
+        
+        system(command.str().c_str());
+        // Không cần kiểm tra result vì đã chạy background
+    }
     
     // Reset counters
     cnt_receive_imu = 0;
