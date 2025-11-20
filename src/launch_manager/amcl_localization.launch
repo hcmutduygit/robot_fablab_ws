@@ -9,13 +9,13 @@
     <arg name="base_frame_id"   default="base_footprint"/>
     <arg name="global_frame_id" default="map"/>
 
-    <arg name="mqtt_enabled" default="false" />
+    <arg name="mqtt_enabled" default="true" />
 
     <!-- Lidar driver -->
     <include file="$(find rplidar_ros)/launch/rplidar_s2.launch"/>
 
     <!-- RViz -->
-    <arg name="rvizconfig" default="$(find rviz)/amcl.rviz"/>
+    <arg name="rvizconfig" default="$(find rviz)/robot.rviz"/>
     <node name="rviz" pkg="rviz" type="rviz" args="-d $(arg rvizconfig)"/>
 
     <!-- Load map (yaml file, không dùng .pbstream) -->
@@ -93,7 +93,7 @@
             <param name="angular_speed" value="0.5"/>
             <param name="goal_radius" value="0.5"/>
             <param name="cycle" value="0.1"/>
-            <param name="angular_speed_max" value="1.5"/>
+            <param name="angular_speed_max" value="0.8"/>
             <param name="linear_speed_max" value="0.5"/>
             <param name="KP" value="0.7"/>
             <param name="drive" value="1"/>
