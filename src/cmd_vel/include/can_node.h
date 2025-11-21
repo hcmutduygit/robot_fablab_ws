@@ -305,10 +305,12 @@ private:
  ros::Subscriber sub;
  ros::Subscriber amcl_sub;
  ros::Timer loopControl;
+ ros::Timer loopControl2;
  ros::Timer cnt_byte;
  int number, new_number, calib ;
  float cycle_transmit = 0;
- int cnt_receive = 0;
+ int cnt_receive_odom = 0;
+ int cnt_receive_imu = 0;
  int cnt_send = 0;
  float right_mps = 0.0;
  float left_mps = 0.0;

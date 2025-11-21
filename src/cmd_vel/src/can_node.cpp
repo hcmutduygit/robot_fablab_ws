@@ -3,11 +3,13 @@
 #include "odom_publisher.hpp"
 #include <cstdlib>
 #include <string>
+#include <sstream>
 #include <map>
 #include <vector>
 #include <chrono> // For time measurement
 #include <ctime>
 #include <iomanip>
+#include <fstream>
 #include <sensor_msgs/Imu.h>
 #define PI 3.14159265358979323846
 
@@ -37,7 +39,8 @@ static const std::map<std::vector<uint8_t>, std::pair<std::string, std::string>>
     {{0xfa, 0xdc, 0x02, 0xcd, 0xe9, 0x55, 0xaa, 0xc8}, {"QUANG DUY", "Duy"}},
     {{0xef, 0xa8, 0x98, 0x1e, 0xc1, 0x55, 0xaa, 0xc8}, {"CHI THIEN", "Thien"}},
     {{0xb6, 0x87, 0x13, 0x2b, 0x09, 0x55, 0xaa, 0xc8}, {"VAN LOI", "Loi"}},
-    {{0xc2, 0xbf, 0xb0, 0x2e, 0xe3, 0x55, 0xaa, 0xc8}, {"BACH THU", "Thu"}}};
+    {{0xc2, 0xbf, 0xb0, 0x2e, 0xe3, 0x55, 0xaa, 0xc8}, {"BACH THU", "Thu"}},
+    {{0xd2, 0xb8, 0x3d, 0x04, 0x5b, 0x55, 0xaa, 0xc8}, {"DINH HUY", "Huy"}}};
 
 // Simple function to publish MQTT message via Python script
 void publishMQTTMessage(const std::string &user_name, const std::string &mqtt_msg, const std::string &timestamp)
@@ -85,13 +88,15 @@ float ConvertVelocityFromPulse(int pulse)
     return velocity_mps;
 }
 
-void send_vel(WaveshareCAN &can) //0x013
+void send_vel(WaveshareCAN &can) //0x030
 {
     try
     {
         // Get integer velocities
         int right_vel = right_wheel_velocity;
         int left_vel = left_wheel_velocity;
+        // int right_vel = 3000;
+        // int left_vel = -3000;
      
         // Create 8-byte data array: first 4 bytes for left wheel, last 4 bytes for right wheel
         uint8_t data[8];
@@ -132,6 +137,7 @@ void CallBackVel(const utils::cmd_vel::ConstPtr &cmd_vel)
     if (number==2) {
         send_vel(can);
     }
+    // send_vel(can);
 }
 
 void CallBackAMCL(const geometry_msgs::PoseWithCovarianceStamped::ConstPtr& msg) {
@@ -260,7 +266,7 @@ void process_frame(uint16_t can_id, const std::vector<uint8_t> &data, ros::Publi
         // std::cout << "pitch_degree: " << pitch << "\n";
         // std::cout << "Yaw_degree: " << raw_yaw << "\n";
         updateOdometry(left_mps, right_mps, odom_pub, lasttime);
-        // cnt_receive++;
+        cnt_receive_imu++;
         break;
     }
     // // IMU Gyro
@@ -340,7 +346,7 @@ void process_frame(uint16_t can_id, const std::vector<uint8_t> &data, ros::Publi
         // std::cout << "Converted Left Velocity (m/s): " << left_mps << "\n";
         // std::cout << "Converted Right Velocity (m/s): " << right_mps << "\n";
         // updateOdometry(left_mps, right_mps, x, y, odom_pub, lasttime, yaw_offset, initialized, yaw_angle);
-        cnt_receive++;
+        cnt_receive_odom++;
         break;
     }
     default:
@@ -351,11 +357,91 @@ void process_frame(uint16_t can_id, const std::vector<uint8_t> &data, ros::Publi
     }
 }
 
+std::string generateCSVFileName() 
+{
+    // Tạo tên file dựa trên timestamp khi bắt đầu chương trình
+    auto now = std::chrono::system_clock::now();
+    std::time_t now_time = std::chrono::system_clock::to_time_t(now);
+    
+    std::stringstream filename;
+    filename << "/home/nvidia/robot_fablab_ws/src/cmd_vel/csv_data/can_data_";
+    filename << std::put_time(std::localtime(&now_time), "%Y%m%d_%H%M%S");
+    filename << ".csv";
+    
+    return filename.str();
+}
+
+void saveDataToCSV(int imu_packages, int odom_packages, int send_packages)
+{
+    // Tạo timestamp cho dữ liệu
+    auto now = std::chrono::system_clock::now();
+    std::time_t now_time = std::chrono::system_clock::to_time_t(now);
+    auto ms = std::chrono::duration_cast<std::chrono::milliseconds>(
+        now.time_since_epoch()) % 1000;
+    
+    std::stringstream timestamp;
+    timestamp << std::put_time(std::localtime(&now_time), "%Y-%m-%d %H:%M:%S");
+    timestamp << "." << std::setfill('0') << std::setw(3) << ms.count();
+    
+    // Biến static để lưu tên file - chỉ tạo 1 lần khi chương trình bắt đầu
+    static std::string csv_file_path = generateCSVFileName();
+    static bool is_first_write = true;
+    
+    // Thông báo tên file khi lần đầu ghi
+    if (is_first_write) {
+        ROS_INFO("CSV file created: %s", csv_file_path.c_str());
+        is_first_write = false;
+    }
+    
+    // Kiểm tra xem file có tồn tại không để thêm header
+    bool file_exists = std::ifstream(csv_file_path).good();
+    
+    std::ofstream csv_file(csv_file_path, std::ios::app);
+    if (csv_file.is_open()) {
+        // Thêm header nếu file mới tạo
+        if (!file_exists) {
+            csv_file << "Timestamp,IMU_Packages_per_sec,Odom_Packages_per_sec,Send_Packages_per_sec\n";
+        }
+        
+        // Ghi dữ liệu
+        csv_file << timestamp.str() << "," 
+                 << imu_packages << "," 
+                 << odom_packages << "," 
+                 << send_packages << "\n";
+        csv_file.close();
+        
+        ROS_INFO("Data saved: IMU=%d, Odom=%d, Send=%d", imu_packages, odom_packages, send_packages);
+    } else {
+        ROS_ERROR("Cannot open CSV file: %s", csv_file_path.c_str());
+    }
+}
+
 void CntBytes(const ros::TimerEvent &event)
 {
-    ROS_WARN("Receive Packages = %d Pkg/s", cnt_receive);
-    cnt_receive = 0;
+    ROS_WARN("Receive IMU Packages = %d Pkg/s", cnt_receive_imu);
+    ROS_WARN("Receive Odom Packages = %d Pkg/s", cnt_receive_odom);
     ROS_WARN("Send Packages = %d Pkg/s", cnt_send);
+    
+    // Lưu dữ liệu vào CSV trước khi reset
+    saveDataToCSV(cnt_receive_imu, cnt_receive_odom, cnt_send);
+    
+    // Publish telemetry data to MQTT (non-blocking, low overhead)
+    if (!g_should_exit) {
+        std::string python_script = "/home/nvidia/robot_fablab_ws/src/MQTT/telemetry_publisher.py";
+        std::stringstream command;
+        // Sử dụng nohup để tránh zombie processes
+        command << "nohup python2 " << python_script << " " 
+                << cnt_receive_imu << " " 
+                << cnt_receive_odom << " " 
+                << cnt_send << " >/dev/null 2>&1 &";
+        
+        system(command.str().c_str());
+        // Không cần kiểm tra result vì đã chạy background
+    }
+    
+    // Reset counters
+    cnt_receive_imu = 0;
+    cnt_receive_odom = 0;
     cnt_send = 0;
 }
 
@@ -409,6 +495,8 @@ int main(int argc, char **argv)
     sub = nh.subscribe("Cmd_vel", 1, CallBackVel);
     // amcl_sub = nh.subscribe("amcl_pose", 10, CallBackAMCL);
     cnt_byte = nh.createTimer(ros::Duration(10), CntBytes);
+    
+    // Master request 
     loopControl = nh.createTimer(
         ros::Duration(cycle_transmit),
         [&](const ros::TimerEvent&) {
@@ -417,6 +505,15 @@ int main(int argc, char **argv)
             TransmitSTM(odom_pub, lasttime); // publish sau
         }
     );
+    
+    // // Master request 
+    // loopControl2 = nh.createTimer(
+    //     ros::Duration(0.1),
+    //     [&](const ros::TimerEvent&) {
+    //         can.send(0x030, {1, 0, 0, 0, 0, 0, 0, 0});
+    //         cnt_send++;
+    //     }
+    // );
 
      // Thêm biến mới để kiểm tra runtime thay đổi mode
     new_number = number;
