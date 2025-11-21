@@ -28,7 +28,8 @@ TOPICS = {
     "battery": "robot/battery",
     "velocity": "robot/velocity", 
     "attendance": "robot/attendance",
-    "location": "robot/location"
+    "location": "robot/location",
+    "telemetry": "robot/telemetry"
 }
 
 # Message Settings
