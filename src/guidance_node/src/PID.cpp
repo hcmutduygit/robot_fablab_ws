@@ -1,6 +1,6 @@
 #include "pid.h"
 
-double PID::pid(double error, float kp, float kd) {
+double PID::pid(double error, float kd, float kp) {
     current_time = ros::Time::now().toSec();
     dt = (last_time > 0) ? (current_time - last_time) : 0.01;
 
@@ -12,5 +12,5 @@ double PID::pid(double error, float kp, float kd) {
     last_value = error;
     last_time = current_time;
     // return   ki * error + kp * derivate;
-    return kd * error + kp * derivate;
+    return kp * error + kd * derivate;
 }

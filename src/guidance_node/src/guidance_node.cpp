@@ -50,8 +50,9 @@ void control_los(float goal_x, float goal_y, float previous_x, float previous_y)
 
     // ROS_INFO("CrossTrack = %.2f, LongTrack = %.2f, HeadingDesire = %.2f, HeadingErr = %.2f, Theta = %.2f",cross_track, long_track,target_heading,heading_error,theta);
 
-    filtered_angular_z = pid_controller.pid(heading_error, KP, ANGULAR_SPEED);
+    filtered_angular_z = pid_controller.pid(heading_error, KD, ANGULAR_SPEED);
     // filtered_angular_z = limit(filtered_angular_z, -MAX_ANGULAR_SPEED, ANGULAR_SPEED);
+    std::cout << "filtered_angular_z = " << filtered_angular_z << "\n";
     filtered_angular_z = limit(filtered_angular_z, -MAX_ANGULAR_SPEED, MAX_ANGULAR_SPEED);
 
     dist_to_goal = abs(s_k_1 - long_track);
@@ -196,14 +197,14 @@ int main(int argc, char **argv){
     arg_nh.getParam("cycle", cycle);
     arg_nh.getParam("linear_speed_max", MAX_LINEAR_SPEED);
     arg_nh.getParam("angular_speed_max", MAX_ANGULAR_SPEED);
-    arg_nh.getParam("KP", KP);
+    arg_nh.getParam("KD", KD);
     arg_nh.getParam("drive", drive);
     arg_nh.getParam("min_speed_linear", min_speed);
     arg_nh.getParam("direct", direct);
 
 
 
-    ROS_INFO("Linear_speed_max = %.2f, Angular_speed_max= %.2f, goal_radius= %.2f. KP = %.2f",MAX_LINEAR_SPEED,MAX_ANGULAR_SPEED,GOAL_RADIUS,KP);
+    ROS_INFO("Linear_speed_max = %.2f, Angular_speed_max= %.2f, goal_radius= %.2f. KD = %.2f",MAX_LINEAR_SPEED,MAX_ANGULAR_SPEED,GOAL_RADIUS,KD);
     ros::NodeHandle nh;
 
     pub = nh.advertise<utils::cmd_vel>("Cmd_vel", 1);
