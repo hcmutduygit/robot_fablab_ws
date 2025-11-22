@@ -109,7 +109,7 @@ inline void updateOdometry(float vel_left, float vel_right, ros::Publisher& odom
     odom_tf.transform.rotation = tf::createQuaternionMsgFromYaw(yaw);
     odom_broadcaster.sendTransform(odom_tf);
 
-    // std::cout << "yaw: " << yaw << "\n";
+    std::cout << "yaw: " << yaw << "\n";
     // std::cout << "v_left odom =" << left_wheel << "(m/s), v_right odom =" << right_wheel << "(m/s)\n";
     // std::cout << "current_time: " << cur_time << "\n";
     // std::cout << "dt: " << dt << "\n";
@@ -118,5 +118,4 @@ inline void updateOdometry(float vel_left, float vel_right, ros::Publisher& odom
     // std::cout << "x: " << x << ", y: " << y << "\n";
     // std::cout << "pose.orientation: " << odom.pose.pose.orientation << "\n";
     // std::cout << "---------------------------" <<"\n";
-
 }
