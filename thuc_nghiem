@@ -2,5 +2,32 @@ Thực nghiệm độ chính xác của map tạo được với thuật toán c
 Thực nghiệm độ chính xác định vị dựa trên map có sẵn của thuật toán AMCL
 Thực nghiệm quỹ đạo di chuyển thực tế so với quỹ đạo di chuyển từ thuật toán LOS
 Thực nghiệm tỷ lệ mất gói dữ liệu
-
+000000 0.000000 0.959084 0.283122)
+         at line 244 in /tmp/binarydeb/ros-melodic-tf2-0.6.5/src/buffer_core.cpp
+[ERROR] [1763812314.878461432]: Ignoring transform for child_frame_id "base_footprint" from authority "unknown_publisher" because of a nan value in the transform (nan nan 0.000000) (0.000000 0.000000 0.959084 0.283122)
+Error:   TF_NAN_INPUT: Ignoring transform for child_frame_id "base_footprint" from authority "unknown_publisher" because of a nan value in the transform (nan nan 0.000000) (0.000000 0.000000 0.959084 0.283122)
+         at line 244 in /tmp/binarydeb/ros-melodic-tf2-0.6.5/src/buffer_core.cpp
+[ERROR] [1763812314.928439736]: Ignoring transform for child_frame_id "base_footprint" from authority "unknown_publisher" because of a nan value in the transform (nan nan 0.000000) (0.000000 0.000000 0.959084 0.283122)
+[ WARN] [1763812314.976792312]: Receive IMU Packages = 19 Pkg/s
+[ WARN] [1763812314.976925496]: Receive Odom Packages = 20 Pkg/s
+[ WARN] [1763812314.977186200]: Send Packages = 20 Pkg/s
+[ INFO] [1763812314.977437464]: Data saved: IMU=19, Odom=20, Send=20, Yaw=-147.07, Left=0.0000 m/s, Right=0.0000 m/s
+Error:   TF_NAN_INPUT: Ignoring transform for child_frame_id "base_footprint" from authority "unknown_publisher" because of a nan value in the transform (nan nan 0.000000) (0.000000 0.000000 0.959084 0.283122)
+         at line 244 in /tmp/binarydeb/ros-melodic-tf2-0.6.5/src/buffer_core.cpp
+[ERROR] [1763812314.983108408]: Ignoring transform for child_frame_id "base_footprint" from authority "unknown_publisher" because of a nan value in the transform (nan nan 0.000000) (0.000000 0.000000 0.959084 0.283122)
+[ERROR] [1763812315.028380888]: Ignoring transform for child_frame_id "base_footprint" from authority "unknown_publisher" because of a nan value in the transform (nan nan 0.000000) (0.000000 0.000000 0.959084 0.283122)
+Error:   TF_NAN_INPUT: Ignoring transform for child_frame_id "base_footprint" from authority "unknown_publisher" because of a nan value in the transform (nan nan 0.000000) (0.000000 0.000000 0.959084 0.283122)
+         at line 244 in /tmp/binarydeb/ros-melodic-tf2-0.6.5/src/buffer_core.cpp
+[ INFO] [1763812315.031422264]: === tranfer_wp DEBUG === wp.size=13, cnt=1, robot=(17.69, 1.53)
+Error:   TF_NAN_INPUT: Ignoring transform for child_frame_id "base_footprint" from authority "unknown_publisher" because of a nan value in the transform (nan nan 0.000000) (0.000000 0.000000 0.959084 0.283122)
+         at line 244 in /tmp/binarydeb/ros-melodic-tf2-0.6.5/src/buffer_core.cpp
+[ERROR] [1763812315.078690264]: Ignoring transform for child_frame_id "base_footprint" from authority "unknown_publisher" because of a nan value in the transform (nan nan 0.000000) (0.000000 0.000000 0.959084 0.283122)
+Error:   TF_NAN_INPUT: Ignoring transform for child_frame_id "base_footprint" from authority "unknown_publisher" because of a nan value in the transform (nan nan 0.000000) (0.000000 0.000000 0.959084 0.283122)
+         at line 244 in /tmp/binarydeb/ros-melodic-tf2-0.6.5/src/buffer_core.cpp
+[ERROR] [1763812315.128332440]: Ignoring transform for child_frame_id "base_footprint" from authority "unknown_publisher" because of a nan value in the transform (nan nan 0.000000) (0.000000 0.000000 0.959084 0.283122)
+Error:   [ERROR] [1763812315.178455320]: Ignoring transform for child_frame_id "base_footprint" from authority "unknown_publisher" because of a nan value in the transform (nan nan 0.000000) (0.000000 0.000000 0.959084 0.283122)
+TF_NAN_INPUT: Ignoring transform for child_frame_id "base_footprint" from authority "unknown_publisher" because of a nan value in the transform (nan nan 0.000000) (0.000000 0.000000 0.959084 0.283122)
+         at line 244 in /tmp/binarydeb/ros-melodic-tf2-0.6.5/src/buffer_core.cpp
+Error:   TF_NAN_INPUT: Ignoring transform for child_frame_id "base_footprint" from authority "unknown_publisher" because of a nan value in the transform (nan nan 0.000000) (0.000000 0.000000 0.959084 0.283122)
+         at line [ERROR] [1763812315.228536888]: Ignoring transform for child_frame_id "base_footprint" from authority "unknown_publisher" because of a nan valu
 
