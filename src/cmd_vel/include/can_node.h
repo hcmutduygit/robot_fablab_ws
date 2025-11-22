@@ -314,4 +314,8 @@ private:
  int cnt_send = 0;
  float right_mps = 0.0;
  float left_mps = 0.0;
+ float qx = 0.0;
+ float qy = 0.0;
+ float qz = 0.0;
+ float qw = 0.0;
 #endif 
