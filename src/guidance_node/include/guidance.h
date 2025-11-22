@@ -37,7 +37,7 @@ double GOAL_RADIUS;
 double MAX_LINEAR_SPEED, min_speed ;
 double MAX_ANGULAR_SPEED;
 float cycle;
-float KP;
+float KD;
 double filtered_linear_x = 0.0;
 double filtered_angular_z = 0.0;
 int cnt = 0;
