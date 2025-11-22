@@ -400,17 +400,23 @@ void saveDataToCSV(int imu_packages, int odom_packages, int send_packages)
     if (csv_file.is_open()) {
         // Thêm header nếu file mới tạo
         if (!file_exists) {
-            csv_file << "Timestamp,IMU_Packages_per_sec,Odom_Packages_per_sec,Send_Packages_per_sec\n";
+            csv_file << "Timestamp,IMU_Packages_per_sec,Odom_Packages_per_sec,Send_Packages_per_sec,"
+                     << "Yaw_Angle,Left_Velocity_mps,Right_Velocity_mps\n";
         }
         
         // Ghi dữ liệu
         csv_file << timestamp.str() << "," 
                  << imu_packages << "," 
                  << odom_packages << "," 
-                 << send_packages << "\n";
+                 << send_packages << ","
+                 << std::fixed << std::setprecision(2) << yaw_angle << ","
+                 << std::setprecision(4) << left_mps << ","
+                 << std::setprecision(4) << right_mps << "\n";
         csv_file.close();
         
-        ROS_INFO("Data saved: IMU=%d, Odom=%d, Send=%d", imu_packages, odom_packages, send_packages);
+        ROS_INFO("Data saved: IMU=%d, Odom=%d, Send=%d, Yaw=%.2f, Left=%.4f m/s, Right=%.4f m/s", 
+                 imu_packages, odom_packages, send_packages, yaw_angle, 
+                 left_mps, right_mps);
     } else {
         ROS_ERROR("Cannot open CSV file: %s", csv_file_path.c_str());
     }
