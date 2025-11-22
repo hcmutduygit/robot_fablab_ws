@@ -1,0 +1,4 @@
+Timestamp,IMU_Packages_per_sec,Odom_Packages_per_sec,Send_Packages_per_sec,Yaw_Angle,Left_Velocity_mps,Right_Velocity_mps,X_Position,Y_Position
+2025-11-22 12:03:12.119,197,199,199,138.87,-0.0026,0.0000,0.000,0.000
+2025-11-22 12:03:22.119,199,200,200,138.87,0.0026,0.0000,16.209,14.987
+2025-11-22 12:03:32.120,199,200,200,138.75,0.0000,0.0026,20.724,19.525
