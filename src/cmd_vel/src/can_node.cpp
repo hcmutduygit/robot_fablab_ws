@@ -187,7 +187,7 @@ void process_frame(uint16_t can_id, const std::vector<uint8_t> &data, ros::Publi
     switch (can_id)
     {
     // RFID
-    case 0x15:
+    case 0x16:
     {
         std::cout << "ID 0x" << std::hex << can_id << std::dec << " receive RFID hex: ";
         for (uint8_t b : data)
@@ -267,6 +267,28 @@ void process_frame(uint16_t can_id, const std::vector<uint8_t> &data, ros::Publi
         // std::cout << "Yaw_degree: " << raw_yaw << "\n";
         updateOdometry(left_mps, right_mps, odom_pub, lasttime);
         cnt_receive_imu++;
+        break;
+    }
+    case 0x15:  // IMU quaternion
+    {
+        // Ensure data has at least 8 bytes for quaternion (4 bytes each)
+        if (data.size() < 8)
+        {
+            std::cerr << "Error: Insufficient data bytes for ID 0x015\n";
+            return;
+        }
+        // std::cout << "ID 0x" << std::hex << can_id << std::dec << " receive IMU hex: ";
+        // for (uint8_t b : data)
+        // {
+        //     std::cout << std::hex << std::setw(2) << std::setfill('0') << (int)b << " ";
+        // }
+        // std::cout << std::dec << std::endl;
+        // Extract roll, pitch, yaw as signed 16-bit integers and scale by 100.0
+        qw = hex_to_signed(data, 0) / 1000.0;  // Bytes 0-1
+        qx = hex_to_signed(data, 2) / 1000.0; // Bytes 2-3
+        qy = hex_to_unsigned(data, 4) / 1000.0; // Bytes 4-5
+        qz = hex_to_unsigned(data, 6) / 1000.0; // Bytes 6-7
+        // cnt_receive_imu++;
         break;
     }
     // // IMU Gyro
