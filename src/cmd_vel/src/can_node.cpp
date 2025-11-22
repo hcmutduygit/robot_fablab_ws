@@ -264,7 +264,7 @@ void process_frame(uint16_t can_id, const std::vector<uint8_t> &data, ros::Publi
         // publish_yaw(yaw);
         // std::cout << "roll_degree: " << roll << "\n";
         // std::cout << "pitch_degree: " << pitch << "\n";
-        std::cout << "Yaw_degree: " << raw_yaw << "\n";
+        // std::cout << "Yaw_degree: " << raw_yaw << "\n";
         updateOdometry(left_mps, right_mps, odom_pub, lasttime);
         cnt_receive_imu++;
         break;

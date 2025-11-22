@@ -19,7 +19,7 @@
     <node name="rviz" pkg="rviz" type="rviz" args="-d $(arg rvizconfig)"/>
 
     <!-- Load map (yaml file, không dùng .pbstream) -->
-    <arg name="map_file" default="$(find robot_fablab)/maps/map_inside_fablab.yaml" />
+    <arg name="map_file" default="$(find robot_fablab)/maps/new_map2.yaml" />
     <!-- <arg name="map_file" default="$(find robot_fablab)/maps/map_fablab.yaml" /> -->
     <node name="map_server" pkg="map_server" type="map_server" args="$(arg map_file)" />
 
@@ -93,7 +93,7 @@
             <param name="angular_speed" value="0.5"/>
             <param name="goal_radius" value="0.5"/>
             <param name="cycle" value="0.1"/>
-            <param name="angular_speed_max" value="1"/>
+            <param name="angular_speed_max" value="0.8"/>
             <param name="linear_speed_max" value="0.5"/>
             <param name="KD" value="0.7"/>
             <param name="drive" value="1"/>
@@ -101,10 +101,10 @@
             <param name="min_speed_linear" value="0.3"/>
             <!-- <param name="waypoints_x" value="8.43370545973, -1.5463915164, -1.02582621629, -5.14741795585, -10.2078468764, -5.14741795585, -1.02582621, -1.5463915, 8.43370545" /> -->
             <!-- <param name="waypoints_y" value="15.9036135775,  21.4933550528, 24.8810294018, 27.6081660781, 29.7301846772, 27.6081660781, 24.8810294, 21.4933550, 15.9036135" /> -->
-            <!-- <param name="waypoints_x" value="17.6858554792, 16.8749998552, 19.9679920085, 19.6681547578, 18.4091273325, 13.4507733824, 13.4117297827, 19.1596853144, 19.66815475, 19.96799200, 16.87499985, 17.68585547" />
-            <param name="waypoints_y" value="1.52747189432,  12.4088992202, 14.4544250146, 20.8412712994, 26.2399740808, 26.0336352831, 24.3740114849, 24.5011076441, 20.84127129, 14.45442501, 12.4088992202, 1.527471894" /> -->
-            <param name="waypoints_x" value="0.215465042, 5.09272268852, 4.28954811917" />
-            <param name="waypoints_y" value="0.495773281,  0.888337984803, -0.0972579290311" />
+            <param name="waypoints_x" value="17.6858554792, 16.8749998552, 19.9679920085, 19.6681547578, 18.4091273325, 13.4507733824, 13.4117297827, 19.1596853144, 19.66815475, 19.96799200, 16.87499985, 17.68585547" />
+            <param name="waypoints_y" value="1.52747189432,  12.4088992202, 14.4544250146, 20.8412712994, 26.2399740808, 26.0336352831, 24.3740114849, 24.5011076441, 20.84127129, 14.45442501, 12.4088992202, 1.527471894" />
+            <!-- <param name="waypoints_x" value="0.215465042, 5.09272268852, 4.28954811917" />
+            <param name="waypoints_y" value="0.495773281,  0.888337984803, -0.0972579290311" /> -->
         </node>
     </group>
 </launch>
