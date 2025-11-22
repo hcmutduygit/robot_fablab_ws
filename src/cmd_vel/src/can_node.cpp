@@ -141,10 +141,6 @@ void CallBackVel(const utils::cmd_vel::ConstPtr &cmd_vel)
 }
 
 void CallBackAMCL(const geometry_msgs::PoseWithCovarianceStamped::ConstPtr& msg) {
-    // Lấy tọa độ x, y từ AMCL
-    x = msg->pose.pose.position.x;
-    y = msg->pose.pose.position.y;
-    
     double orientation_x = msg->pose.pose.orientation.x;
     double orientation_y = msg->pose.pose.orientation.y;
     double orientation_z = msg->pose.pose.orientation.z;
@@ -405,7 +401,7 @@ void saveDataToCSV(int imu_packages, int odom_packages, int send_packages)
         // Thêm header nếu file mới tạo
         if (!file_exists) {
             csv_file << "Timestamp,IMU_Packages_per_sec,Odom_Packages_per_sec,Send_Packages_per_sec,"
-                     << "Yaw_Angle,Left_Velocity_mps,Right_Velocity_mps,X_Position,Y_Position\n";
+                     << "Yaw_Angle,Left_Velocity_mps,Right_Velocity_mps\n";
         }
         
         // Ghi dữ liệu
@@ -415,14 +411,12 @@ void saveDataToCSV(int imu_packages, int odom_packages, int send_packages)
                  << send_packages << ","
                  << std::fixed << std::setprecision(2) << yaw_angle << ","
                  << std::setprecision(4) << left_mps << ","
-                 << std::setprecision(4) << right_mps << ","
-                 << std::setprecision(3) << x << ","
-                 << std::setprecision(3) << y << "\n";
+                 << std::setprecision(4) << right_mps << "\n";
         csv_file.close();
         
-        ROS_INFO("Data saved: IMU=%d, Odom=%d, Send=%d, Yaw=%.2f, Left=%.4f m/s, Right=%.4f m/s, X=%.3f, Y=%.3f", 
+        ROS_INFO("Data saved: IMU=%d, Odom=%d, Send=%d, Yaw=%.2f, Left=%.4f m/s, Right=%.4f m/s", 
                  imu_packages, odom_packages, send_packages, yaw_angle, 
-                 left_mps, right_mps, x, y);
+                 left_mps, right_mps);
     } else {
         ROS_ERROR("Cannot open CSV file: %s", csv_file_path.c_str());
     }
@@ -505,7 +499,7 @@ int main(int argc, char **argv)
     } 
 
     sub = nh.subscribe("Cmd_vel", 1, CallBackVel);
-    amcl_sub = nh.subscribe("amcl_pose", 10, CallBackAMCL);
+    // amcl_sub = nh.subscribe("amcl_pose", 10, CallBackAMCL);
     cnt_byte = nh.createTimer(ros::Duration(10), CntBytes);
     
     // Master request 
