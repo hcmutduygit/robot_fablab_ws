@@ -187,7 +187,7 @@ void process_frame(uint16_t can_id, const std::vector<uint8_t> &data, ros::Publi
     switch (can_id)
     {
     // RFID
-    case 0x16:
+    case 0x19:
     {
         std::cout << "ID 0x" << std::hex << can_id << std::dec << " receive RFID hex: ";
         for (uint8_t b : data)
