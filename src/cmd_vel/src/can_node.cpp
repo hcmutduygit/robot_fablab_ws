@@ -265,7 +265,7 @@ void process_frame(uint16_t can_id, const std::vector<uint8_t> &data, ros::Publi
         // std::cout << "roll_degree: " << roll << "\n";
         // std::cout << "pitch_degree: " << pitch << "\n";
         // std::cout << "Yaw_degree: " << raw_yaw << "\n";
-        updateOdometry(left_mps, right_mps, odom_pub, lasttime);
+        // updateOdometry(left_mps, right_mps, odom_pub, lasttime);
         cnt_receive_imu++;
         break;
     }
@@ -294,6 +294,7 @@ void process_frame(uint16_t can_id, const std::vector<uint8_t> &data, ros::Publi
         tf::Matrix3x3(q).getRPY(roll, pitch, quaternion_yaw);
         quaternion_yaw = quaternion_yaw * 180.0 / PI;
         std::cout << "Quaternion Yaw (deg): " << quaternion_yaw << "\n";
+        updateOdometry(left_mps, right_mps, odom_pub, lasttime, qz, qw, quaternion_yaw);
         // cnt_receive_imu++;
         break;
     }
