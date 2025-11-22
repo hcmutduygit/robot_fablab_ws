@@ -136,7 +136,7 @@ extern std::mutex odom_mutex;
 extern bool initialized;
 extern int odom_count;
 
-inline void updateOdometry(float vel_left, float vel_right, ros::Publisher& odom_pub, ros::Time& lasttime, float& qz, float& qw, double& quaternion_yaw) {
+inline void updateOdometry(float vel_left, float vel_right, ros::Publisher& odom_pub, ros::Time& lasttime, float& qx, float& qy, float& qz, float& qw, double quaternion_yaw) {
     std::lock_guard<std::mutex> lock(odom_mutex);
     // odom_count += 1;
     // // std::cout << "odom_count" << odom_count << "\n";
@@ -208,10 +208,10 @@ inline void updateOdometry(float vel_left, float vel_right, ros::Publisher& odom
     odom.pose.pose.position.x = x;
     odom.pose.pose.position.y = y;
     odom.pose.pose.position.z = 0.0;
-    // odom.pose.pose.orientation = tf::createQuaternionMsgFromYaw(yaw);
+    // odom.pose.pose.orientation = tf::createQuaternionMsgFromYaw(quaternion_yaw);
     // std::cout << "pose.orientation: " << odom.pose.pose.orientation << "\n";
-    odom.pose.pose.orientation.x = 0;
-    odom.pose.pose.orientation.y = 0;
+    odom.pose.pose.orientation.x = qx;
+    odom.pose.pose.orientation.y = qy;
     odom.pose.pose.orientation.z = qz;
     odom.pose.pose.orientation.w = qw;
     odom.twist.twist.linear.x = v;
@@ -233,7 +233,7 @@ inline void updateOdometry(float vel_left, float vel_right, ros::Publisher& odom
     odom_tf.transform.translation.x = x;
     odom_tf.transform.translation.y = y;
     odom_tf.transform.translation.z = 0.0;
-    odom_tf.transform.rotation = tf::createQuaternionMsgFromYaw(yaw);
+    odom_tf.transform.rotation = tf::createQuaternionMsgFromYaw(quaternion_yaw);
     odom_broadcaster.sendTransform(odom_tf);
 
     // std::cout << "yaw: " << yaw << "\n";
