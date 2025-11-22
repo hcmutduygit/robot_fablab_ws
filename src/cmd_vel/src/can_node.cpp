@@ -292,7 +292,8 @@ void process_frame(uint16_t can_id, const std::vector<uint8_t> &data, ros::Publi
         tf::Quaternion q(qx, qy, qz, qw);
         double roll, pitch, quaternion_yaw;
         tf::Matrix3x3(q).getRPY(roll, pitch, quaternion_yaw);
-        std::cout << "Quaternion Yaw (rad): " << quaternion_yaw << "\n";
+        quaternion_yaw = quaternion_yaw * 180.0 / PI;
+        std::cout << "Quaternion Yaw (deg): " << quaternion_yaw << "\n";
         // cnt_receive_imu++;
         break;
     }
