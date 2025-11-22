@@ -292,9 +292,9 @@ void process_frame(uint16_t can_id, const std::vector<uint8_t> &data, ros::Publi
         tf::Quaternion q(qx, qy, qz, qw);
         double roll, pitch, quaternion_yaw;
         tf::Matrix3x3(q).getRPY(roll, pitch, quaternion_yaw);
-        quaternion_yaw = quaternion_yaw * 180.0 / PI;
-        std::cout << "Quaternion Yaw (deg): " << quaternion_yaw << "\n";
-        updateOdometry(left_mps, right_mps, odom_pub, lasttime, qz, qw, quaternion_yaw);
+        // quaternion_yaw = quaternion_yaw * 180.0 / PI;
+        // std::cout << "Quaternion Yaw (deg): " << quaternion_yaw * 180.0 / PI << "\n";
+        updateOdometry(left_mps, right_mps, odom_pub, lasttime, qx, qy, qz, qw, quaternion_yaw);
         // cnt_receive_imu++;
         break;
     }
