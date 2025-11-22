@@ -328,9 +328,6 @@ inline void updateOdometry(float vel_left, float vel_right,
     odom.pose.pose.position.x = x;
     odom.pose.pose.position.y = y;
     odom.pose.pose.position.z = 0;
-
-    odom.pose.pose.orientation.x = qx;
-    odom.pose.pose.orientation.y = qy;
     odom.pose.pose.orientation.z = qz;
     odom.pose.pose.orientation.w = qw;
 
@@ -348,7 +345,11 @@ inline void updateOdometry(float vel_left, float vel_right,
     odom_tf.transform.translation.x = x;
     odom_tf.transform.translation.y = y;
     odom_tf.transform.translation.z = 0;
-    odom_tf.transform.rotation = tf::createQuaternionMsgFromYaw(quaternion_yaw);
+    // odom_tf.transform.rotation = tf::createQuaternionMsgFromYaw(quaternion_yaw);
+    odom_tf.transform.rotation.z = qz;
+    odom_tf.transform.rotation.w = qw;
+
+
 
     br.sendTransform(odom_tf);
 }
