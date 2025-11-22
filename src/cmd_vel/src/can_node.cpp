@@ -284,10 +284,10 @@ void process_frame(uint16_t can_id, const std::vector<uint8_t> &data, ros::Publi
         // }
         // std::cout << std::dec << std::endl;
         // Extract roll, pitch, yaw as signed 16-bit integers and scale by 100.0
-        qw = hex_to_signed(data, 0) / 1000.0;  // Bytes 0-1
-        qx = hex_to_signed(data, 2) / 1000.0; // Bytes 2-3
-        qy = hex_to_unsigned(data, 4) / 1000.0; // Bytes 4-5
-        qz = hex_to_unsigned(data, 6) / 1000.0; // Bytes 6-7
+        qw = hex_to_signed(data, 0) / 10000.0;  // Bytes 0-1
+        qx = hex_to_signed(data, 2) / 10000.0; // Bytes 2-3
+        qy = hex_to_signed(data, 4) / 10000.0; // Bytes 4-5
+        qz = hex_to_signed(data, 6) / 10000.0; // Bytes 6-7
 
         tf::Quaternion q(qx, qy, qz, qw);
         double roll, pitch, quaternion_yaw;
