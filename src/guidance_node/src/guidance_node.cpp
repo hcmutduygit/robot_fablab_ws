@@ -52,7 +52,7 @@ void control_los(float goal_x, float goal_y, float previous_x, float previous_y)
 
     filtered_angular_z = pid_controller.pid(heading_error, KD, ANGULAR_SPEED);
     // filtered_angular_z = limit(filtered_angular_z, -MAX_ANGULAR_SPEED, ANGULAR_SPEED);
-    std::cout << "filtered_angular_z = " << filtered_angular_z << "\n";
+    // std::cout << "filtered_angular_z = " << filtered_angular_z << "\n";
     filtered_angular_z = limit(filtered_angular_z, -MAX_ANGULAR_SPEED, MAX_ANGULAR_SPEED);
 
     dist_to_goal = abs(s_k_1 - long_track);
@@ -216,7 +216,7 @@ int main(int argc, char **argv){
     // ========================================================================
     // waypoint_mode = 0: Doc tu PARAM (cach cu)
     // waypoint_mode = 1: Doc tu TOPIC (cach moi - MQTT)
-    int waypoint_mode = 0; // Mac dinh dung topic
+    int waypoint_mode = 1; // Mac dinh dung topic
     arg_nh.getParam("waypoint_mode", waypoint_mode);
 
     if (waypoint_mode == 0) {
