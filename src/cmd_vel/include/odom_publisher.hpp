@@ -199,6 +199,8 @@ inline void updateOdometry(float vel_left, float vel_right,
     odom.pose.pose.position.x = x;
     odom.pose.pose.position.y = y;
     odom.pose.pose.position.z = 0;
+    odom.pose.pose.orientation.x = qx;
+    odom.pose.pose.orientation.y = qy;
     odom.pose.pose.orientation.z = qz;
     odom.pose.pose.orientation.w = qw;
     odom.twist.twist.linear.x = v;
