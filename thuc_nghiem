@@ -31,3 +31,15 @@ TF_NAN_INPUT: Ignoring transform for child_frame_id "base_footprint" from author
 Error:   TF_NAN_INPUT: Ignoring transform for child_frame_id "base_footprint" from authority "unknown_publisher" because of a nan value in the transform (nan nan 0.000000) (0.000000 0.000000 0.959084 0.283122)
          at line [ERROR] [1763812315.228536888]: Ignoring transform for child_frame_id "base_footprint" from authority "unknown_publisher" because of a nan valu
 
+[ INFO] [1763982960.947858358]: Data saved: IMU=20, Odom=20, Send=20, Yaw=147.81, Left=7.0633 m/s, Right=-0.0052 m/s
+qx=-0.0086, qy=-0.0109, qz=-0.9555, qw=0.2944
+qx=-0.0084, qy=-0.0109, qz=-0.9519, qw=0.306
+qx=-0.0083, qy=-0.011, qz=-0.9471, qw=0.3204
+qx=-0.0083, qy=-0.011, qz=-0.9421, qw=0.258
+Error:   TF_DENORMALIZED_QUATERNION: Ignoring transform for child_frame_id "base_footprint" from authority "unknown_publisher" because of an invalid quaternion in the transform (0.000000 0.000000 -0.942100 0.258000)
+         at line [ERROR] [1763982961.098649911]: Ignoring transform for child_frame_id "base_footprint" from authority "unknown_publisher" because of an invalid quaternion in the transform (0.000000 0.000000 -0.942100 0.258000)
+257 in /tmp/binarydeb/ros-melodic-tf2-0.6.5/src/buffer_core.cpp
+qx=-0.0078, qy=-0.0111, qz=-0.9369, qw=0.2723
+Error:   TF_DENORMALIZED_QUATERNION: Ignoring transform for child_frame_id "base_footprint" from authority "unknown_publisher" because of an invalid quaternion in the transform (0.000000 0.000000 -0.936900 0.272300)
+         at line 257 in /tmp/binarydeb/ros-melodic-tf2-0.6.5/src/buffer_core.cpp
+[ERROR] [1763982961.148701898]: Ignoring transform for child_frame_id "base_footprint" from authority "unknown_publisher" because of an invalid quaternion in the transform (0.000000 0.000000 -0.936900 0.272300)

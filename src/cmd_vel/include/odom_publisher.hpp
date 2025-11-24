@@ -294,7 +294,7 @@ inline void updateOdometry(float vel_left, float vel_right,
     static double last_yaw = quaternion_yaw;
 
     double diff = normalizeAngle(quaternion_yaw - last_yaw);
-    if (fabs(diff) > (30.0 * PI / 180.0)) {
+    if ((fabs(diff) > (30.0 * PI / 180.0)) || (qx==0) || (qy==0)) {
         // Reject quaternion orientation — use previous orientation
         quaternion_yaw = last_yaw;
         qx = qx_prev;

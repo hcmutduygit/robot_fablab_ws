@@ -290,8 +290,10 @@ void process_frame(uint16_t can_id, const std::vector<uint8_t> &data, ros::Publi
         qy = hex_to_signed(data, 4) / 10000.0; // Bytes 4-5
         qz = hex_to_signed(data, 6) / 10000.0; // Bytes 6-7
 
+        std::cout << "qx=" << qx << ", qy=" << qy << ", qz=" << qz << ", qw=" << qw << "\n";
+
         tf::Quaternion q(qx, qy, qz, qw);
-        double roll, pitch, quaternion_yaw;
+        // double roll, pitch, quaternion_yaw;
         tf::Matrix3x3(q).getRPY(roll, pitch, quaternion_yaw);
         // quaternion_yaw = quaternion_yaw * 180.0 / PI;
         // std::cout << "Quaternion Yaw (deg): " << quaternion_yaw * 180.0 / PI << "\n";
