@@ -328,6 +328,8 @@ inline void updateOdometry(float vel_left, float vel_right,
     odom.pose.pose.position.x = x;
     odom.pose.pose.position.y = y;
     odom.pose.pose.position.z = 0;
+    odom.pose.pose.orientation.x = qx;
+    odom.pose.pose.orientation.y = qy;
     odom.pose.pose.orientation.z = qz;
     odom.pose.pose.orientation.w = qw;
 
@@ -337,7 +339,7 @@ inline void updateOdometry(float vel_left, float vel_right,
     odom_pub.publish(odom);
 
     // --- TF
-    static tf::TransformBroadcaster br;
+    static tf::TransformBroadcaster odom_broadcaster;
     geometry_msgs::TransformStamped odom_tf;
     odom_tf.header.stamp = cur_time;
     odom_tf.header.frame_id = "odom";
@@ -345,7 +347,11 @@ inline void updateOdometry(float vel_left, float vel_right,
     odom_tf.transform.translation.x = x;
     odom_tf.transform.translation.y = y;
     odom_tf.transform.translation.z = 0.0;
-    odom_tf.transform.rotation = tf::createQuaternionMsgFromYaw(quaternion_yaw);
+    // odom_tf.transform.rotation = tf::createQuaternionMsgFromYaw(quaternion_yaw);
+    odom_tf.transform.rotation.x = qx;
+    odom_tf.transform.rotation.y = qy;
+    odom_tf.transform.rotation.z = qz;
+    odom_tf.transform.rotation.w = qw;
     odom_broadcaster.sendTransform(odom_tf);
 
     // std::cout << "yaw: " << yaw << "\n";
