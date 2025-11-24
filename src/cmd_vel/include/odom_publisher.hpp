@@ -191,6 +191,17 @@ inline void updateOdometry(float vel_left, float vel_right,
         y += -r * (cos(quaternion_yaw + omega*dt) - cos(quaternion_yaw));
     }
 
+    // --- Convert yaw IMU → Quaternion 2D
+    tf::Quaternion q2d;
+    q2d.setRPY(0, 0, quaternion_yaw);
+    q2d.normalize();
+
+    geometry_msgs::Quaternion q_msg;
+    q_msg.x = q2d.x();
+    q_msg.y = q2d.y();
+    q_msg.z = q2d.z();
+    q_msg.w = q2d.w();
+
     // --- Publish odometry
     nav_msgs::Odometry odom;
     odom.header.stamp = cur_time;
@@ -199,10 +210,7 @@ inline void updateOdometry(float vel_left, float vel_right,
     odom.pose.pose.position.x = x;
     odom.pose.pose.position.y = y;
     odom.pose.pose.position.z = 0;
-    odom.pose.pose.orientation.x = qx;
-    odom.pose.pose.orientation.y = qy;
-    odom.pose.pose.orientation.z = qz;
-    odom.pose.pose.orientation.w = qw;
+    odom.pose.pose.orientation = q_msg;
     odom.twist.twist.linear.x = v;
     odom.twist.twist.angular.z = omega;
     odom_pub.publish(odom);
@@ -216,12 +224,9 @@ inline void updateOdometry(float vel_left, float vel_right,
     odom_tf.transform.translation.x = x;
     odom_tf.transform.translation.y = y;
     odom_tf.transform.translation.z = 0.0;
-    // odom_tf.transform.rotation = tf::createQuaternionMsgFromYaw(quaternion_yaw);
-    odom_tf.transform.rotation.x = qx;
-    odom_tf.transform.rotation.y = qy;
-    odom_tf.transform.rotation.z = qz;
-    odom_tf.transform.rotation.w = qw;
+    odom_tf.transform.rotation = q_msg;
     odom_broadcaster.sendTransform(odom_tf);
+
 
     // std::cout << "yaw: " << yaw << "\n";
     // std::cout << "v_left odom =" << left_wheel << "(m/s), v_right odom =" << right_wheel << "(m/s)\n";
