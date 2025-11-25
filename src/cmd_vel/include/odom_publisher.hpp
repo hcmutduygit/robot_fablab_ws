@@ -265,7 +265,7 @@ inline void updateOdometry(float vel_left, float vel_right,
     // float yaw_imu = -yaw_angle * PI / 180 + 2.615;
     // if ((yaw_imu + 2.615) > PI) yaw_imu = yaw_imu + 2.615 - 2*PI;
     // else yaw_imu = yaw_imu + 2.615;
-    float yaw_imu = quaternion_yaw * PI / 180;
+    float yaw_imu = quaternion_yaw;
     // std::cout << "yaw_imu: " << yaw_imu << "\n";
 
     float left_wheel = -vel_left/20;
