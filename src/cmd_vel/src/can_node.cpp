@@ -433,7 +433,8 @@ void saveDataToCSV(int imu_packages, int odom_packages, int send_packages)
         // Thêm header nếu file mới tạo
         if (!file_exists) {
             csv_file << "Timestamp,IMU_Packages_per_sec,Odom_Packages_per_sec,Send_Packages_per_sec,"
-                     << "Yaw_Angle,Left_Velocity_mps,Right_Velocity_mps\n";
+                     << "Yaw_Angle,Left_Velocity_mps,Right_Velocity_mps,"
+                     << "qx,qy,qz,qw,quaternion_yaw\n";
         }
         
         // Ghi dữ liệu
@@ -443,12 +444,17 @@ void saveDataToCSV(int imu_packages, int odom_packages, int send_packages)
                  << send_packages << ","
                  << std::fixed << std::setprecision(2) << yaw_angle << ","
                  << std::setprecision(4) << left_mps << ","
-                 << std::setprecision(4) << right_mps << "\n";
+                 << std::setprecision(4) << right_mps << ","
+                 << std::setprecision(4) << qx << ","
+                 << std::setprecision(4) << qy << ","
+                 << std::setprecision(4) << qz << ","
+                 << std::setprecision(4) << qw << ","
+                 << std::setprecision(4) << quaternion_yaw << "\n";
         csv_file.close();
         
-        ROS_INFO("Data saved: IMU=%d, Odom=%d, Send=%d, Yaw=%.2f, Left=%.4f m/s, Right=%.4f m/s", 
+        ROS_INFO("Data saved: IMU=%d, Odom=%d, Send=%d, Yaw=%.2f, Left=%.4f m/s, Right=%.4f m/s, qx=%.4f, qy=%.4f, qz=%.4f, qw=%.4f, quat_yaw=%.4f", 
                  imu_packages, odom_packages, send_packages, yaw_angle, 
-                 left_mps, right_mps);
+                 left_mps, right_mps, qx, qy, qz, qw, quaternion_yaw);
     } else {
         ROS_ERROR("Cannot open CSV file: %s", csv_file_path.c_str());
     }
