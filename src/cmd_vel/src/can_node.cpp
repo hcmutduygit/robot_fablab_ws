@@ -267,7 +267,7 @@ void process_frame(uint16_t can_id, const std::vector<uint8_t> &data, ros::Publi
         // // std::cout << "pitch_degree: " << pitch << "\n";
         // // std::cout << "Yaw_degree: " << raw_yaw << "\n";
         // // updateOdometry(left_mps, right_mps, odom_pub, lasttime);
-        cnt_receive_imu++;
+        // cnt_receive_imu++;
         break;
     }
     case 0x15:  // IMU quaternion
@@ -290,7 +290,7 @@ void process_frame(uint16_t can_id, const std::vector<uint8_t> &data, ros::Publi
         qy = hex_to_signed(data, 4) / 10000.0; // Bytes 4-5
         qz = hex_to_signed(data, 6) / 10000.0; // Bytes 6-7
 
-        std::cout << "qx=" << qx << ", qy=" << qy << ", qz=" << qz << ", qw=" << qw << "\n";
+        // std::cout << "qx=" << qx << ", qy=" << qy << ", qz=" << qz << ", qw=" << qw << "\n";
 
         tf::Quaternion q(qx, qy, qz, qw);
         // double roll, pitch, quaternion_yaw;
@@ -298,7 +298,7 @@ void process_frame(uint16_t can_id, const std::vector<uint8_t> &data, ros::Publi
         // quaternion_yaw = quaternion_yaw * 180.0 / PI;
         // std::cout << "Quaternion Yaw (deg): " << quaternion_yaw * 180.0 / PI << "\n";
         updateOdometry(left_mps, right_mps, odom_pub, lasttime, qx, qy, qz, qw, quaternion_yaw);
-        // cnt_receive_imu++;
+        cnt_receive_imu++;
         break;
     }
     // // IMU Gyro
