@@ -44,6 +44,7 @@ int cnt = 0;
 int drive, direct;
 float theta;
 std::vector<std::pair<double, double>> wp;
+bool has_published_arrival = false;  // Flag de tranh spam MQTT arrival
 
 // double wp[][2] = {
 //     {13.1728434585, 11.4516193091},
