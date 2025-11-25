@@ -265,7 +265,7 @@ inline void updateOdometry(float vel_left, float vel_right,
     // float yaw_imu = -yaw_angle * PI / 180 + 2.615;
     // if ((yaw_imu + 2.615) > PI) yaw_imu = yaw_imu + 2.615 - 2*PI;
     // else yaw_imu = yaw_imu + 2.615;
-    float yaw_imu = quaternion_yaw * PI / 180;
+    float yaw_imu = quaternion_yaw;
     // std::cout << "yaw_imu: " << yaw_imu << "\n";
 
     float left_wheel = -vel_left/20;
@@ -282,20 +282,6 @@ inline void updateOdometry(float vel_left, float vel_right,
     // std::cout << "v: " << v << "\n";
     float omega = (right_wheel - left_wheel) / 0.57;
     // std::cout << "omega: " << omega << "\n";
-
-    // // Fuse IMU yaw if available
-    // float yaw_enc = yaw_prev + omega * dt;
-    // yaw_enc = atan2(sin(yaw_enc), cos(yaw_enc));
-    // float alpha = 0.5;  // 0.9–0.99: tin encoder nhiều hơn
-    // float yaw_temp = alpha * yaw_enc + (1 - alpha) * yaw_imu;
-    // yaw = atan2(sin(yaw_temp), cos(yaw_temp));
-    // std::cout << "fused_yaw: " << yaw << "\n";
-
-    // // Use only yaw from encoder
-    // float yaw_enc = yaw_prev + omega*dt;
-    // yaw_enc = atan2(sin(yaw_enc), cos(yaw_enc));
-    // yaw = yaw_enc;
-    // std::cout << "yaw_encoder = " << yaw * 180 / PI << "\n";
 
     yaw = yaw_imu;
 
@@ -353,14 +339,4 @@ inline void updateOdometry(float vel_left, float vel_right,
     odom_tf.transform.translation.z = 0.0;
     odom_tf.transform.rotation = tf::createQuaternionMsgFromYaw(yaw);
     odom_broadcaster.sendTransform(odom_tf);
-
-    // std::cout << "yaw: " << yaw << "\n";
-    // std::cout << "v_left odom =" << left_wheel << "(m/s), v_right odom =" << right_wheel << "(m/s)\n";
-    // std::cout << "current_time: " << cur_time << "\n";
-    // std::cout << "dt: " << dt << "\n";
-    // std::cout << "v: " << v << "\n";
-    // std::cout << "omega: " << omega << "\n";
-    // std::cout << "x: " << x << ", y: " << y << "\n";
-    // std::cout << "pose.orientation: " << odom.pose.pose.orientation << "\n";
-    // std::cout << "---------------------------" <<"\n";
 }
