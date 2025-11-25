@@ -104,37 +104,22 @@ void tranfer_wp() {
         // ROS_INFO("Reached waypoint #%d: (%.2f, %.2f) ✓✓✓", cnt+1, wp[cnt+1].first, wp[cnt+1].second);
         cnt +=1;
         
-        // Neu da den waypoint cuoi cung
+        // Neu da den waypoint cuoi cung, publish MQTT arrival
         if (cnt + 1 >= wp.size()) {
-            // Chi publish MQTT 1 lan duy nhat
-            if (!has_published_arrival) {
-                ROS_WARN("========================================");
-                ROS_WARN("✓✓✓ REACHED FINAL DESTINATION ✓✓✓");
-                ROS_WARN("Publishing arrival status to MQTT...");
-                ROS_WARN("========================================");
-                
-                // Goi Python script de publish MQTT arrival
-                std::string script_path = "python /home/nvidia/robot_fablab_ws/src/MQTT/publish_arrival.py";
-                int result = system(script_path.c_str());
-                
-                if (result == 0) {
-                    ROS_WARN("Successfully published arrival status to MQTT");
-                } else {
-                    ROS_ERROR("Failed to publish arrival status (exit code: %d)", result);
-                }
-                
-                // Danh dau da publish de khong spam
-                has_published_arrival = true;
-                
-                ROS_WARN("========================================");
-                ROS_WARN("🔄 Robot stopped - Ready for new waypoints!");
-                ROS_WARN("Current position: (%.3f, %.3f)", x, y);
-                ROS_WARN("========================================");
-            }
+            ROS_WARN("========================================");
+            ROS_WARN("✓✓✓ REACHED FINAL DESTINATION ✓✓✓");
+            ROS_WARN("Publishing arrival status to MQTT...");
+            ROS_WARN("========================================");
             
-            // Dung robot
-            linear_x = 0.0;
-            angular_z = 0.0;
+            // Goi Python script de publish MQTT
+            std::string script_path = "python /home/nvidia/robot_fablab_ws/src/MQTT/publish_arrival.py";
+            int result = system(script_path.c_str());
+            
+            if (result == 0) {
+                ROS_WARN("Successfully published arrival status to MQTT");
+            } else {
+                ROS_ERROR("Failed to publish arrival status (exit code: %d)", result);
+            }
         }
     }
 }
@@ -192,8 +177,8 @@ void CallBackWp(const utils::waypoints::ConstPtr& msg) {
 void ControlVel(const ros::TimerEvent& event){
     utils::cmd_vel cmd;
     tranfer_wp();
-    double v_left = linear_x - (angular_z * 0.58 / 2);
-    double v_right = linear_x + (angular_z * 0.58 / 2);
+    double v_left = linear_x - (angular_z * 0.57/ 2);
+    double v_right = linear_x + (angular_z * 0.57/ 2);
     
     // cmd.linear.x  = linear_x;        
     // cmd.angular.z = angular_z; 
