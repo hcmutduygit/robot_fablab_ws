@@ -267,6 +267,7 @@ inline void updateOdometry(float vel_left, float vel_right, ros::Publisher& odom
 
     ros::Time cur_time = ros::Time::now();
     float dt = (cur_time - lasttime).toSec();
+    std::cout << "dt: " << dt << "\n";
     lasttime = cur_time;
 
     // Robot velocities
