@@ -229,7 +229,7 @@ void process_frame(uint16_t can_id, const std::vector<uint8_t> &data, ros::Publi
     //     break;
     // }
     // IMU Angle
-    case 0x15:
+    case 0x12:
     {
         // // Ensure data has at least 6 bytes for roll, pitch, yaw (2 bytes each)
         // if (data.size() < 6)
@@ -271,7 +271,7 @@ void process_frame(uint16_t can_id, const std::vector<uint8_t> &data, ros::Publi
         // cnt_receive_imu++;
         break;
     }
-    case 0x12:  // IMU quaternion
+    case 0x15:  // IMU quaternion
     {
         // Ensure data has at least 8 bytes for quaternion (4 bytes each)
         if (data.size() < 8)
