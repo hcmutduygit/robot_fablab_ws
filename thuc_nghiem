@@ -43,3 +43,7 @@ qx=-0.0078, qy=-0.0111, qz=-0.9369, qw=0.2723
 Error:   TF_DENORMALIZED_QUATERNION: Ignoring transform for child_frame_id "base_footprint" from authority "unknown_publisher" because of an invalid quaternion in the transform (0.000000 0.000000 -0.936900 0.272300)
          at line 257 in /tmp/binarydeb/ros-melodic-tf2-0.6.5/src/buffer_core.cpp
 [ERROR] [1763982961.148701898]: Ignoring transform for child_frame_id "base_footprint" from authority "unknown_publisher" because of an invalid quaternion in the transform (0.000000 0.000000 -0.936900 0.272300)
+        
+        [set_initial_pose-7] process has died [pid 27198, exit code 1, cmd /opt/ros/noetic/lib/rostopic/rostopic pub -1 /initialpose geometry_msgs/PoseWithCovarianceStamped -f /home/huypi/robot_fablab_ws/src/robot_fablab/config/initial_pose.yaml __name:=set_initial_pose __log:=/home/huypi/.ros/log/90fbb446-c9fd-11f0-ada7-0be6287720ce/set_initial_pose-7.log].
+log file: /home/huypi/.ros/log/90fbb446-c9fd-11f0-ada7-0be6287720ce/set_initial_pose-7*.log
+[INFO] [1

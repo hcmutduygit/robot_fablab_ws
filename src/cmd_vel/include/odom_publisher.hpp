@@ -251,23 +251,15 @@
 
 extern float x, y, yaw, yaw_offset, yaw_prev, yaw_angle;
 extern std::mutex odom_mutex;
+extern ros::Time lasttime;
 extern bool initialized;
 extern int odom_count;
 
-inline void updateOdometry(float vel_left, float vel_right,
-                           ros::Publisher& odom_pub, ros::Time& lasttime,
-                           float& qx, float& qy, float& qz, float& qw,
-                           double& quaternion_yaw)     
+inline void updateOdometry(float vel_left, float vel_right, ros::Publisher& odom_pub, double& quaternion_yaw)     
 {                         
     std::lock_guard<std::mutex> lock(odom_mutex);
     odom_count += 1;
-    // std::cout << "odom_count" << odom_count << "\n";
-    // float yaw_imu = -yaw_angle * PI / 180 + 2.615;
-    // if ((yaw_imu + 2.615) > PI) yaw_imu = yaw_imu + 2.615 - 2*PI;
-    // else yaw_imu = yaw_imu + 2.615;
     float yaw_imu = quaternion_yaw;
-    // std::cout << "yaw_imu: " << yaw_imu << "\n";
-
     float left_wheel = -vel_left/20;
     float right_wheel = vel_right/20;
     left_wheel = (std::abs(left_wheel) < 5e-4) ? 0.0 : left_wheel; 
@@ -279,21 +271,12 @@ inline void updateOdometry(float vel_left, float vel_right,
 
     // Robot velocities
     float v = (right_wheel + left_wheel) / 2.0;
-    // std::cout << "v: " << v << "\n";
     float omega = (right_wheel - left_wheel) / 0.57;
-    // std::cout << "omega: " << omega << "\n";
-
     yaw = yaw_imu;
 
     // Integrate position
-    // float dyaw = (yaw_prev == 0.0) ? 0.0 : (yaw - yaw_prev);
-
-    // float dyaw = (yaw_prev == 0) ? 0.0 : (yaw_imu - yaw_prev);
     float dyaw = omega*dt;
     yaw_prev = yaw;
-    // yaw += dyaw;
-    // if (yaw > PI) yaw -= (2*PI);
-    // else if (yaw < -PI) yaw += (2*PI);
 
     const double eps = 1e-6;
     if (std::abs(omega) < eps) {
@@ -317,7 +300,6 @@ inline void updateOdometry(float vel_left, float vel_right,
     odom.pose.pose.position.y = y;
     odom.pose.pose.position.z = 0.0;
     odom.pose.pose.orientation = tf::createQuaternionMsgFromYaw(yaw);
-    // std::cout << "pose.orientation: " << odom.pose.pose.orientation << "\n";
     odom.twist.twist.linear.x = v;
     odom.twist.twist.angular.z = omega;
 
