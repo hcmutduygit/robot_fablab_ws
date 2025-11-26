@@ -26,12 +26,13 @@ float yaw_prev = 0.0;
 bool initialized = false;
 int odom_count = 0;
 float qx_prev, qy_prev, qz_prev, qw_prev;
+ros::Time lasttime;
 
 
 
 static volatile int g_should_exit = 0;
 
-WaveshareCAN can("/dev/usbcan", 2000000, 2.0);
+WaveshareCAN can("/dev/ttyUSB0", 2000000, 2.0);
 
 // RFID database - mapping RFID data to user info
 static const std::map<std::vector<uint8_t>, std::pair<std::string, std::string>> rfid_database = {
@@ -183,7 +184,7 @@ float mapf(float x, float in_min, float in_max, float out_min, float out_max)
 }
 
 // Process CAN frame (equivalent to Python's process_frame)
-void process_frame(uint16_t can_id, const std::vector<uint8_t> &data, ros::Publisher& odom_pub, ros::Time& lasttime)
+void process_frame(uint16_t can_id, const std::vector<uint8_t> &data, ros::Publisher& odom_pub)
 {
     switch (can_id)
     {
@@ -228,7 +229,7 @@ void process_frame(uint16_t can_id, const std::vector<uint8_t> &data, ros::Publi
     //     break;
     // }
     // IMU Angle
-    case 0x12:
+    case 0x15:
     {
         // // Ensure data has at least 6 bytes for roll, pitch, yaw (2 bytes each)
         // if (data.size() < 6)
@@ -270,7 +271,7 @@ void process_frame(uint16_t can_id, const std::vector<uint8_t> &data, ros::Publi
         // cnt_receive_imu++;
         break;
     }
-    case 0x15:  // IMU quaternion
+    case 0x12:  // IMU quaternion
     {
         // Ensure data has at least 8 bytes for quaternion (4 bytes each)
         if (data.size() < 8)
@@ -297,7 +298,7 @@ void process_frame(uint16_t can_id, const std::vector<uint8_t> &data, ros::Publi
         tf::Matrix3x3(q).getRPY(roll, pitch, quaternion_yaw);
         // quaternion_yaw = quaternion_yaw * 180.0 / PI;
         // std::cout << "Quaternion Yaw (deg): " << quaternion_yaw * 180.0 / PI << "\n";
-        updateOdometry(left_mps, right_mps, odom_pub, lasttime, qx, qy, qz, qw, quaternion_yaw);
+        updateOdometry(left_mps, right_mps, odom_pub, quaternion_yaw);
         cnt_receive_imu++;
         break;
     }
@@ -503,13 +504,13 @@ int main(int argc, char **argv)
     ros::init(argc, argv, "Can_node");
     ros::NodeHandle nh;
     odom_pub = nh.advertise<nav_msgs::Odometry>("odom", 10);
-    ros::Time lasttime = ros::Time::now();
+    // ros::Time lasttime = ros::Time::now();
     pub = nh.advertise<utils::pose_robot>("pose_robot", 10);
     pub_vel_stm = nh.advertise<utils::cmd_vel>("Guidance", 10);
 
     can.open();
     can.start_receive_loop([&](uint16_t can_id, const std::vector<uint8_t>& data) {
-        process_frame(can_id, data, odom_pub, lasttime);
+        process_frame(can_id, data, odom_pub);
     });
     ros::NodeHandle arg_nh("~");
     nh.getParam("mode", number);
@@ -532,7 +533,7 @@ int main(int argc, char **argv)
 
     sub = nh.subscribe("Cmd_vel", 1, CallBackVel);
     // amcl_sub = nh.subscribe("amcl_pose", 10, CallBackAMCL);
-    cnt_byte = nh.createTimer(ros::Duration(1), CntBytes);
+    cnt_byte = nh.createTimer(ros::Duration(10), CntBytes);
     
     // Master request 
     loopControl = nh.createTimer(
