@@ -163,7 +163,20 @@ void CallBackPose(const geometry_msgs::PoseWithCovarianceStamped::ConstPtr& msg)
 }
 
 void CallBackWp(const utils::waypoints::ConstPtr& msg) {
-    // Neu day la waypoint dau tien tu MQTT, them vi tri hien tai lam diem xuat phat
+    // Kiem tra neu da hoan thanh mission truoc do (da den waypoint cuoi) 
+    // thi reset tat ca de bat dau mission moi
+    if (has_published_arrival && wp.size() > 0) {
+        ROS_WARN("========================================");
+        ROS_WARN("🆕 NEW MISSION DETECTED - Resetting all waypoints!");
+        ROS_WARN("========================================");
+        wp.clear();
+        cnt = 0;
+        has_published_arrival = false;
+        linear_x = 0.0;
+        angular_z = 0.0;
+    }
+    
+    // Neu day la waypoint dau tien cua mission moi, them vi tri hien tai lam diem xuat phat
     if (wp.size() == 0) {
         double current_x = x;
         double current_y = y;
