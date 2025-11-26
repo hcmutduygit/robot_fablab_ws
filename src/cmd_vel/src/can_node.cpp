@@ -449,12 +449,14 @@ void saveDataToCSV(int imu_packages, int odom_packages, int send_packages)
                  << std::setprecision(4) << qy << ","
                  << std::setprecision(4) << qz << ","
                  << std::setprecision(4) << qw << ","
+                 << std::setprecision(4) << x << ","
+                 << std::setprecision(4) << y << ","
                  << std::setprecision(4) << quaternion_yaw << "\n";
         csv_file.close();
         
-        ROS_INFO("Data saved: IMU=%d, Odom=%d, Send=%d, Yaw=%.2f, Left=%.4f m/s, Right=%.4f m/s, qx=%.4f, qy=%.4f, qz=%.4f, qw=%.4f, quat_yaw=%.4f", 
+        ROS_INFO("Data saved: IMU=%d, Odom=%d, Send=%d, Yaw=%.2f, Left=%.4f m/s, Right=%.4f m/s, qx=%.4f, qy=%.4f, qz=%.4f, qw=%.4f, x=%.4f, y=%.4f, quat_yaw=%.4f", 
                  imu_packages, odom_packages, send_packages, yaw_angle, 
-                 left_mps, right_mps, qx, qy, qz, qw, quaternion_yaw);
+                 left_mps, right_mps, qx, qy, qz, qw, x, y, quaternion_yaw);
     } else {
         ROS_ERROR("Cannot open CSV file: %s", csv_file_path.c_str());
     }
