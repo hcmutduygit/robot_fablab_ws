@@ -77,9 +77,7 @@
         <param name="initial_pose_a"            value="$(arg initial_pose_a)"/>
     </node>
 
-    <node pkg="rostopic" type="rostopic" name="set_initial_pose"
-        args="pub -1 /initialpose geometry_msgs/PoseWithCovarianceStamped -f $(find robot_fablab)/config/initial_pose.yaml"
-        output="screen"/>
+    <node pkg="robot_fablab" type="set_initial_pose" name="set_initial_pose" output="screen"/>
 
     <!-- Static TF: base_footprint -> laser -->
     <node pkg="tf" type="static_transform_publisher" name="basefootprint_to_laser"
