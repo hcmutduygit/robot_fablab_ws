@@ -262,56 +262,61 @@ inline void updateOdometry(float vel_left, float vel_right, ros::Publisher& odom
     float yaw_imu = quaternion_yaw;
     float left_wheel = -vel_left/20;
     float right_wheel = vel_right/20;
-    left_wheel = (std::abs(left_wheel) < 5e-4) ? 0.0 : left_wheel; 
-    right_wheel = (std::abs(right_wheel) < 5e-4) ? 0.0 : right_wheel; 
+
+    left_wheel  = (std::abs(left_wheel)  < 5e-4) ? 0.0 : left_wheel;
+    right_wheel = (std::abs(right_wheel) < 5e-4) ? 0.0 : right_wheel;
 
     ros::Time cur_time = ros::Time::now();
     float dt = (cur_time - lasttime).toSec();
     lasttime = cur_time;
 
-    // Robot velocities
     float v = (right_wheel + left_wheel) / 2.0;
     float omega = (right_wheel - left_wheel) / 0.57;
     yaw = yaw_imu;
     std::cout << "yaw=" << yaw << ", dt=" << dt << "\n";
 
-    // Integrate position
-    float dyaw = omega*dt;
+    float dyaw = omega * dt;
     yaw_prev = yaw;
 
-    const double eps = 1e-6;
+    // --- Backup previous position ---
+    float prev_x = x;
+    float prev_y = y;
+
+    // --- Integrate position ---
+    const double eps = 1e-4;
     if (std::abs(omega) < eps) {
         x += v * cos(yaw) * dt;
         y += v * sin(yaw) * dt;
     } else {
         float r = v / omega;
-        // std::cout << "dyaw: " << dyaw << "\n";
         x += r * (sin(yaw + dyaw) - sin(yaw));
         y += -r * (cos(yaw + dyaw) - cos(yaw));
     }
 
-    // std::cout << "x: " << x << ", y: " << y << "\n";
+    // --- NaN / Inf / overflow guard ---
+    if (!std::isfinite(x) || !std::isfinite(y)) {
+        ROS_WARN("[ODOM] x,y became invalid! Reverting to previous values.");
+        x = prev_x;
+        y = prev_y;
+    }
 
-    // Publish odom
+    // --- Publish odom ---
     nav_msgs::Odometry odom;
     odom.header.stamp = cur_time;
     odom.header.frame_id = "odom";
     odom.child_frame_id = "base_footprint";
     odom.pose.pose.position.x = x;
     odom.pose.pose.position.y = y;
-    odom.pose.pose.position.z = 0.0;
     odom.pose.pose.orientation = tf::createQuaternionMsgFromYaw(yaw);
     odom.twist.twist.linear.x = v;
     odom.twist.twist.angular.z = omega;
 
-    // covariance (optional but useful for AMCL)
     for (int i = 0; i < 36; i++) odom.pose.covariance[i] = 0.0;
     odom.pose.covariance[0]  = 0.02;
-    odom.pose.covariance[7]  = 0.02; 
+    odom.pose.covariance[7]  = 0.02;
     odom.pose.covariance[35] = 0.05;
     odom_pub.publish(odom);
 
-    // Broadcast TF
     static tf::TransformBroadcaster odom_broadcaster;
     geometry_msgs::TransformStamped odom_tf;
     odom_tf.header.stamp = cur_time;
