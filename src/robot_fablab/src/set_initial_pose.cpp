@@ -14,8 +14,8 @@ int main(int argc, char** argv)
     ros::Publisher pub = nh.advertise<geometry_msgs::PoseWithCovarianceStamped>("/initialpose", 1, true);
 
     // Delay 3 giây để AMCL khởi động
-    ROS_INFO("Waiting 3 seconds for AMCL to be ready...");
-    std::this_thread::sleep_for(std::chrono::seconds(3));
+    ROS_WARN("Waiting 2 seconds for AMCL to be ready...");
+    std::this_thread::sleep_for(std::chrono::seconds(2));
 
     // Load YAML
     // std::string yaml_file = "/home/huypi/robot_fablab_ws/src/robot_fablab/config/initial_pose.yaml";
