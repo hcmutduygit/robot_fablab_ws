@@ -239,6 +239,96 @@
 //     // std::cout << "---------------------------" <<"\n";
 // }
 
+// #pragma once
+// #include "ros/ros.h"
+// #include <nav_msgs/Odometry.h>
+// #include <tf/transform_broadcaster.h>
+// #include <geometry_msgs/TransformStamped.h>
+// #include <tf/transform_datatypes.h>
+// #include <cmath>
+// #include <mutex>
+// #define PI 3.14159265358979323846
+
+// extern float x, y, yaw, yaw_offset, yaw_prev, yaw_angle;
+// extern std::mutex odom_mutex;
+// // extern ros::Time lasttime;
+// extern bool initialized;
+// extern int odom_count;
+
+// inline void updateOdometry(float vel_left, float vel_right, ros::Publisher& odom_pub, double& quaternion_yaw, ros::Time& lasttime)     
+// {                         
+//     std::lock_guard<std::mutex> lock(odom_mutex);
+//     odom_count += 1;
+//     float yaw = quaternion_yaw;
+//     float left_wheel = -vel_left/20;
+//     float right_wheel = vel_right/20;
+
+//     left_wheel  = (std::abs(left_wheel)  < 5e-4) ? 0.0 : left_wheel;
+//     right_wheel = (std::abs(right_wheel) < 5e-4) ? 0.0 : right_wheel;
+
+//     ros::Time cur_time = ros::Time::now();
+//     float dt = (cur_time - lasttime).toSec();
+//     lasttime = cur_time;
+
+//     float v = (right_wheel + left_wheel) / 2.0;
+//     float omega = (right_wheel - left_wheel) / 0.57;
+//     // std::cout << "yaw=" << yaw << ", dt=" << dt << "\n";
+
+//     float dyaw = omega * dt;
+//     yaw_prev = yaw;
+
+//     // --- Backup previous position ---
+//     float prev_x = x;
+//     float prev_y = y;
+
+//     // --- Integrate position ---
+//     const double eps = 1e-4;
+//     if (std::abs(omega) < eps) {
+//         x += v * cos(yaw) * dt;
+//         y += v * sin(yaw) * dt;
+//     } else {
+//         float r = v / omega;
+//         x += r * (sin(yaw + dyaw) - sin(yaw));
+//         y += -r * (cos(yaw + dyaw) - cos(yaw));
+//     }
+
+//     // --- NaN / Inf / overflow guard ---
+//     if (!std::isfinite(x) || !std::isfinite(y)) {
+//         ROS_WARN("[ODOM] x,y became invalid! Reverting to previous values.");
+//         x = prev_x;
+//         y = prev_y;
+//     }
+
+//     // --- Publish odom ---
+//     nav_msgs::Odometry odom;
+//     odom.header.stamp = cur_time;
+//     odom.header.frame_id = "odom";
+//     odom.child_frame_id = "base_footprint";
+//     odom.pose.pose.position.x = x;
+//     odom.pose.pose.position.y = y;
+//     odom.pose.pose.orientation = tf::createQuaternionMsgFromYaw(yaw);
+//     odom.twist.twist.linear.x = v;
+//     odom.twist.twist.angular.z = omega;
+
+//     for (int i = 0; i < 36; i++) odom.pose.covariance[i] = 0.0;
+//     odom.pose.covariance[0]  = 0.02;
+//     odom.pose.covariance[7]  = 0.02;
+//     odom.pose.covariance[35] = 0.05;
+//     odom_pub.publish(odom);
+
+//     static tf::TransformBroadcaster odom_broadcaster;
+//     geometry_msgs::TransformStamped odom_tf;
+//     odom_tf.header.stamp = cur_time;
+//     odom_tf.header.frame_id = "odom";
+//     odom_tf.child_frame_id = "base_footprint";
+//     odom_tf.transform.translation.x = x;
+//     odom_tf.transform.translation.y = y;
+//     odom_tf.transform.translation.z = 0.0;
+//     odom_tf.transform.rotation = tf::createQuaternionMsgFromYaw(yaw);
+//     odom_broadcaster.sendTransform(odom_tf);
+// }
+
+
 #pragma once
 #include "ros/ros.h"
 #include <nav_msgs/Odometry.h>
@@ -255,11 +345,64 @@ extern std::mutex odom_mutex;
 extern bool initialized;
 extern int odom_count;
 
+// --- Normalize angle to [-pi,pi]
+inline double normalizeAngle(double a) {
+    return atan2(sin(a), cos(a));
+}
+
 inline void updateOdometry(float vel_left, float vel_right, ros::Publisher& odom_pub, double& quaternion_yaw, ros::Time& lasttime)     
 {                         
     std::lock_guard<std::mutex> lock(odom_mutex);
     odom_count += 1;
-    float yaw_imu = quaternion_yaw;
+
+    // --- YAW FILTER: vector LPF (cos,sin) + jump rejection
+    static bool filter_initialized = false;
+    static double filt_x = 1.0, filt_y = 0.0;   // filtered unit vector
+    static double last_input_yaw = 0.0;
+    const double JUMP_THRESHOLD = 45.0 * PI / 180.0; // reject jumps >45 deg
+    const double ALPHA = 0.85; // weight for previous filtered vector (0..1). smaller -> faster response
+
+    double input_yaw = normalizeAngle(quaternion_yaw);
+
+    if (!filter_initialized) {
+        filt_x = cos(input_yaw);
+        filt_y = sin(input_yaw);
+        last_input_yaw = input_yaw;
+        filter_initialized = true;
+    } else {
+        // detect large discontinuity between last input and current input
+        double diff_input = normalizeAngle(input_yaw - last_input_yaw);
+        // detect large discontinuity between filtered angle and new input
+        double filt_angle = atan2(filt_y, filt_x);
+        double diff_filtered = normalizeAngle(input_yaw - filt_angle);
+
+        bool reject = (std::abs(diff_input) > JUMP_THRESHOLD) && (std::abs(diff_filtered) > JUMP_THRESHOLD);
+
+        if (reject) {
+            ROS_WARN_THROTTLE(5.0, "[ODOM FILTER] Rejecting yaw jump: input diff %.3f deg", diff_input * 180.0 / PI);
+            // do not update filt_x/filt_y (keep previous filtered orientation)
+        } else {
+            // update filtered unit vector (LPF on vector components)
+            double meas_x = cos(input_yaw);
+            double meas_y = sin(input_yaw);
+            filt_x = ALPHA * filt_x + (1.0 - ALPHA) * meas_x;
+            filt_y = ALPHA * filt_y + (1.0 - ALPHA) * meas_y;
+            // renormalize to unit length
+            double norm = sqrt(filt_x*filt_x + filt_y*filt_y);
+            if (norm > 1e-12) {
+                filt_x /= norm;
+                filt_y /= norm;
+            } else {
+                filt_x = cos(input_yaw);
+                filt_y = sin(input_yaw);
+            }
+        }
+        last_input_yaw = input_yaw;
+    }
+
+    double filtered_yaw = atan2(filt_y, filt_x);
+    yaw = static_cast<float>(filtered_yaw); // update global yaw used downstream
+
     float left_wheel = -vel_left/20;
     float right_wheel = vel_right/20;
 
@@ -272,7 +415,6 @@ inline void updateOdometry(float vel_left, float vel_right, ros::Publisher& odom
 
     float v = (right_wheel + left_wheel) / 2.0;
     float omega = (right_wheel - left_wheel) / 0.57;
-    yaw = yaw_imu;
     // std::cout << "yaw=" << yaw << ", dt=" << dt << "\n";
 
     float dyaw = omega * dt;
