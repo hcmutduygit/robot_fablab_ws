@@ -251,11 +251,11 @@
 
 extern float x, y, yaw, yaw_offset, yaw_prev, yaw_angle;
 extern std::mutex odom_mutex;
-extern ros::Time lasttime;
+// extern ros::Time lasttime;
 extern bool initialized;
 extern int odom_count;
 
-inline void updateOdometry(float vel_left, float vel_right, ros::Publisher& odom_pub, double& quaternion_yaw)     
+inline void updateOdometry(float vel_left, float vel_right, ros::Publisher& odom_pub, double& quaternion_yaw, ros::Time& lasttime)     
 {                         
     std::lock_guard<std::mutex> lock(odom_mutex);
     odom_count += 1;
@@ -267,13 +267,13 @@ inline void updateOdometry(float vel_left, float vel_right, ros::Publisher& odom
 
     ros::Time cur_time = ros::Time::now();
     float dt = (cur_time - lasttime).toSec();
-    std::cout << "dt: " << dt << "\n";
     lasttime = cur_time;
 
     // Robot velocities
     float v = (right_wheel + left_wheel) / 2.0;
     float omega = (right_wheel - left_wheel) / 0.57;
     yaw = yaw_imu;
+    std::cout << "yaw=" << yaw << ", dt=" << dt << "\n";
 
     // Integrate position
     float dyaw = omega*dt;

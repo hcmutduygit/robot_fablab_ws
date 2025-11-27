@@ -26,7 +26,7 @@ float yaw_prev = 0.0;
 bool initialized = false;
 int odom_count = 0;
 float qx_prev, qy_prev, qz_prev, qw_prev;
-ros::Time lasttime;
+// ros::Time lasttime;
 
 
 
@@ -184,7 +184,7 @@ float mapf(float x, float in_min, float in_max, float out_min, float out_max)
 }
 
 // Process CAN frame (equivalent to Python's process_frame)
-void process_frame(uint16_t can_id, const std::vector<uint8_t> &data, ros::Publisher& odom_pub)
+void process_frame(uint16_t can_id, const std::vector<uint8_t> &data, ros::Publisher& odom_pub, ros::Time& lasttime)
 {
     switch (can_id)
     {
@@ -229,49 +229,49 @@ void process_frame(uint16_t can_id, const std::vector<uint8_t> &data, ros::Publi
     //     break;
     // }
     // IMU Angle
-    case 0x15:
-    {
-        // // Ensure data has at least 6 bytes for roll, pitch, yaw (2 bytes each)
-        // if (data.size() < 6)
-        // {
-        //     std::cerr << "Error: Insufficient data bytes for ID 0x012\n";
-        //     return;
-        // }
-        // // std::cout << "ID 0x" << std::hex << can_id << std::dec << " receive IMU hex: ";
-        // // for (uint8_t b : data)
-        // // {
-        // //     std::cout << std::hex << std::setw(2) << std::setfill('0') << (int)b << " ";
-        // // }
-        // // std::cout << std::dec << std::endl;
-        // // Extract roll, pitch, yaw as signed 16-bit integers and scale by 100.0
-        // // double roll = hex_to_signed(data, 0) / 100.0;  // Bytes 0-1
-        // // double pitch = hex_to_signed(data, 2) / 100.0; // Bytes 2-3
-        // float raw_yaw = hex_to_unsigned(data, 4) / 100.0; // Bytes 4-5
-        // // float raw = 0;
-        // // if (raw_yaw>341 && raw_yaw<360) raw=mapf(raw_yaw,341,360,333,360);
-        // // else if (raw_yaw>280 && raw_yaw<341) raw=mapf(raw_yaw,280,341,243,333);
-        // // else if (raw_yaw>147 && raw_yaw<280) raw=mapf(raw_yaw,147,280,153,243);
-        // // else if (raw_yaw>44.5 && raw_yaw<147) raw=mapf(raw_yaw,44.5,147,63.18,153);
-        // // else if (raw_yaw>0 && raw_yaw<44.5) raw=mapf(raw_yaw,0,44.5,0,63.18); 
-        // while (raw_yaw > 180.0)
-        // {
-        //     raw_yaw-= 360.0;
-        // }
-        // while (raw_yaw <= -180.0)
-        // {
-        //     raw_yaw += 360.0;
-        // }
+    // case 0x15:
+    // {
+    //     // // Ensure data has at least 6 bytes for roll, pitch, yaw (2 bytes each)
+    //     // if (data.size() < 6)
+    //     // {
+    //     //     std::cerr << "Error: Insufficient data bytes for ID 0x012\n";
+    //     //     return;
+    //     // }
+    //     // // std::cout << "ID 0x" << std::hex << can_id << std::dec << " receive IMU hex: ";
+    //     // // for (uint8_t b : data)
+    //     // // {
+    //     // //     std::cout << std::hex << std::setw(2) << std::setfill('0') << (int)b << " ";
+    //     // // }
+    //     // // std::cout << std::dec << std::endl;
+    //     // // Extract roll, pitch, yaw as signed 16-bit integers and scale by 100.0
+    //     // // double roll = hex_to_signed(data, 0) / 100.0;  // Bytes 0-1
+    //     // // double pitch = hex_to_signed(data, 2) / 100.0; // Bytes 2-3
+    //     // float raw_yaw = hex_to_unsigned(data, 4) / 100.0; // Bytes 4-5
+    //     // // float raw = 0;
+    //     // // if (raw_yaw>341 && raw_yaw<360) raw=mapf(raw_yaw,341,360,333,360);
+    //     // // else if (raw_yaw>280 && raw_yaw<341) raw=mapf(raw_yaw,280,341,243,333);
+    //     // // else if (raw_yaw>147 && raw_yaw<280) raw=mapf(raw_yaw,147,280,153,243);
+    //     // // else if (raw_yaw>44.5 && raw_yaw<147) raw=mapf(raw_yaw,44.5,147,63.18,153);
+    //     // // else if (raw_yaw>0 && raw_yaw<44.5) raw=mapf(raw_yaw,0,44.5,0,63.18); 
+    //     // while (raw_yaw > 180.0)
+    //     // {
+    //     //     raw_yaw-= 360.0;
+    //     // }
+    //     // while (raw_yaw <= -180.0)
+    //     // {
+    //     //     raw_yaw += 360.0;
+    //     // }
         
-        // yaw_angle = raw_yaw; // Update global yaw angle
-        // // publish_yaw(yaw);
-        // // std::cout << "roll_degree: " << roll << "\n";
-        // // std::cout << "pitch_degree: " << pitch << "\n";
-        // // std::cout << "Yaw_degree: " << raw_yaw << "\n";
-        // // updateOdometry(left_mps, right_mps, odom_pub, lasttime);
-        // cnt_receive_imu++;
-        break;
-    }
-    case 0x12:  // IMU quaternion
+    //     // yaw_angle = raw_yaw; // Update global yaw angle
+    //     // // publish_yaw(yaw);
+    //     // // std::cout << "roll_degree: " << roll << "\n";
+    //     // // std::cout << "pitch_degree: " << pitch << "\n";
+    //     // // std::cout << "Yaw_degree: " << raw_yaw << "\n";
+    //     // // updateOdometry(left_mps, right_mps, odom_pub, lasttime);
+    //     // cnt_receive_imu++;
+    //     break;
+    // }
+    case 0x15:  // IMU quaternion
     {
         // Ensure data has at least 8 bytes for quaternion (4 bytes each)
         if (data.size() < 8)
@@ -294,11 +294,10 @@ void process_frame(uint16_t can_id, const std::vector<uint8_t> &data, ros::Publi
         // std::cout << "qx=" << qx << ", qy=" << qy << ", qz=" << qz << ", qw=" << qw << "\n";
 
         tf::Quaternion q(qx, qy, qz, qw);
-        // double roll, pitch, quaternion_yaw;
         tf::Matrix3x3(q).getRPY(roll, pitch, quaternion_yaw);
         // quaternion_yaw = quaternion_yaw * 180.0 / PI;
-        // std::cout << "Quaternion Yaw (deg): " << quaternion_yaw * 180.0 / PI << "\n";
-        updateOdometry(left_mps, right_mps, odom_pub, quaternion_yaw);
+        std::cout << "Quaternion Yaw (deg): " << quaternion_yaw * 180.0 / PI << "\n";
+        updateOdometry(left_mps, right_mps, odom_pub, quaternion_yaw, lasttime);
         cnt_receive_imu++;
         break;
     }
@@ -435,7 +434,7 @@ void saveDataToCSV(int imu_packages, int odom_packages, int send_packages)
         if (!file_exists) {
             csv_file << "Timestamp,IMU_Packages_per_sec,Odom_Packages_per_sec,Send_Packages_per_sec,"
                      << "Yaw_Angle,Left_Velocity_mps,Right_Velocity_mps,"
-                     << "qx,qy,qz,qw,quaternion_yaw\n";
+                     << "qx,qy,qz,qw,x,y,quaternion_yaw\n";
         }
         
         // Ghi dữ liệu
@@ -455,7 +454,7 @@ void saveDataToCSV(int imu_packages, int odom_packages, int send_packages)
                  << std::setprecision(4) << quaternion_yaw << "\n";
         csv_file.close();
         
-        ROS_INFO("Data saved: IMU=%d, Odom=%d, Send=%d, Yaw=%.2f, Left=%.4f m/s, Right=%.4f m/s, qx=%.4f, qy=%.4f, qz=%.4f, qw=%.4f, x=%.4f, y=%.4f, quat_yaw=%.4f", 
+        ROS_INFO("Data saved: IMU=%d, Odom=%d, Send=%d, Yaw=%.2f, Left=%.4f m/s, Right=%.4f m/s, qx=%.4f, qy=%.4f, qz=%.4f, qw=%.4f, x=%.4f, y=%.4f, quat_yaw=%lf", 
                  imu_packages, odom_packages, send_packages, yaw_angle, 
                  left_mps, right_mps, qx, qy, qz, qw, x, y, quaternion_yaw);
     } else {
@@ -512,13 +511,13 @@ int main(int argc, char **argv)
     ros::init(argc, argv, "Can_node");
     ros::NodeHandle nh;
     odom_pub = nh.advertise<nav_msgs::Odometry>("odom", 10);
-    // ros::Time lasttime = ros::Time::now();
+    ros::Time lasttime = ros::Time::now();
     pub = nh.advertise<utils::pose_robot>("pose_robot", 10);
     pub_vel_stm = nh.advertise<utils::cmd_vel>("Guidance", 10);
 
     can.open();
     can.start_receive_loop([&](uint16_t can_id, const std::vector<uint8_t>& data) {
-        process_frame(can_id, data, odom_pub);
+        process_frame(can_id, data, odom_pub, lasttime);
     });
     ros::NodeHandle arg_nh("~");
     nh.getParam("mode", number);
@@ -541,7 +540,7 @@ int main(int argc, char **argv)
 
     sub = nh.subscribe("Cmd_vel", 1, CallBackVel);
     // amcl_sub = nh.subscribe("amcl_pose", 10, CallBackAMCL);
-    cnt_byte = nh.createTimer(ros::Duration(10), CntBytes);
+    cnt_byte = nh.createTimer(ros::Duration(1), CntBytes);
     
     // Master request 
     loopControl = nh.createTimer(
