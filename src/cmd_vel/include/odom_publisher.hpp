@@ -359,8 +359,8 @@ inline void updateOdometry(float vel_left, float vel_right, ros::Publisher& odom
     static bool filter_initialized = false;
     static double filt_x = 1.0, filt_y = 0.0;   // filtered unit vector
     static double last_input_yaw = 0.0;
-    const double JUMP_THRESHOLD = 45.0 * PI / 180.0; // reject jumps >45 deg
-    const double ALPHA = 0.85; // weight for previous filtered vector (0..1). smaller -> faster response
+    const double JUMP_THRESHOLD = 30.0 * PI / 180.0; // reject jumps >45 deg
+    const double ALPHA = 0.5; // weight for previous filtered vector (0..1). smaller -> faster response
 
     double input_yaw = normalizeAngle(quaternion_yaw);
 
