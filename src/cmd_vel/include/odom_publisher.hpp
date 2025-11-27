@@ -273,7 +273,7 @@ inline void updateOdometry(float vel_left, float vel_right, ros::Publisher& odom
     float v = (right_wheel + left_wheel) / 2.0;
     float omega = (right_wheel - left_wheel) / 0.57;
     yaw = yaw_imu;
-    std::cout << "yaw=" << yaw << ", dt=" << dt << "\n";
+    // std::cout << "yaw=" << yaw << ", dt=" << dt << "\n";
 
     float dyaw = omega * dt;
     yaw_prev = yaw;
