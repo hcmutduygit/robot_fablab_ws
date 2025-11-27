@@ -259,7 +259,7 @@
 // {                         
 //     std::lock_guard<std::mutex> lock(odom_mutex);
 //     odom_count += 1;
-//     float yaw = quaternion_yaw;
+//     yaw = quaternion_yaw;
 //     float left_wheel = -vel_left/20;
 //     float right_wheel = vel_right/20;
 
@@ -275,7 +275,8 @@
 //     // std::cout << "yaw=" << yaw << ", dt=" << dt << "\n";
 
 //     float dyaw = omega * dt;
-//     yaw_prev = yaw;
+//     // yaw = (yaw == 0) ? yaw_prev : yaw;
+//     // yaw_prev = yaw;
 
 //     // --- Backup previous position ---
 //     float prev_x = x;
@@ -359,8 +360,8 @@ inline void updateOdometry(float vel_left, float vel_right, ros::Publisher& odom
     static bool filter_initialized = false;
     static double filt_x = 1.0, filt_y = 0.0;   // filtered unit vector
     static double last_input_yaw = 0.0;
-    const double JUMP_THRESHOLD = 45.0 * PI / 180.0; // reject jumps >45 deg
-    const double ALPHA = 0.85; // weight for previous filtered vector (0..1). smaller -> faster response
+    const double JUMP_THRESHOLD = 90.0 * PI / 180.0; // reject jumps >45 deg
+    const double ALPHA = 0.2; // weight for previous filtered vector (0..1). smaller -> faster response
 
     double input_yaw = normalizeAngle(quaternion_yaw);
 
@@ -371,7 +372,7 @@ inline void updateOdometry(float vel_left, float vel_right, ros::Publisher& odom
         filter_initialized = true;
     } else {
         // detect large discontinuity between last input and current input
-        double diff_input = normalizeAngle(input_yaw - last_input_yaw);
+        double diff_input = normalizeAngle(abs(input_yaw) - abs(last_input_yaw));
         // detect large discontinuity between filtered angle and new input
         double filt_angle = atan2(filt_y, filt_x);
         double diff_filtered = normalizeAngle(input_yaw - filt_angle);
