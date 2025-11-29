@@ -47,3 +47,8 @@ Error:   TF_DENORMALIZED_QUATERNION: Ignoring transform for child_frame_id "base
         [set_initial_pose-7] process has died [pid 27198, exit code 1, cmd /opt/ros/noetic/lib/rostopic/rostopic pub -1 /initialpose geometry_msgs/PoseWithCovarianceStamped -f /home/huypi/robot_fablab_ws/src/robot_fablab/config/initial_pose.yaml __name:=set_initial_pose __log:=/home/huypi/.ros/log/90fbb446-c9fd-11f0-ada7-0be6287720ce/set_initial_pose-7.log].
 log file: /home/huypi/.ros/log/90fbb446-c9fd-11f0-ada7-0be6287720ce/set_initial_pose-7*.log
 [INFO] [1
+
+QObject::connect: Cannot queue arguments of type 'QVector<int>'
+(Make sure 'QVector<int>' is registered using qRegisterMetaType().)
+QObject::connect: Cannot queue arguments of type 'QVector<int>'
+(Make sure 'QVector<int>' is registered using qRegisterMetaType().)
