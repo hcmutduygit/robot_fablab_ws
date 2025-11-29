@@ -297,16 +297,41 @@ void process_frame(uint16_t can_id, const std::vector<uint8_t> &data, ros::Publi
         tf::Matrix3x3(q).getRPY(roll, pitch, quaternion_yaw);
         // quaternion_yaw = quaternion_yaw * 180.0 / PI;
         // std::cout << "Quaternion Yaw (deg): " << quaternion_yaw * 180.0 / PI << "\n";
-        updateOdometry(left_mps, right_mps, odom_pub, quaternion_yaw, lasttime);
         cnt_receive_imu++;
         break;
     }
-    // // IMU Gyro
-    // case 0x42:
-    // {
-    //     cnt_receive++;
-    //     break;
-    // }
+    // IMU Gyro
+    case 0x13:
+    {
+        if (data.size() < 6) {
+            ROS_WARN("IMU Gyro CAN frame invalid size!");
+            break;
+        }
+
+        // Giải mã 3 trục Gyro từ 6 byte đầu
+        int16_t gx_raw = (int16_t)((data[0] << 8) | data[1]);
+        int16_t gy_raw = (int16_t)((data[2] << 8) | data[3]);
+        int16_t gz_raw = (int16_t)((data[4] << 8) | data[5]);
+
+        // Vì STM32 gửi nguyên giá trị float cast sang int16_t ⇒ đơn vị °/s
+        float gx_deg = gx_raw/16.0f;
+        float gy_deg = (float)gy_raw/16.0f;
+        float gz_deg = (float)gz_raw/16.0f;
+
+        float gx_rad = gx_deg * PI / 180.0f;
+        float gy_rad = gy_deg * PI / 180.0f;
+        float gz_rad = gz_deg * PI / 180.0f;
+
+        // Lưu global biến Z
+        gyro_z = gz_rad;
+
+        // Debug
+        std::cout << "[IMU Gyro] X=" << gx_rad
+                << " Y=" << gy_rad
+                << " Z=" << gz_rad << " rad/s" << std::endl;
+        cnt_receive_imu++;
+        break;
+    }
     // // IMU Accel
     // case 0x43:
     // {
@@ -377,7 +402,7 @@ void process_frame(uint16_t can_id, const std::vector<uint8_t> &data, ros::Publi
         // std::cout << std::fixed << std::setprecision(3);
         // std::cout << "Converted Left Velocity (m/s): " << left_mps << "\n";
         // std::cout << "Converted Right Velocity (m/s): " << right_mps << "\n";
-        // updateOdometry(left_mps, right_mps, x, y, odom_pub, lasttime, yaw_offset, initialized, yaw_angle);
+        updateOdometry(left_mps, right_mps, odom_pub, quaternion_yaw, lasttime);
         cnt_receive_odom++;
         break;
     }

@@ -319,5 +319,6 @@ float qy = 0.0;
 float qz = 0.0;
 float qw = 0.0;
 double roll, pitch, quaternion_yaw;
+float gyro_z = 0.0;
 
 #endif 
