@@ -42,7 +42,7 @@
         <param name="odom_model_type"           value="diff"/>
         <param name="odom_alpha5"               value="0.1"/>
         <param name="gui_publish_rate"          value="10.0"/>
-        <param name="laser_max_beams"             value="70"/>
+        <param name="laser_max_beams"             value="60"/>
         <param name="laser_max_range"           value="10.0"/>
         <param name="min_particles"             value="500"/>
         <param name="max_particles"             value="2000"/>
@@ -88,10 +88,10 @@
     <group if="$(arg guidance_enabled)">
         <node pkg = "guidance_node" type = "guidance_node" name = "Guidance" output = "screen">
             <param name="linear_speed" value="0.4"/>
-            <param name="angular_speed" value="0.8"/>
+            <param name="angular_speed" value="0.5"/>
             <param name="goal_radius" value="0.5"/>
             <param name="cycle" value="0.1"/>
-            <param name="angular_speed_max" value="0.9"/>
+            <param name="angular_speed_max" value="0.8"/>
             <param name="linear_speed_max" value="0.5"/>
             <param name="KD" value="0.7"/>
             <param name="drive" value="1"/>
