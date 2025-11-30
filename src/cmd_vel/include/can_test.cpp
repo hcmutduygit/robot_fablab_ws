@@ -13,7 +13,7 @@
 #include <thread>
 #define PI 3.14159265358979323846
 
-WaveshareCAN can("/dev/ttyUSB1", 2000000, 2.0);
+WaveshareCAN can("/dev/ttyUSB0", 2000000, 2.0);
 
 // RFID database - mapping RFID data to user info
 static const std::map<std::vector<uint8_t>, std::pair<std::string, std::string>> rfid_database = {
@@ -56,20 +56,23 @@ float yaw_angle = 0;
 int right_wheel_velocity = 0;
 int left_wheel_velocity = 0;
 
-// Convert two bytes to a signed 16-bit integer
+// Convert two bytes to a signed 16-bit integer (safe with uint32_t intermediate)
 int16_t hex_to_signed(const std::vector<uint8_t> &data, size_t start_idx, size_t bits = 16)
 {
-    uint16_t value = (data[start_idx] << 8) | data[start_idx + 1];
-    // Convert unsigned to signed using proper casting
-    int16_t signed_value = static_cast<int16_t>(value);
+    // Use uint32_t to prevent overflow during calculation
+    uint32_t value = (static_cast<uint32_t>(data[start_idx]) << 8) | static_cast<uint32_t>(data[start_idx + 1]);
+    // Convert to int16_t
+    int16_t signed_value = static_cast<int16_t>(value & 0xFFFF);
     return signed_value;
 }
 
-// Convert two bytes to an unsigned 16-bit integer for angles
+// Convert two bytes to an unsigned 16-bit integer for angles (safe with uint32_t intermediate)
 uint16_t hex_to_unsigned(const std::vector<uint8_t> &data, size_t start_idx)
 {
-    // Combine two bytes into a 16-bit unsigned integer (big-endian)
-    return static_cast<uint16_t>((data[start_idx] << 8) | data[start_idx + 1]);
+    // Use uint32_t to prevent overflow during calculation (big-endian)
+    // Byte[start_idx] is HIGH byte, Byte[start_idx+1] is LOW byte
+    uint32_t value = (static_cast<uint32_t>(data[start_idx]) << 8) | static_cast<uint32_t>(data[start_idx + 1]);
+    return static_cast<uint16_t>(value & 0xFFFF);
 }
 
 // Process CAN frame (equivalent to Python's process_frame)
@@ -218,7 +221,7 @@ void process_frame(uint16_t can_id, const std::vector<uint8_t> &data)
     }
     default:
         // Handle unknown CAN IDs
-        std::cout << "Unknown CAN ID: 0x" << std::hex << can_id << std::dec << std::endl;
+        // std::cout << "Unknown CAN ID: 0x" << std::hex << can_id << std::dec << std::endl;
         break;
     }
 }

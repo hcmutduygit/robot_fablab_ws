@@ -10,8 +10,8 @@ private:
     double current_time = 0;
     double last_time = 0;
     double derivate = 0;
-
+    double filter_derivate = 0;
 public:
-    double pid(double error, float kp, float ki);
+    double pid(double error, float kp, float kd);
 };
 #endif

@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <launch>
 
-  <arg name="world" default="$(find robot_fablab)/worlds/empty.world" />
+  <arg name="world" default="$(find robot_fablab)/worlds/empty_office.world" />
 
   <include file="$(find gazebo_ros)/launch/empty_world.launch">
     <arg name="world_name" value="$(arg world)"/>

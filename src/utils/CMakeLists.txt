@@ -12,7 +12,7 @@ find_package(catkin REQUIRED COMPONENTS
 add_message_files(
   DIRECTORY msg
   FILES
-  waypoint.msg
+  waypoints.msg
   cmd_vel.msg
   pose_robot.msg
 )
