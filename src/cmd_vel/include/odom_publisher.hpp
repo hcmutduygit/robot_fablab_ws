@@ -29,7 +29,7 @@ inline void updateOdometry(float vel_left, float vel_right, ros::Publisher& odom
     static bool filter_initialized = false;
     static double filt_x = 1.0, filt_y = 0.0;
     static double last_input_yaw = 0.0;
-    const double JUMP_THRESHOLD = 45.0 * PI / 180.0; // 45 deg
+    const double JUMP_THRESHOLD = 90.0 * PI / 180.0;
     double input_yaw = normalizeAngle(quaternion_yaw);
 
     if (!filter_initialized) {
@@ -47,7 +47,7 @@ inline void updateOdometry(float vel_left, float vel_right, ros::Publisher& odom
             double ang_rate = std::isfinite(imu_gyro_z) ? std::abs(imu_gyro_z) : std::abs(diff_input);
             double ALPHA_fast = 0.05;
             double ALPHA_smooth = 0.8;
-            double rate_thresh = 0.6; // rad/s
+            double rate_thresh = 0.5; // rad/s
             double ALPHA = (ang_rate > rate_thresh) ? ALPHA_fast : ALPHA_smooth;
 
             double meas_x = cos(input_yaw);
