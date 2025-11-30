@@ -4,6 +4,7 @@
 #include <ros/ros.h>
 #include <utils/pose_robot.h>
 #include <utils/cmd_vel.h>
+#include <nav_msgs/Odometry.h>
 #include <string>
 #include <vector>
 #include <thread>
@@ -17,6 +18,8 @@
 #include <chrono>
 #include <cerrno>
 #include <cstring>
+#include <geometry_msgs/PoseWithCovarianceStamped.h>
+
 class WaveshareCAN {
 public:
     using Callback = std::function<void(uint16_t, const std::vector<uint8_t>&)>;
@@ -296,16 +299,26 @@ private:
     std::unique_ptr<std::thread> rx_thread_;
 };
 
- ros::Publisher pub;
- ros::Publisher pub_vel_stm;
- ros::Publisher odom_pub;
- ros::Subscriber sub;
- ros::Timer loopControl;
- ros::Timer cnt_byte;
- int number, calib ;
- float cycle_transmit;
- int cnt_receive = 0;
- int cnt_send = 0;
- float right_mps = 0.0;
- float left_mps = 0.0;
+ros::Publisher pub;
+ros::Publisher pub_vel_stm;
+ros::Publisher odom_pub;
+ros::Subscriber sub;
+ros::Subscriber amcl_sub;
+ros::Timer loopControl;
+ros::Timer loopControl2;
+ros::Timer cnt_byte;
+int number, new_number, calib ;
+float cycle_transmit = 0;
+int cnt_receive_odom = 0;
+int cnt_receive_imu = 0;
+int cnt_send = 0;
+float right_mps = 0.0;
+float left_mps = 0.0;
+float qx = 0.0;
+float qy = 0.0;
+float qz = 0.0;
+float qw = 0.0;
+double roll, pitch, quaternion_yaw;
+float gyro_z = 0.0;
+
 #endif 

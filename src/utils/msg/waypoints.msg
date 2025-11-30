@@ -1,0 +1,2 @@
+float32 direction_x
+float32 direction_y

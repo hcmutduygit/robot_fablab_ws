@@ -26,17 +26,19 @@ class AdaptiveLOSTrajectoryController:
         self.delta_max = 0.8
 
         self.KP = 2.5
-        self.LINEAR_SPEED = 1.5
+        self.LINEAR_SPEED = 1
         self.ANGULAR_SPEED = 2
-        self.GOAL_RADIUS = 1.5
+        self.GOAL_RADIUS = 3
         self.MAX_LINEAR_SPEED = 2
         self.MAX_ANGULAR_SPEED = 2.5
         self.filtered_linear_x = 0.0
         self.filtered_angular_z = 0.0
 
         # self.waypoints = [(0,0),(7.765,-4.42),(19.68,-12.1),(28.912,3.44),(35.22, 12.78),(39.6, 10.324),(50.53,2.95)]
-        self.waypoints = [(0.236976775786, 2.97073580198),(-5.33050850251, -3.44570115279)]
+        # self.waypoints = [(0.236976775786, 2.97073580198),(-5.33050850251, -3.44570115279)]
         # self.waypoints = [(0,0),(4,0)]
+        self.waypoints = [(0, 0), (10, 0),(10, 8),(20.4,6.5),(20.4,-1.23),(25.8,-1.23)]
+        # self.waypoints = [(0, 0), (10.665608, -0.976406),(10.654301, 7.693296)]
         self.x_data = []
         self.y_data = []
         self.angular_data = []
