@@ -59,8 +59,8 @@ void control_los(float goal_x, float goal_y, float previous_x, float previous_y)
     perc_dist = abs(s_k_1 - long_track)/s_k_1;
 
     if (abs(heading_error) > 0.1){
-        linear_x = MAX_LINEAR_SPEED/2;
-        // linear_x = limit(MAX_LINEAR_SPEED * exp(-3 * abs(heading_error)), min_speed, MAX_LINEAR_SPEED);
+        // linear_x = MAX_LINEAR_SPEED/2;
+        linear_x = limit(MAX_LINEAR_SPEED * exp(-3 * abs(heading_error)), min_speed, MAX_LINEAR_SPEED);
     }
     else {
         linear_x = limit(LINEAR_SPEED*perc_dist, min_speed, MAX_LINEAR_SPEED);
