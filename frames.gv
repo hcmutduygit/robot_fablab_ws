@@ -1,7 +1,0 @@
-digraph G {
-"base_footprint" -> "laser"[label="Broadcaster: /basefootprint_to_laser\nAverage rate: 20.106 Hz\nMost recent transform: 1758534942.440 ( -0.019 sec old)\nBuffer length: 4.924 sec\n"];
-edge [style=invis];
- subgraph cluster_legend { style=bold; color=black; label ="view_frames Result";
-"Recorded at time: 1758534942.421"[ shape=plaintext ] ;
- }->"base_footprint";
-}
