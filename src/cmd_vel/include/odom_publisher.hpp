@@ -45,9 +45,9 @@ inline void updateOdometry(float vel_left, float vel_right, ros::Publisher& odom
         if (!reject) {
             // dynamic alpha: when angular rate large -> faster response (smaller alpha)
             double ang_rate = std::isfinite(imu_gyro_z) ? std::abs(imu_gyro_z) : std::abs(diff_input);
-            double ALPHA_fast = 0.05;
-            double ALPHA_smooth = 0.8;
-            double rate_thresh = 0.5; // rad/s
+            double ALPHA_fast = 0.03;
+            double ALPHA_smooth = 0.6;
+            double rate_thresh = 0.6; // rad/s
             double ALPHA = (ang_rate > rate_thresh) ? ALPHA_fast : ALPHA_smooth;
 
             double meas_x = cos(input_yaw);
@@ -149,5 +149,5 @@ inline void updateOdometry(float vel_left, float vel_right, ros::Publisher& odom
     odom_tf.transform.translation.z = 0.0;
     odom_tf.transform.rotation = tf::createQuaternionMsgFromYaw(yaw);
     odom_broadcaster.sendTransform(odom_tf);
-    std::cout << "---------------------------" <<"\n";
+    // std::cout << "---------------------------" <<"\n";
 }

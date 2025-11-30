@@ -326,9 +326,7 @@ void process_frame(uint16_t can_id, const std::vector<uint8_t> &data, ros::Publi
         gyro_z = gz_rad;
 
         // Debug
-        // std::cout << "[IMU Gyro] X=" << gx_rad
-        //         << " Y=" << gy_rad
-        //         << " Z=" << gz_rad << " rad/s" << std::endl;
+        // std::cout << "[IMU Gyro] Z=" << gz_rad << " rad/s" << std::endl;
         cnt_receive_imu++;
         break;
     }
