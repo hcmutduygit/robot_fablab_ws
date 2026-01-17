@@ -34,7 +34,7 @@ void updateWheelOdometry(float vel_left, float vel_right, ros::Publisher& wheel_
 
     wheel_yaw += omega * dt;
     wheel_yaw = normalizeAngle(wheel_yaw);
-    std::cout << "wheel_yaw = " << wheel_yaw * 360/PI << std::endl;
+    // std::cout << "wheel_yaw = " << wheel_yaw * 360/PI << std::endl;
 
     if (std::abs(omega) < 1e-6) {
         x += v * cos(wheel_yaw) * dt;
