@@ -93,7 +93,11 @@
 
     <!-- Static TF: base_footprint -> laser -->
     <node pkg="tf" type="static_transform_publisher" name="basefootprint_to_laser"
-            args="0 0 0 0 0 0 base_footprint laser 50" />
+            args="0.15 0 0.6 0 0 0 base_footprint laser 50" />
+
+    <node pkg="tf" type="static_transform_publisher" name="imu_to_base"
+            args="0.2 0 0.6 0 0 0 base_footprint imu_link" />
+
 
     <node pkg="subscribe_mqtt" type="waypoints_subscriber.py" name="waypoints_subscriber" output="screen"></node>
 
