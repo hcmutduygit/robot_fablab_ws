@@ -1,6 +1,6 @@
 #include <cmath>
 #include "can_node.h"
-#include "odom_publisher.hpp"
+#include "wheel_odometry.hpp"
 #include <cstdlib>
 #include <string>
 #include <sstream>
@@ -11,6 +11,7 @@
 #include <iomanip>
 #include <fstream>
 #include <sensor_msgs/Imu.h>
+#include <tf/transform_datatypes.h> // add this line
 #define PI 3.14159265358979323846
 
 // Global variable to store the updated value
@@ -19,8 +20,9 @@ int right_wheel_velocity = 0;
 int left_wheel_velocity = 0;
 float x = 0;
 float y = 0;
+float wheel_yaw = 0;
 float yaw = 0;
-std::mutex odom_mutex; 
+std::mutex wheel_odom_mutex; 
 float yaw_offset = 0;
 float yaw_prev = 0.0;
 bool initialized = false;
@@ -142,17 +144,6 @@ void CallBackVel(const utils::cmd_vel::ConstPtr &cmd_vel)
     // send_vel(can);
 }
 
-void CallBackAMCL(const geometry_msgs::PoseWithCovarianceStamped::ConstPtr& msg) {
-    double orientation_x = msg->pose.pose.orientation.x;
-    double orientation_y = msg->pose.pose.orientation.y;
-    double orientation_z = msg->pose.pose.orientation.z;
-    double orientation_w = msg->pose.pose.orientation.w;
-
-    tf::Quaternion q(orientation_x, orientation_y, orientation_z, orientation_w);
-    double roll, pitch, yaw_amcl;
-    tf::Matrix3x3(q).getRPY(roll, pitch, yaw_amcl);
-    // yaw = yaw_amcl;
-}
 
 // Convert two bytes to a signed 16-bit integer
 int16_t hex_to_signed(const std::vector<uint8_t> &data, size_t start_idx, size_t bits = 16)
@@ -400,7 +391,7 @@ void process_frame(uint16_t can_id, const std::vector<uint8_t> &data, ros::Publi
         // std::cout << std::fixed << std::setprecision(3);
         // std::cout << "Converted Left Velocity (m/s): " << left_mps << "\n";
         // std::cout << "Converted Right Velocity (m/s): " << right_mps << "\n";
-        updateOdometry(left_mps, right_mps, odom_pub, quaternion_yaw, lasttime);
+        updateWheelOdometry(left_mps, right_mps, odom_pub, lasttime);
         cnt_receive_odom++;
         break;
     }
@@ -533,7 +524,7 @@ int main(int argc, char **argv)
 {
     ros::init(argc, argv, "Can_node");
     ros::NodeHandle nh;
-    odom_pub = nh.advertise<nav_msgs::Odometry>("odom", 10);
+    odom_pub = nh.advertise<nav_msgs::Odometry>("wheel_odometry", 10);
     ros::Time lasttime = ros::Time::now();
     pub = nh.advertise<utils::pose_robot>("pose_robot", 10);
     pub_vel_stm = nh.advertise<utils::cmd_vel>("Guidance", 10);
