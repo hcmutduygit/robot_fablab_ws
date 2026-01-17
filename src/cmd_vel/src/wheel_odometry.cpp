@@ -59,8 +59,8 @@ void updateWheelOdometry(float vel_left, float vel_right, ros::Publisher& wheel_
 
     // covariance cao → EKF sẽ "ít tin"
     for (int i = 0; i < 36; i++) odom.pose.covariance[i] = 0.0;
-    odom.pose.covariance[0]  = 0.2;
-    odom.pose.covariance[7]  = 0.2;
+    odom.pose.covariance[0]  = 0.05;
+    odom.pose.covariance[7]  = 0.05;
     odom.pose.covariance[35] = 0.5;
 
     wheel_odom_pub.publish(odom);
