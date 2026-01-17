@@ -19,8 +19,8 @@
     <node name="rviz" pkg="rviz" type="rviz" args="-d $(arg rvizconfig)"/>
 
     <!-- Load map (yaml file, không dùng .pbstream) -->
-    <!-- <arg name="map_file" default="$(find robot_fablab)/maps/map_inside_fablab.yaml" /> -->
-    <arg name="map_file" default="$(find robot_fablab)/maps/new_map2.yaml" />
+    <arg name="map_file" default="$(find robot_fablab)/maps/map_inside_fablab.yaml" />
+    <!-- <arg name="map_file" default="$(find robot_fablab)/maps/new_map2.yaml" /> -->
     <node name="map_server" pkg="map_server" type="map_server" args="$(arg map_file)" />
 
     <group if="$(arg can_enabled)">
@@ -92,11 +92,11 @@
     <node pkg="robot_fablab" type="set_initial_pose" name="set_initial_pose" output="screen"/>
 
     <!-- Static TF: base_footprint -> laser -->
-    <node pkg="tf" type="static_transform_publisher" name="basefootprint_to_laser"
-            args="0.15 0 0.6 0 0 0 base_footprint laser 50" />
+    <node pkg="tf2_ros" type="static_transform_publisher" name="basefootprint_to_laser"
+            args="0.15 0 0.6 0 0 0 base_footprint laser" />
 
-    <node pkg="tf" type="static_transform_publisher" name="imu_to_base"
-            args="0.2 0 0.6 0 0 0 base_footprint imu_link" />
+    <node pkg="tf2_ros" type="static_transform_publisher" name="imu_to_base"
+            args="0.2 0 0.6 0 0 0 base_footprint imu" />
 
 
     <node pkg="subscribe_mqtt" type="waypoints_subscriber.py" name="waypoints_subscriber" output="screen"></node>
