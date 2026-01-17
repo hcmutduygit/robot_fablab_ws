@@ -42,7 +42,7 @@
     </node>
 
     <node pkg="robot_localization" type="ekf_localization_node" name="ekf_localization" output="screen">
-        <rosparam command="load" file="$(find cmd_vel)/config/ekf.yaml"/>
+        <rosparam command="load" file="$(find robot_fablab)/config/ekf_localization.yaml"/>
         <remap from="odometry/filtered" to="/odom"/>
     </node>
 
