@@ -19,7 +19,7 @@ double normalizeAngle(double a) {
     return atan2(sin(a), cos(a));
 }
 
-inline void updateOdometry(float vel_left, float vel_right, ros::Publisher& odom_pub,
+void updateOdometry(float vel_left, float vel_right, ros::Publisher& odom_pub,
                            double quaternion_yaw, ros::Time& lasttime, float imu_gyro_z = NAN)
 {
     std::lock_guard<std::mutex> lock(odom_mutex);
