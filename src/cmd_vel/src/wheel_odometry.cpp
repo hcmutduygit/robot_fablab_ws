@@ -12,17 +12,20 @@ double normalizeAngle(double a)
     return atan2(sin(a), cos(a));
 }
 
-void updateWheelOdometry(float vel_left, float vel_right, ros::Publisher& wheel_odom_pub, ros::Time& last_time)
+void updateWheelOdometry(float vel_left, float vel_right,
+                          ros::Publisher& wheel_odom_pub,
+                          ros::Time& last_time)
 {
     std::lock_guard<std::mutex> lock(wheel_odom_mutex);
 
     // scale encoder
-    float v_l = -vel_left  / 20.0f;
-    float v_r =  vel_right / 20.0f;
+    double v_l = -vel_left  / 20.0;
+    double v_r =  vel_right / 20.0;
+    
 
-    if (std::abs(v_l) < 5e-4) v_l = 0.0f;
-    if (std::abs(v_r) < 5e-4) v_r = 0.0f;
-
+    if (std::abs(v_l) < 5e-3) v_l = 0.0;
+    if (std::abs(v_r) < 5e-3) v_r = 0.0;
+std::cout << "v_l=" << v_l << ", v_r=" << v_r << "\n";
     ros::Time now = ros::Time::now();
     double dt = (now - last_time).toSec();
     if (dt <= 0.0 || !std::isfinite(dt)) dt = 1e-3;
@@ -32,33 +35,36 @@ void updateWheelOdometry(float vel_left, float vel_right, ros::Publisher& wheel_
     double v     = (v_r + v_l) / 2.0;
     double omega = (v_r - v_l) / WHEEL_BASE;
 
-    wheel_yaw += omega * dt;
-    wheel_yaw = normalizeAngle(wheel_yaw);
-    // std::cout << "left vel = " << v_l << ", right vel = " << v_r << "\n";
-    // std::cout << "wheel_yaw = " << wheel_yaw * 180/PI << std::endl;
+    // lưu yaw cũ
+    double yaw_old = wheel_yaw;
 
-    if (std::abs(omega) < 1e-6) {
-        x += v * cos(wheel_yaw) * dt;
-        y += v * sin(wheel_yaw) * dt;
+    // cập nhật pose
+    if (std::abs(omega) < 1e-4) {
+        x += v * cos(yaw_old) * dt;
+        y += v * sin(yaw_old) * dt;
     } else {
         double r = v / omega;
-        x += r * (sin(wheel_yaw + omega * dt) - sin(wheel_yaw));
-        y += -r * (cos(wheel_yaw + omega * dt) - cos(wheel_yaw));
+        x += r * (sin(yaw_old + omega * dt) - sin(yaw_old));
+        y += -r * (cos(yaw_old + omega * dt) - cos(yaw_old));
     }
+
+    // cập nhật yaw SAU
+    wheel_yaw = normalizeAngle(yaw_old + omega * dt);
 
     nav_msgs::Odometry odom;
     odom.header.stamp = now;
-    odom.header.frame_id = "odom";          
-    odom.child_frame_id = "base_footprint"; 
+    odom.header.frame_id = "odom";
+    odom.child_frame_id = "base_footprint";
 
     odom.pose.pose.position.x = x;
     odom.pose.pose.position.y = y;
-    odom.pose.pose.orientation = tf::createQuaternionMsgFromYaw(wheel_yaw);
+    odom.pose.pose.orientation =
+    tf::createQuaternionMsgFromYaw(wheel_yaw);
 
     odom.twist.twist.linear.x  = v;
     odom.twist.twist.angular.z = omega;
 
-    // covariance cao → EKF sẽ "ít tin"
+    // covariance (wheel odom → không tin lắm)
     for (int i = 0; i < 36; i++) odom.pose.covariance[i] = 0.0;
     odom.pose.covariance[0]  = 0.05;
     odom.pose.covariance[7]  = 0.05;
@@ -66,3 +72,4 @@ void updateWheelOdometry(float vel_left, float vel_right, ros::Publisher& wheel_
 
     wheel_odom_pub.publish(odom);
 }
+
