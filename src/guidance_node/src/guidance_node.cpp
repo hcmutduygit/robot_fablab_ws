@@ -2,6 +2,7 @@
 #include <gazebo_msgs/ModelStates.h>
 #include <geometry_msgs/Twist.h>
 #include <geometry_msgs/PoseWithCovarianceStamped.h>
+#include <nav_msgs/Odometry.h>
 #include <tf/tf.h>
 #include <algorithm> 
 #include <math.h>
