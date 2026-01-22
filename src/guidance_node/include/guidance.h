@@ -51,7 +51,7 @@ bool has_published_arrival = false;  // Flag de tranh spam MQTT arrival
 //     {7.69544647905, 17.9154257326}
 // };
 ros::Timer loopControl; 
-ros::Subscriber sub;
+ros::Subscriber sub_odom;
 ros::Publisher pub;
 ros::Subscriber sub_amcl;
 ros::Subscriber sub_wp;
