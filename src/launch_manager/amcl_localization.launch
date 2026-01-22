@@ -27,7 +27,7 @@
         <node pkg = "cmd_vel" type = "can_node" name = "Cmd_vel" output = "screen">
             <param name="mode" value="1"/> 
             <param name="calib" value="0"/>
-            <param name="cycle_transmit" value="0.025"/>
+            <param name="cycle_transmit" value="0.05"/>
         </node>
     </group>
 
