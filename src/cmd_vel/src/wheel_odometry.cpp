@@ -71,6 +71,10 @@ void updateWheelOdometry(float vel_left, float vel_right,
     odom.pose.covariance[7]  = 0.05;
     odom.pose.covariance[35] = 0.5;
 
+    for (int i = 0; i < 36; i++) odom.twist.covariance[i] = 0.0;
+    odom.twist.covariance[0]  = 0.2;   // vx
+    odom.twist.covariance[35] = 1.0;   // vyaw (nếu có)
+
     wheel_odom_pub.publish(odom);
 }
 
