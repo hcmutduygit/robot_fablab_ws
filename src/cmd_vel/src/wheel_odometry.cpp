@@ -4,7 +4,7 @@
 
 #define PI 3.14159265358979323846
 
-static constexpr double WHEEL_BASE = 0.57;
+static constexpr double WHEEL_BASE = 0.58;
 static constexpr double DT_MAX = 0.2;
 
 double normalizeAngle(double a)
@@ -25,7 +25,8 @@ void updateWheelOdometry(float vel_left, float vel_right,
 
     if (std::abs(v_l) < 5e-3) v_l = 0.0;
     if (std::abs(v_r) < 5e-3) v_r = 0.0;
-std::cout << "v_l=" << v_l << ", v_r=" << v_r << "\n";
+    std::cout << "v_l=" << v_l << ", v_r=" << v_r << "\n";
+    
     ros::Time now = ros::Time::now();
     double dt = (now - last_time).toSec();
     if (dt <= 0.0 || !std::isfinite(dt)) dt = 1e-3;
@@ -39,7 +40,7 @@ std::cout << "v_l=" << v_l << ", v_r=" << v_r << "\n";
     double yaw_old = wheel_yaw;
 
     // cập nhật pose
-    if (std::abs(omega) < 1e-4) {
+    if (std::abs(omega) < 5e-2) {
         x += v * cos(yaw_old) * dt;
         y += v * sin(yaw_old) * dt;
     } else {
