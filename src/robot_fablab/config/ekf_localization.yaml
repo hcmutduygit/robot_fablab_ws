@@ -1,12 +1,8 @@
 frequency: 50
 sensor_timeout: 0.1
 two_d_mode: true
-world_frame: odom          # ĐÚNG cho AMCL
-publish_tf: true 
-
 publish_tf: true
 publish_acceleration: false
-
 map_frame: map
 odom_frame: odom
 base_link_frame: base_footprint

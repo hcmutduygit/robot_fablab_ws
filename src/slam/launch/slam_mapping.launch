@@ -9,12 +9,14 @@
     <node pkg = "cmd_vel" type = "can_node" name = "Cmd_vel" output = "screen">
         <param name="mode" value="1"/> 
         <param name="calib" value="0"/>
-        <param name="cycle_transmit" value="0.05"/>
+        <param name="cycle_transmit" value="0.02"/>
     </node>
 
-    <!-- Static TF: base_footprint -> laser -->
-    <node pkg="tf" type="static_transform_publisher" name="basefootprint_to_laser"
-            args="0 0 0 0 0 0 base_footprint laser 50" />
+    <node pkg="tf2_ros" type="static_transform_publisher" name="basefootprint_to_laser"
+            args="0.15 0 0.6 0 0 0 base_footprint laser" />
+
+    <node pkg="tf2_ros" type="static_transform_publisher" name="imu_to_base"
+            args="0.2 0 0.6 0 0 0 base_footprint imu" />
 
     <node name="cartographer_node" pkg="cartographer_ros"
         type="cartographer_node" args="
@@ -22,7 +24,7 @@
             -configuration_basename my_robot.lua"
         output="screen">
         <remap from="scan" to="scan" />
-        <remap from="odom" to="odom" />
+        <remap from="odom" to="wheel_odometry" />
     </node>
 
     <arg name="publish_period_sec" default="1.0" />
@@ -32,3 +34,6 @@
     <node name="cartographer_occupancy_grid_node" pkg="cartographer_ros"
         type="cartographer_occupancy_grid_node" args="-resolution 0.05 -publish_period_sec 1.0" />
 </launch>
+
+<!-- rosservice call /finish_trajectory 0
+rosrun map_server map_saver -f /home/robot_fablab_ws/src/robot_fablab/maps/map_outside -->
