@@ -149,7 +149,7 @@ void CallBackOdom (const nav_msgs::Odometry::ConstPtr& msg){
     tf::Quaternion q(orientation_x, orientation_y, orientation_z, orientation_w);
     double roll, pitch, amcl_yaw;
     tf::Matrix3x3(q).getRPY(roll, pitch, amcl_yaw);
-    std::cout << "Odom yaw = " << amcl_yaw * 180/PI << std::endl;
+    // std::cout << "Odom yaw = " << amcl_yaw * 180/PI << std::endl;
 }
 
 void CallBackPose(const geometry_msgs::PoseWithCovarianceStamped::ConstPtr& msg){
