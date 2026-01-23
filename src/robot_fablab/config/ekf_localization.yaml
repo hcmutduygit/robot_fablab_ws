@@ -1,5 +1,4 @@
-ekf_filter_node:
-  ros_parameters:
+
     frequency: 30
     sensor_timeout: 0.1
     two_d_mode: true
@@ -35,4 +34,4 @@ ekf_filter_node:
         false, false, true,
         false, false, false,
         false, false, true,
-        false, false, false ]
+        true, true, false ]

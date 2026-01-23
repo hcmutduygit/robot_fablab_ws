@@ -25,7 +25,7 @@ void updateWheelOdometry(float vel_left, float vel_right,
 
     if (std::abs(v_l) < 5e-3) v_l = 0.0;
     if (std::abs(v_r) < 5e-3) v_r = 0.0;
-    std::cout << "v_l=" << v_l << ", v_r=" << v_r << "\n";
+    // std::cout << "v_l=" << v_l << ", v_r=" << v_r << "\n";
     
     ros::Time now = ros::Time::now();
     double dt = (now - last_time).toSec();
