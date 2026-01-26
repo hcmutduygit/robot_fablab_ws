@@ -22,7 +22,7 @@ void updateWheelOdometry(float vel_left, float vel_right,
     double v_l = -vel_left  / 20.0;
     double v_r =  vel_right / 20.0;
     
-
+    
     if (std::abs(v_l) < 5e-3) v_l = 0.0;
     if (std::abs(v_r) < 5e-3) v_r = 0.0;
     // std::cout << "v_l=" << v_l << ", v_r=" << v_r << "\n";
@@ -40,7 +40,7 @@ void updateWheelOdometry(float vel_left, float vel_right,
     double yaw_old = wheel_yaw;
 
     // cập nhật pose
-    if (std::abs(omega) < 5e-2) {
+    if (std::abs(omega) < 5e-3) {
         x += v * cos(yaw_old) * dt;
         y += v * sin(yaw_old) * dt;
     } else {
