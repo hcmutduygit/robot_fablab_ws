@@ -4,7 +4,7 @@
 
 #define PI 3.14159265358979323846
 
-static constexpr double WHEEL_BASE = 0.58;
+static constexpr double WHEEL_BASE = 0.57;
 static constexpr double DT_MAX = 0.2;
 
 double normalizeAngle(double a)
@@ -23,8 +23,8 @@ void updateWheelOdometry(float vel_left, float vel_right,
     double v_r =  vel_right / 20.0;
     
 
-    if (std::abs(v_l) < 5e-3) v_l = 0.0;
-    if (std::abs(v_r) < 5e-3) v_r = 0.0;
+    if (std::abs(v_l) < 1e-3) v_l = 0.0;
+    if (std::abs(v_r) < 1e-3) v_r = 0.0;
     // std::cout << "v_l=" << v_l << ", v_r=" << v_r << "\n";
     
     ros::Time now = ros::Time::now();

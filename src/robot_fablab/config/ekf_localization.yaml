@@ -17,10 +17,10 @@
     odom0_differential: false
 
     odom0_config:
-      [ false, false, false,   # x, y, z
-        false, false, true,    # roll, pitch, yaw
-        true,  true,  false,   # vx, vy, vz
-        false, false, true,    # vroll, vpitch, vyaw
+      [ true, true, false,   # x, y, z
+        false, false, false,    # roll, pitch, yaw
+        false,  false,  false,   # vx, vy, vz
+        false, false, false,    # vroll, vpitch, vyaw
         false, false, false ]  # ax, ay, az
 
     # ===============================
@@ -31,7 +31,9 @@
 
     imu0_config:
       [ false, false, false,
-        false, false, true,
+        false, false, false,
         false, false, false,
         false, false, true,
-        true, true, false ]
+        false, false, false ]
+
+    
