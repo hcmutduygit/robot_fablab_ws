@@ -19,15 +19,15 @@
     <node name="rviz" pkg="rviz" type="rviz" args="-d $(arg rvizconfig)"/>
 
     <!-- Load map (yaml file, không dùng .pbstream) -->
-    <!-- <arg name="map_file" default="$(find robot_fablab)/maps/map_inside_fablab.yaml" /> -->
-    <arg name="map_file" default="$(find robot_fablab)/maps/new_map2.yaml" />
+    <arg name="map_file" default="$(find robot_fablab)/maps/map_inside_fablab.yaml" />
+    <!-- <arg name="map_file" default="$(find robot_fablab)/maps/new_map2.yaml" /> -->
     <node name="map_server" pkg="map_server" type="map_server" args="$(arg map_file)" />
 
     <group if="$(arg can_enabled)">
         <node pkg = "cmd_vel" type = "can_node" name = "Cmd_vel" output = "screen">
             <param name="mode" value="1"/> 
             <param name="calib" value="0"/>
-            <param name="cycle_transmit" value="0.04"/>
+            <param name="cycle_transmit" value="0.025"/>
         </node>
     </group>
 
