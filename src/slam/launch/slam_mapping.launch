@@ -31,6 +31,7 @@
         output="screen">
         <remap from="scan" to="scan" />
         <remap from="odom" to="wheel_odometry" />
+        <remap from="imu"  to="imu/data" />
     </node>
 
     <arg name="publish_period_sec" default="1.0" />
