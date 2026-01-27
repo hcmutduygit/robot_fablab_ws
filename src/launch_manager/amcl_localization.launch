@@ -43,10 +43,10 @@
 
         <!-- Static TF: base_footprint -> laser -->
     <node pkg="tf2_ros" type="static_transform_publisher" name="basefootprint_to_laser"
-            args="0.15 0 0.6 0 0 0 base_footprint laser" />
+            args="-0.15 0 0.6 0 0 0 base_footprint laser" />
 
     <node pkg="tf2_ros" type="static_transform_publisher" name="basefootprint_to_imu"
-            args="0.2 0 0.6 0 0 0 base_footprint imu" />
+            args="-0.15 0.06 0.6 0 0 0 base_footprint imu" />
 
     <node pkg="robot_localization" type="ekf_localization_node" name="ekf_localization" output="screen">
         <rosparam command="load" file="$(find robot_fablab)/config/ekf_localization.yaml"/>
