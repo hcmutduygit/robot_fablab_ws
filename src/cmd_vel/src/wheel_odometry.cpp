@@ -35,6 +35,7 @@ void updateWheelOdometry(float vel_left, float vel_right,
 
     double v     = (v_r + v_l) / 2.0;
     double omega = (v_r - v_l) / WHEEL_BASE;
+  
 
     // lưu yaw cũ
     double yaw_old = wheel_yaw;
