@@ -6,7 +6,7 @@
     <arg name="rvizconfig" default="$(find rviz)/amcl.rviz"/>
     <node name="rviz" pkg="rviz" type="rviz" args="-d $(arg rvizconfig)"/>
 
-    <node pkg = "cmd_vel" type = "can_node" name = "Cmd_vel" output = "screen">
+    <node pkg = "slam" type = "slam_node" name = "slam_node" output = "screen">
         <param name="mode" value="1"/> 
         <param name="calib" value="0"/>
         <param name="cycle_transmit" value="0.02"/>
@@ -19,10 +19,7 @@
     </node>
 
     <node pkg="tf2_ros" type="static_transform_publisher" name="basefootprint_to_laser"
-            args="0.15 0 0.6 0 0 0 base_footprint laser" />
-
-    <node pkg="tf2_ros" type="static_transform_publisher" name="imu_to_base"
-            args="0.2 0 0.6 0 0 0 base_footprint imu" />
+            args="-0.17 0 0.6 0 0 0 base_footprint laser" />
 
     <node name="cartographer_node" pkg="cartographer_ros"
         type="cartographer_node" args="
@@ -31,7 +28,6 @@
         output="screen">
         <remap from="scan" to="scan" />
         <remap from="odom" to="wheel_odometry" />
-        <remap from="imu"  to="imu/data" />
     </node>
 
     <arg name="publish_period_sec" default="1.0" />
