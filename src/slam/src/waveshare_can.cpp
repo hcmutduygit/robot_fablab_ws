@@ -41,7 +41,7 @@ void WaveshareCAN::open() {
     options.c_cflag |= (CLOCAL | CREAD);
     options.c_cflag &= ~PARENB;
     options.c_cflag &= ~CSTOPB;
-    options.c_cflag &= ~CSIZE;
+    options.c_cflag &= ~CSIZE;+
     options.c_cflag |= CS8;
     options.c_lflag &= ~(ICANON | ECHO | ECHOE | ISIG);
     options.c_iflag &= ~(IXON | IXOFF | IXANY);
