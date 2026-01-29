@@ -12,7 +12,7 @@ double normalizeAngle(double a)
     return atan2(sin(a), cos(a));
 }
 
-void updateWheelOdometry(float vel_left, float vel_right, float yaw, ros::Publisher& wheel_odom_pub, ros::Time& lasttime)
+void updateWheelOdometry(float vel_left, float vel_right, double quaternion_yaw, ros::Publisher& wheel_odom_pub, ros::Time& lasttime)
 {
     std::lock_guard<std::mutex> lock(wheel_odom_mutex);
 
@@ -34,17 +34,14 @@ void updateWheelOdometry(float vel_left, float vel_right, float yaw, ros::Publis
     double v     = (v_r + v_l) / 2.0;
     double omega = (v_r - v_l) / WHEEL_BASE;
 
-    // lưu yaw cũ
-    double yaw_old = yaw;
-
     // cập nhật pose
     if (std::abs(omega) < 5e-3) {
-        x += v * cos(yaw_old) * dt;
-        y += v * sin(yaw_old) * dt;
+        x += v * cos(quaternion_yaw) * dt;
+        y += v * sin(quaternion_yaw) * dt;
     } else {
         double r = v / omega;
-        x += r * (sin(yaw_old + omega * dt) - sin(yaw_old));
-        y += -r * (cos(yaw_old + omega * dt) - cos(yaw_old));
+        x += r * (sin(quaternion_yaw + omega * dt) - sin(quaternion_yaw));
+        y += -r * (cos(quaternion_yaw + omega * dt) - cos(quaternion_yaw));
     }
 
     nav_msgs::Odometry odom;
@@ -54,7 +51,7 @@ void updateWheelOdometry(float vel_left, float vel_right, float yaw, ros::Publis
 
     odom.pose.pose.position.x = x;
     odom.pose.pose.position.y = y;
-    odom.pose.pose.orientation = tf::createQuaternionMsgFromYaw(yaw);
+    odom.pose.pose.orientation = tf::createQuaternionMsgFromYaw(quaternion_yaw);
     odom.twist.twist.linear.x  = v;
     odom.twist.twist.angular.z = omega;
 

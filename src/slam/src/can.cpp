@@ -53,6 +53,23 @@ int main(int argc, char** argv)
             updateWheelOdometry(left_mps, right_mps, wheel_yaw, wheel_odom_pub, lasttime);
         });
 
+    ros::NodeHandle arg_nh("~");
+    nh.getParam("mode", number);
+    arg_nh.getParam("calib", calib);
+    arg_nh.getParam("cycle_transmit", cycle_transmit);
+    ROS_INFO("mode = %d", number);
+
+
+    // Master request 
+    loopControl = nh.createTimer(
+        ros::Duration(cycle_transmit),
+        [&](const ros::TimerEvent&) {
+            can.send(0x050, {1, 0, 0, 0, 0, 0, 0, 0}); // slave master - gửi trước
+            cnt_send++;
+            TransmitSTM(odom_pub, lasttime); // publish sau
+        }
+    );
+
     ros::spin();
     return 0;
 }

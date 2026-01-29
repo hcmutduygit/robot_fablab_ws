@@ -243,7 +243,7 @@ int main(int argc, char **argv){
     ROS_INFO("Linear_speed_max = %.2f, Angular_speed_max= %.2f, goal_radius= %.2f. KD = %.2f",MAX_LINEAR_SPEED,MAX_ANGULAR_SPEED,GOAL_RADIUS,KD);
     ros::NodeHandle nh;
 
-    pub = nh.advertise<utils::cmd_vel>("Cmd_vel", 1);
+    pub = nh.advertise<utils::cmd_vel>("Cmd_vel", 10);
     sub_odom = nh.subscribe("odom", 10, CallBackOdom);
     sub_amcl = nh.subscribe("amcl_pose", 10, CallBackPose); //theo topic
 
