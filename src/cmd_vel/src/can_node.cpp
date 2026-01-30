@@ -97,10 +97,10 @@ void send_vel(WaveshareCAN &can) //0x030
     try
     {
         // Get integer velocities
-        int right_vel = right_wheel_velocity;
-        int left_vel = left_wheel_velocity;
-        // int right_vel = 3000;
-        // int left_vel = -3000;
+        // int right_vel = right_wheel_velocity;
+        // int left_vel = left_wheel_velocity;
+        int right_vel = 3000;
+        int left_vel = -3000;
      
         // Create 8-byte data array: first 4 bytes for left wheel, last 4 bytes for right wheel
         uint8_t data[8];
@@ -565,15 +565,20 @@ int main(int argc, char **argv)
             TransmitSTM(odom_pub, lasttime); // publish sau
         }
     );
+
+    utils::cmd_vel cmd_vel;
+
+    cmd_vel.v_left = 0;
+    cmd_vel.v_right = 0;
     
-    // // Master request 
-    // loopControl2 = nh.createTimer(
-    //     ros::Duration(0.1),
-    //     [&](const ros::TimerEvent&) {
-    //         can.send(0x030, {1, 0, 0, 0, 0, 0, 0, 0});
-    //         cnt_send++;
-    //     }
-    // );
+    loopControl2 = nh.createTimer(
+        ros::Duration(0.1),
+        [&](const ros::TimerEvent&) {
+            auto ptr = boost::make_shared<utils::cmd_vel>(cmd_vel);
+            CallBackVel(ptr);
+
+        }
+    );
 
      // Thêm biến mới để kiểm tra runtime thay đổi mode
     new_number = number;
