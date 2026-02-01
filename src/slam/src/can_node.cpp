@@ -34,7 +34,7 @@ float qx_prev, qy_prev, qz_prev, qw_prev;
 
 static volatile int g_should_exit = 0;
 
-WaveshareCAN can("/dev/usbcan", 2000000, 2.0);
+WaveshareCAN can("/dev/ttyUSB0", 2000000, 2.0);
 
 int ConvertPulse(float &velocity)
 {
