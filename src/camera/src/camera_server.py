@@ -40,7 +40,7 @@ def generate_frames():
             frame = frame[:, :width // 2]  # crop nửa trái
 
             # ✅ Resize ra khung rộng hơn như 960x540 hoặc 1280x720
-            frame = cv2.resize(frame, (1280, 720))  # tùy bạn chọn
+            frame = cv2.resize(frame, (1280, 720))  
 
             # Lưu ý: 1280x720 là 16:9, sẽ fill được màn hình tốt hơn
 
