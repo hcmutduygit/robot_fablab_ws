@@ -64,6 +64,8 @@ void updateWheelOdometry(float vel_left, float vel_right,
     tf::createQuaternionMsgFromYaw(wheel_yaw);
 
     odom.twist.twist.linear.x  = v;
+    odom.twist.twist.linear.y = 0.0;
+    odom.twist.twist.linear.z = 0.0;
     odom.twist.twist.angular.z = omega;
 
     // covariance (wheel odom → không tin lắm)
