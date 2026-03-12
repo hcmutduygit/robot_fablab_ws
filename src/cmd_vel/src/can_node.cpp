@@ -565,15 +565,20 @@ int main(int argc, char **argv)
             TransmitSTM(odom_pub, lasttime); // publish sau
         }
     );
+
+    utils::cmd_vel cmd_vel;
+
+    cmd_vel.v_left = 0;
+    cmd_vel.v_right = 0;
     
-    // // Master request 
-    // loopControl2 = nh.createTimer(
-    //     ros::Duration(0.1),
-    //     [&](const ros::TimerEvent&) {
-    //         can.send(0x030, {1, 0, 0, 0, 0, 0, 0, 0});
-    //         cnt_send++;
-    //     }
-    // );
+    loopControl2 = nh.createTimer(
+        ros::Duration(0.1),
+        [&](const ros::TimerEvent&) {
+            // auto ptr = boost::make_shared<utils::cmd_vel>(cmd_vel);
+            // CallBackVel(ptr);
+
+        }
+    );
 
      // Thêm biến mới để kiểm tra runtime thay đổi mode
     new_number = number;

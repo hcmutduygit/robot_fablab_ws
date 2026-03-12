@@ -9,7 +9,7 @@
     <node pkg = "slam" type = "slam_node" name = "slam_node" output = "screen">
         <param name="mode" value="1"/> 
         <param name="calib" value="0"/>
-        <param name="cycle_transmit" value="0.02"/>
+        <param name="cycle_transmit" value="0.025"/>
     </node>
 
     <node ns="imu" name="imu_node" pkg="imu_bno055" type="bno055_i2c_node" respawn="true" respawn_delay="2">
