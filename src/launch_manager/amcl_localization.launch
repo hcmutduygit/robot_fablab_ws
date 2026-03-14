@@ -9,7 +9,7 @@
     <arg name="base_frame_id"   default="base_footprint"/>
     <arg name="global_frame_id" default="map"/>
 
-    <arg name="mqtt_enabled" default="false" />
+    <arg name="mqtt_enabled" default="true" />
 
     <!-- Lidar driver -->
     <include file="$(find rplidar_ros)/launch/rplidar_s2.launch"/>
@@ -21,7 +21,7 @@
     <!-- Load map (yaml file, không dùng .pbstream) -->
     <!-- <arg name="map_file" default="$(find robot_fablab)/maps/map_inside_fablab.yaml" /> -->
     <arg name="map_file" default="$(find robot_fablab)/maps/new_map2.yaml" />
-    <!-- <arg name="map_file" default="$(find robot_fablab)/maps/map.yaml" /> -->
+    <!-- <arg name="map_file" default="$(find robot_fablab)/maps/new_map.yaml" /> -->
     <node name="map_server" pkg="map_server" type="map_server" args="$(arg map_file)" />
 
     <group if="$(arg can_enabled)">
@@ -44,7 +44,7 @@
 
         <!-- Static TF: base_footprint -> laser -->
     <node pkg="tf2_ros" type="static_transform_publisher" name="basefootprint_to_laser"
-            args="-0.17 0 0.6 0 0 0 base_footprint laser" />
+            args="-0.17 0 0.6 3.141592635 0 0 base_footprint laser" />
 
     <node pkg="tf2_ros" type="static_transform_publisher" name="basefootprint_to_imu"
             args="-0.17 0.06 0.6 0 0 0 base_footprint imu" />
