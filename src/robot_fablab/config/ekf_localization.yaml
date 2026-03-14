@@ -42,7 +42,7 @@ odom0_config:
         false, false, true,    # roll, pitch, yaw
         true,  false,  false,   # vx, vy, vz
         false, false, true,    # vroll, vpitch, vyaw
-        false, false, false ]  # ax, ay, az
+        true, false, false ]  # ax, ay, az
 
 imu0: /imu/data
 imu0_config:

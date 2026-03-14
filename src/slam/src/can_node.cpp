@@ -158,6 +158,7 @@ void callbackImu(const sensor_msgs::Imu::ConstPtr& msg)
     qz = msg->orientation.z;
     qw = msg->orientation.w;
     quaternion_yaw = tf::getYaw(msg->orientation);
+    // std::cout << "imu yaw: " << quaternion_yaw * 180/PI << "\n";
 }
 
 std::string generateCSVFileName() 
