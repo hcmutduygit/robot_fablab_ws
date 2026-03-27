@@ -1,42 +1,42 @@
 <launch>
-  <arg name="guidance_enabled" default="true" />
-  <arg name="can_enabled" default="true" />
-  <arg name="camera_enabled" default="false" />
-  <arg name="mqtt_enabled" default="false" />
+    <arg name="guidance_enabled" default="true" />
+    <!-- <arg name="can_enabled" default="true" />
+    <arg name="camera_enabled" default="false" />
+    <arg name="mqtt_enabled" default="false" /> -->
 
-<group if="$(arg guidance_enabled)">
-    <node pkg = "guidance_node" type = "guidance_node" name = "Guidance" output = "screen">
-        <param name="linear_speed" value="8"/>
-        <param name="angular_speed" value="8"/>
-        <param name="goal_radius" value="0.3"/>
-        <param name="cycle" value="0.1"/>
-        <param name="angular_speed_max" value="10"/>
-        <param name="linear_speed_max" value="5"/>
-        <param name="KP" value="1"/>
-        <param name="drive" value="-1"/>
-        <param name="direct" value="-1"/>
-        <param name="min_speed_linear" value="2.0"/>
-        <param name="waypoints_x" value="-9.30491496088, 3.25696052098" />
-        <param name="waypoints_y" value="-1.52284350262, 0.579487409835" />
-    </node>
-</group>
+    <group if="$(arg guidance_enabled)">
+        <node pkg = "guidance_node" type = "guidance_node" name = "Guidance" output = "screen">
+            <param name="mode" value="1"/>
+            <param name="linear_speed" value="0.3"/>
+            <param name="angular_speed" value="0.5"/>
+            <param name="goal_radius" value="0.3"/>
+            <param name="cycle" value="0.1"/>
+            <param name="angular_speed_max" value="1"/>
+            <param name="linear_speed_max" value="0.5"/>
+            <param name="KP" value="1"/>
+            <param name="drive" value="1"/>
+            <param name="direct" value="1"/>
+            <param name="min_speed_linear" value="0.2"/>
+            <!-- <param name="waypoints_x" value="8.112411409209532, -2.2787375397544154" />
+            <param name="waypoints_y" value="16.55553421686869, 22.95870043564341" /> -->
+            <param name="waypoints_x" value="-2.2787375397544154, 0.0" />
+            <param name="waypoints_y" value="22.95870043564341, 0.0" />
+        </node>
+    </group>
 
-<group if="$(arg can_enabled)">
-    <node pkg = "cmd_vel" type = "can_node" name = "Cmd_vel" output = "screen">
-      <param name="mode" value="1"/>
-      <param name="calib" value="0"/>
-      <param name="cycle" value="0.1"/>
-    </node>
-</group>
+    <!-- <group if="$(arg can_enabled)">
+        <node pkg = "cmd_vel" type = "can_node" name = "Cmd_vel" output = "screen">
+            <param name="calib" value="0"/>
+            <param name="cycle_transmit" value="0.1"/>
+        </node>
+    </group> -->
 
-<group if="$(arg camera_enabled)">
-    <node pkg = "camera" type = "camera_server.py" name = "camera_webserver" output = "screen">
-    </node>
-</group>
+    <!-- <group if="$(arg camera_enabled)">
+        <node pkg = "camera" type = "camera_server.py" name = "camera_webserver" output = "screen"></node>
+    </group> -->
 
-<group if="$(arg mqtt_enabled)">
-    <node pkg = "publish_mqtt" type = "publish_mqtt_node" name = "Mqtt" output = "screen">
-    </node>
-</group>
+    <!-- <group if="$(arg mqtt_enabled)">
+        <node pkg = "publish_mqtt" type = "publish_mqtt_node" name = "Mqtt" output = "screen"></node>
+    </group> -->
 
 </launch>
