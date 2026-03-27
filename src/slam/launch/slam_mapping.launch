@@ -6,7 +6,7 @@
     <arg name="rvizconfig" default="$(find rviz)/amcl.rviz"/>
     <node name="rviz" pkg="rviz" type="rviz" args="-d $(arg rvizconfig)"/>
 
-    <node pkg = "cmd_vel" type = "can_node" name = "Cmd_vel" output = "screen">
+    <node pkg = "slam" type = "slam_node" name = "slam_node" output = "screen">
         <param name="mode" value="1"/> 
         <param name="calib" value="0"/>
         <param name="cycle_transmit" value="0.05"/>
