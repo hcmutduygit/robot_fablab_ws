@@ -127,8 +127,8 @@ void send_vel(WaveshareCAN &can) //0x030
 
 void CallBackVel(const utils::cmd_vel::ConstPtr &cmd_vel)
 {
-    float v_left = cmd_vel->v_left;
-    float v_right = cmd_vel->v_right;
+    v_left = cmd_vel->v_left;
+    v_right = cmd_vel->v_right;
 
     // ROS_INFO("vel_left guidance = %f, vel_right guidance = %f", v_left, v_right);
 
@@ -448,7 +448,7 @@ void saveDataToCSV(int imu_packages, int odom_packages, int send_packages)
         if (!file_exists) {
             csv_file << "Timestamp,IMU_Packages_per_sec,Odom_Packages_per_sec,Send_Packages_per_sec,"
                      << "Yaw_Angle,Left_Velocity_mps,Right_Velocity_mps,"
-                     << "qx,qy,qz,qw,x,y,quaternion_yaw\n";
+                     << "qx,qy,qz,qw,x,y,quaternion_yaw,Left_Velocity_LOS,Right_Velocity_LOS\n";
         }
         
         // Ghi dữ liệu
@@ -465,7 +465,9 @@ void saveDataToCSV(int imu_packages, int odom_packages, int send_packages)
                  << std::setprecision(4) << qw << ","
                  << std::setprecision(4) << x << ","
                  << std::setprecision(4) << y << ","
-                 << std::setprecision(4) << quaternion_yaw << "\n";
+                 << std::setprecision(4) << quaternion_yaw << ","
+                 << std::setprecision(4) << v_left/20 << ","
+                 << std::setprecision(4) << v_right/20 << "\n";
         csv_file.close();
         
         ROS_INFO("Data saved: IMU=%d, Odom=%d, Send=%d, Yaw=%.2f, Left=%.4f m/s, Right=%.4f m/s, qx=%.4f, qy=%.4f, qz=%.4f, qw=%.4f, x=%.4f, y=%.4f, quat_yaw=%lf", 
