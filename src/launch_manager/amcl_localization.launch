@@ -20,8 +20,8 @@
 
     <!-- Load map (yaml file, không dùng .pbstream) -->
     <!-- <arg name="map_file" default="$(find robot_fablab)/maps/map_inside_fablab.yaml" /> -->
-    <arg name="map_file" default="$(find robot_fablab)/maps/new_map2.yaml" />
-    <!-- <arg name="map_file" default="$(find robot_fablab)/maps/B2_map.yaml" /> -->
+    <!-- <arg name="map_file" default="$(find robot_fablab)/maps/new_map2.yaml" /> -->
+    <arg name="map_file" default="$(find robot_fablab)/maps/B2_map.yaml" />
     <node name="map_server" pkg="map_server" type="map_server" args="$(arg map_file)" />
 
     <group if="$(arg can_enabled)">
@@ -103,20 +103,20 @@
 
     <group if="$(arg guidance_enabled)">
         <node pkg = "guidance_node" type = "guidance_node" name = "Guidance" output = "screen">
-            <param name="linear_speed" value="1.0"/>
+            <param name="linear_speed" value="0.6"/>
             <param name="angular_speed" value="0.5"/>
             <param name="goal_radius" value="0.5"/>
             <param name="cycle" value="0.1"/>
             <param name="angular_speed_max" value="0.8"/>
-            <param name="linear_speed_max" value="1.0"/>
+            <param name="linear_speed_max" value="0.6"/>
             <param name="KD" value="0.7"/>
             <param name="drive" value="1"/>
             <param name="direct" value="1"/>
             <param name="min_speed_linear" value="0.3"/>
             <!-- <param name="waypoints_x" value="8.43370545973, -1.5463915164, -1.02582621629, -5.14741795585, -10.2078468764, -5.14741795585, -1.02582621, -1.5463915, 8.43370545" /> -->
             <!-- <param name="waypoints_y" value="15.9036135775,  21.4933550528, 24.8810294018, 27.6081660781, 29.7301846772, 27.6081660781, 24.8810294, 21.4933550, 15.9036135" /> -->
-            <param name="waypoints_x" value="17.7482836171, 4.07109296558, 4.36828805066, 3.96287388499, 3.82816284655, 3.6259261503, 5.50858533119, 15.0417906024, 24.2846808459, 19.96799200, 16.87499985, 17.74828361" />
-            <param name="waypoints_y" value="1.74636434141,  0.226667157814, 1.41586392363, 4.92082046796, 9.27709200749, 13.9424737858, 14.9608998089, 15.3367562076, 15.9047058822, 14.45442501, 12.4088992202, 1.746364341" />
+            <param name="waypoints_x" value="-0.0145568176766, 4.07109296558, 4.36828805066, 3.96287388499, 3.82816284655, 3.6259261503, 5.50858533119, 15.0417906024, 25.405224311" />
+            <param name="waypoints_y" value="-0.0899522513034,  0.226667157814, 1.41586392363, 4.92082046796, 9.27709200749, 13.9424737858, 14.9608998089, 15.3367562076, 16.1181246676" />
             <!-- <param name="waypoints_x" value="17.846833875, 19.580640488, 18.0909480487, 13.7855435301, 13.2871246977, 18.0432616809, 18.7305777725" />
             <param name="waypoints_y" value="20.043761136,  24.1110019643, 26.2962949068, 26.4921987671, 24.8377278702, 24.0635676018, 21.5189316661" /> Toilet nu khoa Hoa -->
             <!-- <param name="waypoints_x" value="0.0839265684349, 11.063455044, 12.7462350141, 16.0562803583, 22.2976415284,  24.7464449317, 24.729907139,  23.0243540792, 22.4718292685, 18.2379016332, 12.7797560431, 11.4664644751, 0.083926568" />
