@@ -101,6 +101,9 @@
 
     <node pkg="subscribe_mqtt" type="waypoints_subscriber.py" name="waypoints_subscriber" output="screen"></node>
 
+    <!-- Xoay Subscriber - Listen to robot/xoay topic and send to CAN -->
+    <node pkg="subscribe_mqtt" type="xoay_subscriber.py" name="xoay_subscriber" output="screen"></node>
+
     <group if="$(arg guidance_enabled)">
         <node pkg = "guidance_node" type = "guidance_node" name = "Guidance" output = "screen">
             <param name="linear_speed" value="0.6"/>
