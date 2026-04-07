@@ -61,20 +61,22 @@ def on_message(mosq, obj, msg):
 def send_angle_to_can(angle_value):
     """Send angle value to CAN bus via serial port"""
     try:
-        # Convert angle to 16-bit integer (scaled by 100)
-        angle_scaled = int(angle_value * 100)
+        # Convert to integer (input is already int)
+        angle_int = int(angle_value)
         
-        # Clamp to 16-bit range (-32768 to 32767)
-        if angle_scaled > 32767:
-            angle_scaled = 32767
-        elif angle_scaled < -32768:
-            angle_scaled = -32768
+        # Clamp to 16-bit unsigned range (0 to 65535)
+        # or 16-bit signed range (-32768 to 32767) depending on your needs
+        if angle_int > 65535:
+            angle_int = 65535
+        elif angle_int < 0:
+            angle_int = 0
         
-        # Convert to bytes (big-endian)
-        angle_bytes = struct.pack('>h', angle_scaled)
+        # Convert to bytes (little-endian, 2 bytes)
+        # Byte 0 = LSB, Byte 1 = MSB
+        angle_bytes = bytearray([angle_int & 0xFF, (angle_int >> 8) & 0xFF])
         
         # Create CAN frame according to WaveshareCAN protocol:
-        # [0xAA, CMD, IDL, IDH, DATA(8), 0x55]
+        # [0xAA, 0xC8, IDL, IDH, DATA(8 bytes), 0x55]
         frame = bytearray()
         frame.append(0xAA)  # Start byte
         frame.append(0xC8)  # CMD byte
@@ -93,7 +95,7 @@ def send_angle_to_can(angle_value):
         
         # Print angle data hex only
         angle_hex = ' '.join('{:02X}'.format(b) for b in angle_bytes)
-        rospy.loginfo("Angle data (HEX): %s (Value: %.2f degrees)", angle_hex, angle_value)
+        rospy.loginfo("Angle data (HEX): %s (Value: %d)", angle_hex, angle_int)
         
         # Open serial port and send
         ser = serial.Serial(CAN_PORT, CAN_BAUDRATE, timeout=1.0)
@@ -103,8 +105,8 @@ def send_angle_to_can(angle_value):
         ser.close()
         
         if bytes_written == len(frame):
-            rospy.loginfo("✓ Successfully sent %d bytes to CAN bus (ID: 0x%02X, Angle: %.2f degrees)", 
-                         bytes_written, CAN_ID, angle_value)
+            rospy.loginfo("✓ Successfully sent %d bytes to CAN bus (ID: 0x%02X, Angle: %d)", 
+                         bytes_written, CAN_ID, angle_int)
             rospy.loginfo("Exit after sending CAN data successfully")
             exit(0)
         else:
