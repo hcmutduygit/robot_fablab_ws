@@ -1,130 +1,135 @@
 #!/usr/bin/env python2
 # -*- coding: utf-8 -*-
-# Import packages
-import sys
-import os
+
+import rospy
 import struct
-from mqtt_base import MQTTTemplate, get_topic
+import serial
+import time
+import paho.mqtt.client as mqtt
 
-class XoaySubscriber(MQTTTemplate):
-    def __init__(self):
-        MQTTTemplate.__init__(self)  # Direct call instead of super()
-        self.topic = "robot/xoay"  # Subscribe to robot/xoay topic
-        self.message_count = 0
-        self.can_port = "/dev/usbcan"  # CAN port
-        self.can_baudrate = 2000000
-        self.can_id = 0x40  # CAN ID for sending angle data
-        self.last_sent_value = None  # Track last sent value to avoid duplicates
-    
-    def on_connect_callback(self, client, userdata, flags, rc):
-        """Subscribe to topic when connected"""
-        if rc == 0:
-            print("Connected to MQTT broker")
-            self.subscribe(self.topic, qos=0)
+# --- Config MQTT ---
+MQTT_HOST = "45.117.177.157"
+MQTT_PORT = 1883
+MQTT_KEEPALIVE_INTERVAL = 5
+MQTT_USERNAME = "client"
+MQTT_PASSWORD = "viam1234"
+MQTT_TOPIC = "robot/xoay"
+
+# --- Config CAN ---
+CAN_PORT = "/dev/usbcan"
+CAN_BAUDRATE = 2000000
+CAN_ID = 0x40
+
+# Global variable to track last sent value
+last_sent_value = None
+
+# --- Callback function when received MQTT message ---
+def on_message(mosq, obj, msg):
+    global last_sent_value
+    try:
+        rospy.loginfo("=== Received MQTT message from topic: %s ===", msg.topic)
+        payload = msg.payload.decode("utf-8")
+        
+        # Convert to float
+        angle_value = float(payload)
+        rospy.loginfo("Angle value: %.2f degrees", angle_value)
+        
+        # Only send if value is different from last sent value
+        if angle_value != last_sent_value:
+            send_angle_to_can(angle_value)
+            last_sent_value = angle_value
         else:
-            print("Failed to connect, return code {}".format(rc))
-    
-    def on_subscribe_callback(self, client, userdata, mid, granted_qos):
-        """Callback when subscription is acknowledged"""
-        print("Subscribed to topic: {}".format(self.topic))
-    
-    def on_message_callback(self, client, userdata, msg):
-        """Handle incoming message from subscribed topic"""
-        self.message_count += 1
-        # Decode message payload
-        try:
-            payload = msg.payload.decode('utf-8')
-        except:
-            payload = str(msg.payload)
+            rospy.loginfo("(Skipped: Same value as last sent)")
         
-        # Print the message once
-        print("Message received from {}: {}".format(msg.topic, payload))
-        
-        # Send angle data to CAN bus only if it's a new value
-        try:
-            angle_value = float(payload)
-            # Only send if value is different from last sent value
-            if angle_value != self.last_sent_value:
-                self.send_angle_to_can(angle_value)
-                self.last_sent_value = angle_value
-            else:
-                print("(Skipped: Same value as last sent)")
-        except ValueError:
-            print("Error: Could not convert payload to float: {}".format(payload))
-    
-    def send_angle_to_can(self, angle_value):
-        """Send angle value to CAN bus via serial port"""
-        try:
-            import serial
-            import time
-            
-            # Convert angle to 16-bit integer (scaled by 100)
-            # Example: 45.5 degrees -> 4550
-            angle_scaled = int(angle_value * 100)
-            
-            # Clamp to 16-bit range (-32768 to 32767)
-            if angle_scaled > 32767:
-                angle_scaled = 32767
-            elif angle_scaled < -32768:
-                angle_scaled = -32768
-            
-            # Convert to bytes (big-endian)
-            angle_bytes = struct.pack('>h', angle_scaled)  # Big-endian signed short
-            
-            # Create CAN frame according to WaveshareCAN protocol:
-            # [0xAA, CMD, IDL, IDH, DATA(8), 0x55]
-            frame = bytearray()
-            frame.append(0xAA)  # Start byte
-            frame.append(0xC8)  # CMD byte
-            frame.append(self.can_id & 0xFF)  # IDL
-            frame.append((self.can_id >> 8) & 0xFF)  # IDH
-            
-            # Add angle data (2 bytes) + padding (6 bytes)
-            frame.extend(angle_bytes)
-            frame.extend([0x00] * 6)  # Padding to 8 bytes
-            
-            frame.append(0x55)  # End byte
-            
-            # Debug: Print frame in hex format
-            frame_hex = ' '.join('{:02X}'.format(b) for b in frame)
-            print("CAN Frame to send (HEX): {}".format(frame_hex))
-            
-            # Open serial port and send
-            ser = serial.Serial(self.can_port, self.can_baudrate, timeout=1.0)
-            time.sleep(0.1)  # Wait for port to be ready
-            
-            bytes_written = ser.write(frame)
-            ser.close()
-            
-            if bytes_written == len(frame):
-                print("✓ Successfully sent {} bytes to CAN bus (ID: 0x{:02X}, Angle: {} degrees)".format(
-                    bytes_written, self.can_id, angle_value))
-            else:
-                print("⚠ Warning: Only {} of {} bytes sent to CAN bus".format(bytes_written, len(frame)))
-            
-        except ImportError:
-            print("✗ Error: pyserial not installed. Install with: pip install pyserial")
-        except serial.SerialException as e:
-            print("✗ Serial Error: Could not open port {}. Error: {}".format(self.can_port, str(e)))
-        except Exception as e:
-            print("✗ Error sending to CAN bus: {}".format(str(e)))
+    except ValueError:
+        rospy.logerr("Error: Could not convert payload to float: %s", payload)
+    except Exception as e:
+        rospy.logerr("Error handle message MQTT: %s", e)
 
-if __name__ == "__main__":
-    print("Starting Xoay Subscriber...")
-    print("Listening to topic: robot/xoay")
-    
-    # Create subscriber
-    subscriber = XoaySubscriber()
-    
-    # Connect and start listening
-    if subscriber.connect():
-        print("Connected successfully, waiting for messages...")
-        try:
-            # Keep listening for messages
-            subscriber.loop_forever()
-        except KeyboardInterrupt:
-            print("\nDisconnecting...")
-            subscriber.disconnect()
-    else:
-        print("Failed to connect to MQTT broker")
-        sys.exit(1)
+def send_angle_to_can(angle_value):
+    """Send angle value to CAN bus via serial port"""
+    try:
+        # Convert angle to 16-bit integer (scaled by 100)
+        angle_scaled = int(angle_value * 100)
+        
+        # Clamp to 16-bit range (-32768 to 32767)
+        if angle_scaled > 32767:
+            angle_scaled = 32767
+        elif angle_scaled < -32768:
+            angle_scaled = -32768
+        
+        # Convert to bytes (big-endian)
+        angle_bytes = struct.pack('>h', angle_scaled)
+        
+        # Create CAN frame according to WaveshareCAN protocol:
+        # [0xAA, CMD, IDL, IDH, DATA(8), 0x55]
+        frame = bytearray()
+        frame.append(0xAA)  # Start byte
+        frame.append(0xC8)  # CMD byte
+        frame.append(CAN_ID & 0xFF)  # IDL
+        frame.append((CAN_ID >> 8) & 0xFF)  # IDH
+        
+        # Add angle data (2 bytes) + padding (6 bytes)
+        frame.extend(angle_bytes)
+        frame.extend([0x00] * 6)  # Padding to 8 bytes
+        
+        frame.append(0x55)  # End byte
+        
+        # Debug: Print frame in hex format
+        frame_hex = ' '.join('{:02X}'.format(b) for b in frame)
+        rospy.loginfo("CAN Frame to send (HEX): %s", frame_hex)
+        
+        # Open serial port and send
+        ser = serial.Serial(CAN_PORT, CAN_BAUDRATE, timeout=1.0)
+        time.sleep(0.1)  # Wait for port to be ready
+        
+        bytes_written = ser.write(frame)
+        ser.close()
+        
+        if bytes_written == len(frame):
+            rospy.loginfo("✓ Successfully sent %d bytes to CAN bus (ID: 0x%02X, Angle: %.2f degrees)", 
+                         bytes_written, CAN_ID, angle_value)
+        else:
+            rospy.logwarn("⚠ Warning: Only %d of %d bytes sent to CAN bus", bytes_written, len(frame))
+        
+    except serial.SerialException as e:
+        rospy.logerr("✗ Serial Error: Could not open port %s. Error: %s", CAN_PORT, str(e))
+    except Exception as e:
+        rospy.logerr("✗ Error sending to CAN bus: %s", str(e))
+
+# --- Callback when connect MQTT ---
+def on_connect(mosq, obj, flags, rc):
+    rospy.loginfo("Connect to MQTT broker success (rc=%s)", str(rc))
+    mosq.subscribe(MQTT_TOPIC, 0)
+
+# --- Callback when subscribe ---
+def on_subscribe(mosq, obj, mid, granted_qos):
+    rospy.loginfo("Subscribe topic: %s", MQTT_TOPIC)
+
+# --- Main function ---
+if __name__ == '__main__':
+    rospy.init_node('mqtt_xoay_subscriber', anonymous=True)
+    rospy.loginfo("=== Starting Xoay Subscriber ===")
+    rospy.loginfo("Listening to topic: %s", MQTT_TOPIC)
+
+    # Create client MQTT
+    mqttc = mqtt.Client()
+    mqttc.username_pw_set(MQTT_USERNAME, MQTT_PASSWORD)
+
+    # Var callback
+    mqttc.on_connect = on_connect
+    mqttc.on_subscribe = on_subscribe
+    mqttc.on_message = on_message
+
+    # Connect to broker
+    try:
+        mqttc.connect(MQTT_HOST, MQTT_PORT, MQTT_KEEPALIVE_INTERVAL)
+        rospy.loginfo("Connecting MQTT broker %s:%d ...", MQTT_HOST, MQTT_PORT)
+    except Exception as e:
+        rospy.logerr("Can't connect to MQTT broker: %s", e)
+        exit(1)
+
+    # --- Running ROS + MQTT ---
+    while not rospy.is_shutdown():
+        mqttc.loop(0.1)  # handle MQTT in loop
+        rospy.sleep(0.1)
