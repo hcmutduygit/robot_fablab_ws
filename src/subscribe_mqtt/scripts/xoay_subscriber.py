@@ -14,6 +14,7 @@ class XoaySubscriber(MQTTTemplate):
         self.can_port = "/dev/usbcan"  # CAN port
         self.can_baudrate = 2000000
         self.can_id = 0x40  # CAN ID for sending angle data
+        self.last_sent_value = None  # Track last sent value to avoid duplicates
     
     def on_connect_callback(self, client, userdata, flags, rc):
         """Subscribe to topic when connected"""
@@ -39,10 +40,15 @@ class XoaySubscriber(MQTTTemplate):
         # Print the message once
         print("Message received from {}: {}".format(msg.topic, payload))
         
-        # Send angle data to CAN bus
+        # Send angle data to CAN bus only if it's a new value
         try:
             angle_value = float(payload)
-            self.send_angle_to_can(angle_value)
+            # Only send if value is different from last sent value
+            if angle_value != self.last_sent_value:
+                self.send_angle_to_can(angle_value)
+                self.last_sent_value = angle_value
+            else:
+                print("(Skipped: Same value as last sent)")
         except ValueError:
             print("Error: Could not convert payload to float: {}".format(payload))
     
@@ -79,18 +85,29 @@ class XoaySubscriber(MQTTTemplate):
             
             frame.append(0x55)  # End byte
             
+            # Debug: Print frame in hex format
+            frame_hex = ' '.join('{:02X}'.format(b) for b in frame)
+            print("CAN Frame to send (HEX): {}".format(frame_hex))
+            
             # Open serial port and send
             ser = serial.Serial(self.can_port, self.can_baudrate, timeout=1.0)
             time.sleep(0.1)  # Wait for port to be ready
-            ser.write(frame)
+            
+            bytes_written = ser.write(frame)
             ser.close()
             
-            print("Sent angle {} degrees to CAN bus (ID: 0x{:02X})".format(angle_value, self.can_id))
+            if bytes_written == len(frame):
+                print("✓ Successfully sent {} bytes to CAN bus (ID: 0x{:02X}, Angle: {} degrees)".format(
+                    bytes_written, self.can_id, angle_value))
+            else:
+                print("⚠ Warning: Only {} of {} bytes sent to CAN bus".format(bytes_written, len(frame)))
             
         except ImportError:
-            print("Error: pyserial not installed. Install with: pip install pyserial")
+            print("✗ Error: pyserial not installed. Install with: pip install pyserial")
+        except serial.SerialException as e:
+            print("✗ Serial Error: Could not open port {}. Error: {}".format(self.can_port, str(e)))
         except Exception as e:
-            print("Error sending to CAN bus: {}".format(str(e)))
+            print("✗ Error sending to CAN bus: {}".format(str(e)))
 
 if __name__ == "__main__":
     print("Starting Xoay Subscriber...")
