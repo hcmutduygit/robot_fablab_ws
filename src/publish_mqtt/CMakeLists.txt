@@ -12,6 +12,7 @@ find_package(catkin REQUIRED COMPONENTS
   std_msgs
   utils
   message_runtime
+  geometry_msgs
 )
 include_directories(include {$catkin_INCLUDE_DIRS})
 

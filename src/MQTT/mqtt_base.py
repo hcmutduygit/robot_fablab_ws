@@ -15,8 +15,10 @@ import time
 
 # MQTT Broker Configuration
 MQTT_CONFIG = {
-    "host": "10.180.81.156",  # Use localhost since mosquitto is running locally
+    "host": "45.117.177.157",  # New MQTT broker
     "port": 1883,
+    "username": "client",
+    "password": "viam1234",
     "keepalive": 60,  # Increase keepalive to 60 seconds
     "timeout": 0      # 0 = no timeout (infinite)
 }
@@ -26,7 +28,8 @@ TOPICS = {
     "battery": "robot/battery",
     "velocity": "robot/velocity", 
     "attendance": "robot/attendance",
-    "location": "robot/location"
+    "location": "robot/location",
+    "telemetry": "robot/telemetry"
 }
 
 # Message Settings
@@ -112,6 +115,11 @@ class MQTTTemplate(object):  # Inherit from object for new-style class
     def connect(self):
         """Connect to MQTT broker"""
         try:
+            # Set username and password if provided
+            config = get_mqtt_config()
+            if "username" in config and "password" in config:
+                self.client.username_pw_set(config["username"], config["password"])
+            
             self.client.connect(self.host, self.port, self.keepalive)
             return True
         except Exception as e:

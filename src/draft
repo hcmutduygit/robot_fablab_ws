@@ -1,0 +1,329 @@
+file can_node.cpp:
+#include <cmath>
+#include "can_node.h"
+#include "odom_publisher.hpp"
+#include <cstdlib>
+#include <string>
+#include <map>
+#include <vector>
+#include <chrono> // For time measurement
+#include <ctime>
+#include <iomanip>
+#define PI 3.14159265358979323846
+
+// Global variable to store the updated value
+float yaw_angle = 0;
+int right_wheel_velocity = 0;
+int left_wheel_velocity = 0;
+float x = 0;
+float y = 0;
+float yaw = 0;
+std::mutex odom_mutex; 
+tf::TransformBroadcaster odom_broadcaster;
+
+
+static volatile int g_should_exit = 0;
+
+WaveshareCAN can("/dev/canusb", 2000000, 2.0);
+
+// RFID database - mapping RFID data to user info
+static const std::map<std::vector<uint8_t>, std::pair<std::string, std::string>> rfid_database = {
+    {{0xd2, 0x0f, 0x49, 0x2e, 0xba, 0x55, 0xaa, 0xc8}, {"HOAI PHU", "Phu"}},
+    {{0xd2, 0xb1, 0x3d, 0x05, 0x5b, 0x55, 0xaa, 0xc8}, {"MINH KY", "Ky"}},
+    {{0xfa, 0xdc, 0x02, 0xcd, 0xe9, 0x55, 0xaa, 0xc8}, {"QUANG DUY", "Duy"}},
+    {{0xef, 0xa8, 0x98, 0x1e, 0xc1, 0x55, 0xaa, 0xc8}, {"CHI THIEN", "Thien"}},
+    {{0xb6, 0x87, 0x13, 0x2b, 0x09, 0x55, 0xaa, 0xc8}, {"VAN LOI", "Loi"}},
+    {{0xc2, 0xbf, 0xb0, 0x2e, 0xe3, 0x55, 0xaa, 0xc8}, {"BACH THU", "Thu"}}};
+
+// Process CAN frame (equivalent to Python's process_frame)
+void process_frame(uint16_t can_id, const std::vector<uint8_t> &data, ros::Publisher& odom_pub, ros::Time& last_time)
+{
+    switch (can_id)
+    {
+    // RFID
+    case 0x010:
+    {
+        std::cout << "ID 0x" << std::hex << can_id << std::dec << " receive RFID hex: ";
+        for (uint8_t b : data)
+        {
+            std::cout << std::hex << std::setw(2) << std::setfill('0') << (int)b << " ";
+        }
+        std::cout << std::dec << std::endl;
+
+        // Lookup RFID in database
+        auto it = rfid_database.find(data);
+        if (it != rfid_database.end())
+        {
+            const std::string &full_name = it->second.first;
+            const std::string &short_name = it->second.second;
+
+            auto now = std::chrono::system_clock::now();
+            std::time_t now_time = std::chrono::system_clock::to_time_t(now);
+
+            std::stringstream ss;
+            ss << std::put_time(std::localtime(&now_time), "%H:%M:%S");
+            std::string timestamp = ss.str();
+
+            std::cout << "RFID detected: " << full_name << std::endl;
+            publishMQTTMessage(full_name, short_name, timestamp);
+        }
+        else
+        {
+            std::cout << "Unknown RFID data" << std::endl;
+        }
+
+        break;
+    }
+    // CO2 Sensor
+    case 0x011:
+    {
+        cnt_receive++;
+        break;
+    }
+    // IMU Angle
+    case 0x12:
+    {
+        // Ensure data has at least 6 bytes for roll, pitch, yaw (2 bytes each)
+        if (data.size() < 6)
+        {
+            std::cerr << "Error: Insufficient data bytes for ID 0x012\n";
+            return;
+        }
+        // std::cout << "ID 0x" << std::hex << can_id << std::dec << " receive IMU hex: ";
+        // for (uint8_t b : data)
+        // {
+        //     std::cout << std::hex << std::setw(2) << std::setfill('0') << (int)b << " ";
+        // }
+        // std::cout << std::dec << std::endl;
+        // Extract roll, pitch, yaw as signed 16-bit integers and scale by 100.0
+        // double roll = hex_to_signed(data, 0) / 100.0;  // Bytes 0-1
+        // double pitch = hex_to_signed(data, 2) / 100.0; // Bytes 2-3
+        float yaw = hex_to_unsigned(data, 4) / 100.0; // Bytes 4-5
+        while (yaw > 180.0)
+        {
+            yaw -= 360.0;
+        }
+        while (yaw <= -180.0)
+        {
+            yaw += 360.0;
+        }
+        yaw_angle = yaw; // Update global yaw angle
+        // publishMQTTLocation(1.0, 2.0, yaw_angle);
+        std::cout << "Yaw: " << yaw << "\n";
+        cnt_receive++;
+        break;
+    }
+    // IMU Gyro
+    case 0x013:
+    {
+        cnt_receive++;
+        break;
+    }
+    // IMU Accel
+    case 0x014:
+    {
+        cnt_receive++;
+        break;
+    }
+    case 0x016:
+    {
+        // Ensure the data has exactly 8 bytes
+        if (data.size() != 8)
+        {
+            std::cerr << "Error: Expected 8 bytes for ID 0x016, but received " << data.size() << " bytes.\n";
+            return;
+        }
+        // Split the 8 bytes into 4 groups of 2 bytes and convert to integers
+        int group1 = (data[0] << 8) | data[1]; // Combine bytes 0 and 1
+        int group2 = (data[2] << 8) | data[3]; // Combine bytes 2 and 3
+        int group3 = (data[4] << 8) | data[5]; // Combine bytes 4 and 5
+        int group4 = (data[6] << 8) | data[7]; // Combine bytes 6 and 7
+
+        // // Print the results
+        // std::cout << "ID 0x016 received: ";
+        // for (uint8_t b : data)
+        // {
+        //     std::cout << std::hex << std::setw(2) << std::setfill('0') << (int)b << " ";
+        // }
+        // std::cout << std::dec << "\n";
+
+        // std::cout << "Truoc: " << group1 << "\n";
+        // std::cout << "Phai: " << group2 << "\n";
+        // std::cout << "Trai: " << group3 << "\n";
+        // std::cout << "Sau: " << group4 << "\n";
+        cnt_receive++;
+        break;
+    }
+    case 0x030:
+    {
+        // Ensure the data has exactly 8 bytes
+        if (data.size() != 8)
+        {
+            std::cerr << "Error: Expected 8 bytes for ID 0x017, but received " << data.size() << " bytes.\n";
+            return;
+        }
+
+        // Extract left velocity from first 4 bytes
+        int received_left_vel;
+        std::memcpy(&received_left_vel, &data[0], sizeof(int));
+
+        // Extract right velocity from last 4 bytes
+        int received_right_vel;
+        std::memcpy(&received_right_vel, &data[4], sizeof(int));
+
+        // // Print the received data in hex format
+        // std::cout << "ID 0x017 received: ";
+        // for (uint8_t b : data)
+        // {
+        //     std::cout << std::hex << std::setw(2) << std::setfill('0') << (int)b << " ";
+        // // }
+        // std::cout << std::dec << "\n";
+
+        // Print the received velocities (pulses per second)
+        std::cout << "Received Left Velocity (pulses/s): " << received_left_vel << "\n";
+        std::cout << "Received Right Velocity (pulses/s): " << received_right_vel << "\n";
+
+        // Convert pulses to linear velocity (m/s)
+        left_mps = ConvertVelocityFromPulse(received_left_vel);
+        right_mps = ConvertVelocityFromPulse(received_right_vel);
+        // std::cout << std::fixed << std::setprecision(3);
+        // std::cout << "Converted Left Velocity (m/s): " << left_mps << "\n";
+        // std::cout << "Converted Right Velocity (m/s): " << right_mps << "\n";
+        updateOdometry(left_mps, right_mps, x, y, odom_pub, last_time, yaw_angle);
+        cnt_receive++;
+        break;
+    }
+    default:
+        // Handle unknown CAN IDs
+        // std::cout << "Unknown CAN ID: 0x" << std::hex << can_id << std::dec << std::endl;
+        cnt_receive++;
+        break;
+    }
+}
+
+
+void TransmitSTM(const ros::TimerEvent &event)
+{
+    utils::pose_robot pose;
+    utils::cmd_vel vel;
+    // send_vel(can);
+    pose.yaw = yaw_angle;
+    pub.publish(pose);
+    vel.v_left_stm = left_mps;
+    vel.v_right_stm = right_mps;
+    // ROS_INFO("lef = %f", left_mps);
+    pub_vel_stm.publish(vel);
+    can.send(0x050, {1, 0, 0, 0, 0, 0, 0, 0}); 
+}
+
+int main(int argc, char **argv)
+{
+    ros::init(argc, argv, "Cmd_vel");
+    ros::NodeHandle nh;
+    odom_pub = nh.advertise<nav_msgs::Odometry>("odom", 10);
+    ros::Time last_time = ros::Time::now();
+
+    can.open();
+    can.start_receive_loop([&](uint16_t can_id, const std::vector<uint8_t>& data) {
+        process_frame(can_id, data, odom_pub, last_time);
+    });
+    ros::NodeHandle arg_nh("~");
+    arg_nh.getParam("mode", number);
+    arg_nh.getParam("calib", calib);
+    arg_nh.getParam("cycle_transmit", cycle_transmit);
+    ROS_INFO("mode = %d", number);
+
+    uint8_t data[8];
+    std::memcpy(data, &number, sizeof(int));
+    std::vector<uint8_t> velocity_data(data, data + 8);
+    can.send(0x020, velocity_data);
+
+    pub = nh.advertise<utils::pose_robot>("pose_robot", 10);
+    pub_vel_stm = nh.advertise<utils::cmd_vel>("Guidance", 10);
+    sub = nh.subscribe("Cmd_vel", 10, CallBackVel);
+    // cnt_byte = nh.createTimer(ros::Duration(1), CntBytes);
+    loopControl = nh.createTimer(ros::Duration(cycle_transmit), TransmitSTM);
+
+    ros::spin();
+    return 0;
+}
+
+file odom_publisher.hpp:
+
+#pragma once
+#include "ros/ros.h"
+#include <nav_msgs/Odometry.h>
+#include <tf/transform_broadcaster.h>
+#include <geometry_msgs/TransformStamped.h>
+#include <tf/transform_datatypes.h>
+#include <cmath>
+#include <mutex>
+
+extern tf::TransformBroadcaster odom_broadcaster;
+extern float x, y, yaw;
+extern std::mutex odom_mutex;
+
+inline void updateOdometry(float v_left, float v_right, float& x, float& y, ros::Publisher& odom_pub, ros::Time& last_time, float imu_yaw = NAN) {
+    std::lock_guard<std::mutex> lock(odom_mutex);
+
+    ros::Time cur_time = ros::Time::now();
+    double dt = (cur_time - last_time).toSec();
+    if (dt <= 0.0) return;
+    if (dt > 0.2) dt = 0.2; // clamp to avoid huge jumps
+    last_time = cur_time;
+
+    // Robot velocities
+    double v = (v_right + v_left) / 2.0;
+    double omega = (v_right - v_left) / 0.72;
+
+    // Fuse IMU yaw if available
+    if (!std::isnan(imu_yaw)) {
+        double alpha = 0.9;
+        double yaw_pred = yaw + omega * dt;
+        yaw = alpha * yaw_pred + (1.0 - alpha) * imu_yaw;
+    } else {
+        yaw += omega * dt;
+    }
+
+    // Integrate position
+    const double eps = 1e-6;
+    if (std::abs(omega) < eps) {
+        x += v * cos(yaw) * dt;
+        y += v * sin(yaw) * dt;
+    } else {
+        double r = v / omega;
+        double dyaw = omega * dt;
+        x += r * (sin(yaw + dyaw) - sin(yaw));
+        y += -r * (cos(yaw + dyaw) - cos(yaw));
+    }
+
+    // Publish odom
+    nav_msgs::Odometry odom;
+    odom.header.stamp = cur_time;
+    odom.header.frame_id = "odom";
+    odom.child_frame_id = "base_footprint";
+    odom.pose.pose.position.x = x;
+    odom.pose.pose.position.y = y;
+    odom.pose.pose.position.z = 0.0;
+    odom.pose.pose.orientation = tf::createQuaternionMsgFromYaw(yaw);
+    odom.twist.twist.linear.x = v;
+    odom.twist.twist.angular.z = omega;
+
+    // covariance (optional but useful for AMCL)
+    for (int i = 0; i < 36; i++) odom.pose.covariance[i] = 0.0;
+    odom.pose.covariance[0]  = 0.01;
+    odom.pose.covariance[7]  = 0.01;
+    odom.pose.covariance[35] = 0.02;
+    odom_pub.publish(odom);
+
+    // Broadcast TF
+    geometry_msgs::TransformStamped odom_tf;
+    odom_tf.header.stamp = cur_time;
+    odom_tf.header.frame_id = "odom";
+    odom_tf.child_frame_id = "base_footprint";
+    odom_tf.transform.translation.x = x;
+    odom_tf.transform.translation.y = y;
+    odom_tf.transform.translation.z = 0.0;
+    odom_tf.transform.rotation = tf::createQuaternionMsgFromYaw(yaw);
+    odom_broadcaster.sendTransform(odom_tf);
+}
