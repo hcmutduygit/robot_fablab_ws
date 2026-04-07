@@ -91,6 +91,10 @@ def send_angle_to_can(angle_value):
         frame_hex = ' '.join('{:02X}'.format(b) for b in frame)
         rospy.loginfo("CAN Frame to send (HEX): %s", frame_hex)
         
+        # Print angle data hex only
+        angle_hex = ' '.join('{:02X}'.format(b) for b in angle_bytes)
+        rospy.loginfo("Angle data (HEX): %s (Value: %.2f degrees)", angle_hex, angle_value)
+        
         # Open serial port and send
         ser = serial.Serial(CAN_PORT, CAN_BAUDRATE, timeout=1.0)
         time.sleep(0.1)  # Wait for port to be ready
@@ -101,6 +105,8 @@ def send_angle_to_can(angle_value):
         if bytes_written == len(frame):
             rospy.loginfo("✓ Successfully sent %d bytes to CAN bus (ID: 0x%02X, Angle: %.2f degrees)", 
                          bytes_written, CAN_ID, angle_value)
+            rospy.loginfo("Exit after sending CAN data successfully")
+            exit(0)
         else:
             rospy.logwarn("⚠ Warning: Only %d of %d bytes sent to CAN bus", bytes_written, len(frame))
         
