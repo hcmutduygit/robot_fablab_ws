@@ -5,6 +5,7 @@ import rospy
 import struct
 import serial
 import time
+import json
 import paho.mqtt.client as mqtt
 
 # --- Config MQTT ---
@@ -29,9 +30,20 @@ def on_message(mosq, obj, msg):
     try:
         rospy.loginfo("=== Received MQTT message from topic: %s ===", msg.topic)
         payload = msg.payload.decode("utf-8")
+        rospy.loginfo("Raw payload: %s", payload)
         
-        # Convert to float
-        angle_value = float(payload)
+        # Try to parse as JSON first
+        try:
+            data = json.loads(payload)
+            if isinstance(data, dict) and "angle" in data:
+                angle_value = float(data["angle"])
+            else:
+                # If not JSON with "angle" key, try direct float conversion
+                angle_value = float(payload)
+        except:
+            # If JSON parsing fails, try direct float conversion
+            angle_value = float(payload)
+        
         rospy.loginfo("Angle value: %.2f degrees", angle_value)
         
         # Only send if value is different from last sent value
@@ -41,8 +53,8 @@ def on_message(mosq, obj, msg):
         else:
             rospy.loginfo("(Skipped: Same value as last sent)")
         
-    except ValueError:
-        rospy.logerr("Error: Could not convert payload to float: %s", payload)
+    except ValueError as e:
+        rospy.logerr("Error: Could not convert payload to float: %s (Error: %s)", payload, str(e))
     except Exception as e:
         rospy.logerr("Error handle message MQTT: %s", e)
 
