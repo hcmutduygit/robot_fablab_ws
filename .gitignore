@@ -3,6 +3,7 @@
 /build
 /devel
 /log
+src/ros-imu-bno055
 
 # Python cache files
 __pycache__/
