@@ -8,6 +8,8 @@
 #include <utils/waypoints.h>
 #include <tf2_msgs/TFMessage.h>
 #include <geometry_msgs/PoseWithCovarianceStamped.h>
+#include <std_msgs/Bool.h>
+#include <sensor_msgs/LaserScan.h>
 
 // using namespace utils;
 #define PI 3.14159265358979323846
@@ -46,13 +48,16 @@ float theta;
 std::vector<std::pair<double, double>> wp;
 bool has_published_arrival = false;  // Flag de tranh spam MQTT arrival
 
+
+
 // double wp[][2] = {
 //     {13.1728434585, 11.4516193091},
 //     {7.69544647905, 17.9154257326}
 // };
 ros::Timer loopControl; 
-ros::Subscriber sub_odom;
+ros::Subscriber sub_scan;
+ros::Subscriber sub_wp;
 ros::Publisher pub;
 ros::Subscriber sub_amcl;
-ros::Subscriber sub_wp;
+ros::Publisher zones_pub;
 #endif

@@ -13,9 +13,10 @@ find_package(catkin REQUIRED COMPONENTS
   std_msgs
   utils
   message_runtime
+  sensor_msgs
 )
 
-include_directories(include {$catkin_INCLUDE_DIRS})
+include_directories(include ${catkin_INCLUDE_DIRS})
 
 ## System dependencies are found with CMake's conventions
 # find_package(Boost REQUIRED COMPONENTS system)
@@ -109,7 +110,7 @@ include_directories(include {$catkin_INCLUDE_DIRS})
 catkin_package(
  INCLUDE_DIRS include
  LIBRARIES guidance_node
- CATKIN_DEPENDS roscpp utils message_runtime
+ CATKIN_DEPENDS roscpp utils message_runtime sensor_msgs std_msgs
 #  DEPENDS system_lib
 )
 

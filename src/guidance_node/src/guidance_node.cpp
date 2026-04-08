@@ -14,7 +14,19 @@
 #include "guidance.h"
 #include "pid.h"
 
+enum State{
+  FREE = 0,
+  WARNING,
+  DANGER
+};
+
 PID pid_controller;
+double warning_distance_ = 0.75;
+double danger_distance_ = 0.6;
+State prev_state_ = FREE;
+
+std_msgs::Bool is_safety_stop;
+std_msgs::Bool is_safety_slow;
 
 double low_pass_filter(double pre_value, double new_value, double alpha = 0.2){
     return alpha * new_value + (1 - alpha) * pre_value;
@@ -140,17 +152,44 @@ void tranfer_wp() {
     }
 }
 
-// void  CallBackOdom (const nav_msgs::Odometry::ConstPtr& msg){
-//     double orientation_x = msg->pose.pose.orientation.x;
-//     double orientation_y = msg->pose.pose.orientation.y;
-//     double orientation_z = msg->pose.pose.orientation.z;
-//     double orientation_w = msg->pose.pose.orientation.w;
+void CallBackScan(const sensor_msgs::LaserScan::ConstPtr& msg){
+    State state_ = FREE;
 
-//     tf::Quaternion q(orientation_x, orientation_y, orientation_z, orientation_w);
-//     double roll, pitch, amcl_yaw;
-//     tf::Matrix3x3(q).getRPY(roll, pitch, amcl_yaw);
-//     // std::cout << "Odom yaw = " << amcl_yaw * 180/PI << std::endl;
-// }
+    for (const auto &range : msg->ranges)
+    {
+        if (!std::isinf(range) && 0.5 < range && range <= warning_distance_)
+        {
+            state_ = State::WARNING;
+            if (0.5 < range && range <= danger_distance_)
+            {
+                state_ = State::DANGER;
+                break;
+            }
+        }
+    }
+
+    if (state_ != prev_state_)
+    {
+        if (state_ == State::WARNING)
+        {
+            is_safety_stop.data = false;
+            is_safety_slow.data = true;
+
+        }
+        else if (state_ == State::DANGER)
+        {
+            is_safety_stop.data = true;
+            is_safety_slow.data = false;
+        }
+        else if (state_ == State::FREE)
+        {
+            is_safety_stop.data = false;
+            is_safety_slow.data = false;
+        }
+
+        prev_state_ = state_;
+    }
+}
 
 void CallBackPose(const geometry_msgs::PoseWithCovarianceStamped::ConstPtr& msg){
     x = msg->pose.pose.position.x;
@@ -209,14 +248,19 @@ void CallBackWp(const utils::waypoints::ConstPtr& msg) {
 void ControlVel(const ros::TimerEvent& event){
     utils::cmd_vel cmd;
     tranfer_wp();
-    double v_left = linear_x - (angular_z * 0.57/ 2);
-    double v_right = linear_x + (angular_z * 0.57/ 2);
-    
-    // cmd.linear.x  = linear_x;        
-    // cmd.angular.z = angular_z; 
 
-    cmd.v_left = -v_left*drive; 
-    cmd.v_right = v_right*drive; 
+    if (is_safety_stop.data == true && is_safety_slow.data == true){
+        cmd.v_left = 0;
+        cmd.v_right = 0;
+    }
+    else if (is_safety_stop.data == false && is_safety_slow.data == true){
+        cmd.v_left = 0.75 * (linear_x - (angular_z * 0.57/ 2)) * drive/2;
+        cmd.v_right = 0.75 * (linear_x + (angular_z * 0.57/ 2)) * drive/2;
+    }
+    else {
+        cmd.v_left = (linear_x - (angular_z * 0.57/ 2)) * drive;
+        cmd.v_right = (linear_x + (angular_z * 0.57/ 2)) * drive;
+    }
    
     // ROS_INFO("v_left = %.2f, v_right = %.2f, ANGULAR = %.2f", cmd.v_left, cmd.v_right, angular_z);
     pub.publish(cmd);
@@ -244,8 +288,8 @@ int main(int argc, char **argv){
     ros::NodeHandle nh;
 
     pub = nh.advertise<utils::cmd_vel>("Cmd_vel", 10);
-    // sub_odom = nh.subscribe("odom", 10, CallBackOdom);
-    sub_amcl = nh.subscribe("amcl_pose", 10, CallBackPose); //theo topic
+    sub_scan = nh.subscribe("scan", 10, CallBackScan);
+    sub_amcl = nh.subscribe("amcl_pose", 10, CallBackPose); 
 
     // ========================================================================
     // CHON CHE DO DOC WAYPOINTS
