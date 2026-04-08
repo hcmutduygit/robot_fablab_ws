@@ -24,6 +24,7 @@ PID pid_controller;
 double warning_distance_ = 0.75;
 double danger_distance_ = 0.6;
 State prev_state_ = FREE;
+bool is_home = false;
 
 std_msgs::Bool is_safety_stop;
 std_msgs::Bool is_safety_slow;
@@ -105,6 +106,7 @@ void tranfer_wp() {
         // ROS_INFO_THROTTLE(2, "Reached final waypoint #%d - Stopping Robot", cnt);
         linear_x = 0.0;
         angular_z = 0.0;
+        is_home = true;
     }
     else {
         // ROS_INFO_THROTTLE(2, "Moving to waypoint #%d: (%.2f, %.2f) from wp[%d]=(%.2f, %.2f)", 
@@ -229,6 +231,7 @@ void CallBackWp(const utils::waypoints::ConstPtr& msg) {
         // Reset flag khi bat dau mission moi
         cnt = 0;
         has_published_arrival = false;
+        is_home = false;
     }
     
     wp.push_back({msg->direction_x, msg->direction_y});
@@ -263,7 +266,9 @@ void ControlVel(const ros::TimerEvent& event){
     }
    
     // ROS_INFO("v_left = %.2f, v_right = %.2f, ANGULAR = %.2f", cmd.v_left, cmd.v_right, angular_z);
-    pub.publish(cmd);
+    if (!is_home){
+        pub.publish(cmd);
+    }
 }
 
 
