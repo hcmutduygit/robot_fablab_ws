@@ -68,7 +68,7 @@ void CallBackPose(const geometry_msgs::PoseWithCovarianceStamped::ConstPtr& msg)
     tf::Quaternion q(orientation_x, orientation_y, orientation_z, orientation_w);
     double roll, pitch, amcl_yaw;
     tf::Matrix3x3(q).getRPY(roll, pitch, amcl_yaw);
-    theta = amcl_yaw;
+    theta = amcl_yaw * 180 / PI;
 }
 
 void CallBackVel_stm (const utils::cmd_vel::ConstPtr& vel){

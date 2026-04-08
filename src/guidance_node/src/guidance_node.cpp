@@ -140,17 +140,17 @@ void tranfer_wp() {
     }
 }
 
-void CallBackOdom (const nav_msgs::Odometry::ConstPtr& msg){
-    double orientation_x = msg->pose.pose.orientation.x;
-    double orientation_y = msg->pose.pose.orientation.y;
-    double orientation_z = msg->pose.pose.orientation.z;
-    double orientation_w = msg->pose.pose.orientation.w;
+// void  CallBackOdom (const nav_msgs::Odometry::ConstPtr& msg){
+//     double orientation_x = msg->pose.pose.orientation.x;
+//     double orientation_y = msg->pose.pose.orientation.y;
+//     double orientation_z = msg->pose.pose.orientation.z;
+//     double orientation_w = msg->pose.pose.orientation.w;
 
-    tf::Quaternion q(orientation_x, orientation_y, orientation_z, orientation_w);
-    double roll, pitch, amcl_yaw;
-    tf::Matrix3x3(q).getRPY(roll, pitch, amcl_yaw);
-    // std::cout << "Odom yaw = " << amcl_yaw * 180/PI << std::endl;
-}
+//     tf::Quaternion q(orientation_x, orientation_y, orientation_z, orientation_w);
+//     double roll, pitch, amcl_yaw;
+//     tf::Matrix3x3(q).getRPY(roll, pitch, amcl_yaw);
+//     // std::cout << "Odom yaw = " << amcl_yaw * 180/PI << std::endl;
+// }
 
 void CallBackPose(const geometry_msgs::PoseWithCovarianceStamped::ConstPtr& msg){
     x = msg->pose.pose.position.x;
@@ -244,7 +244,7 @@ int main(int argc, char **argv){
     ros::NodeHandle nh;
 
     pub = nh.advertise<utils::cmd_vel>("Cmd_vel", 10);
-    sub_odom = nh.subscribe("odom", 10, CallBackOdom);
+    // sub_odom = nh.subscribe("odom", 10, CallBackOdom);
     sub_amcl = nh.subscribe("amcl_pose", 10, CallBackPose); //theo topic
 
     // ========================================================================
