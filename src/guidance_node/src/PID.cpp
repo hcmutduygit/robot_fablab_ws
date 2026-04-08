@@ -14,3 +14,4 @@ double PID::pid(double error, float kd, float kp) {
     // return   ki * error + kp * derivate;
     return kp * error + kd * derivate;
 }
+

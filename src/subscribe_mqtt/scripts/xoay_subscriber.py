@@ -21,12 +21,8 @@ CAN_PORT = "/dev/usbcan"
 CAN_BAUDRATE = 2000000
 CAN_ID = 0x40
 
-# Global variable to track last sent value
-last_sent_value = None
-
 # --- Callback function when received MQTT message ---
 def on_message(mosq, obj, msg):
-    global last_sent_value
     try:
         rospy.loginfo("=== Received MQTT message from topic: %s ===", msg.topic)
         payload = msg.payload.decode("utf-8")
@@ -44,14 +40,10 @@ def on_message(mosq, obj, msg):
             # If JSON parsing fails, try direct float conversion
             angle_value = float(payload)
         
-        rospy.loginfo("Angle value: %.2f degrees", angle_value)
+        rospy.loginfo("Angle value: %d", int(angle_value))
         
-        # Only send if value is different from last sent value
-        if angle_value != last_sent_value:
-            send_angle_to_can(angle_value)
-            last_sent_value = angle_value
-        else:
-            rospy.loginfo("(Skipped: Same value as last sent)")
+        # Send to CAN for each received message (1 message = 1 CAN send)
+        send_angle_to_can(angle_value)
         
     except ValueError as e:
         rospy.logerr("Error: Could not convert payload to float: %s (Error: %s)", payload, str(e))
@@ -87,6 +79,7 @@ def send_angle_to_can(angle_value):
         frame.extend(angle_bytes)
         frame.extend([0x00] * 6)  # Padding to 8 bytes
         
+
         frame.append(0x55)  # End byte
         
         # Debug: Print frame in hex format
@@ -107,8 +100,6 @@ def send_angle_to_can(angle_value):
         if bytes_written == len(frame):
             rospy.loginfo("✓ Successfully sent %d bytes to CAN bus (ID: 0x%02X, Angle: %d)", 
                          bytes_written, CAN_ID, angle_int)
-            rospy.loginfo("Exit after sending CAN data successfully")
-            exit(0)
         else:
             rospy.logwarn("⚠ Warning: Only %d of %d bytes sent to CAN bus", bytes_written, len(frame))
         
