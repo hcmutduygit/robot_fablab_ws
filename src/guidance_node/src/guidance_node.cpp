@@ -254,11 +254,11 @@ void ControlVel(const ros::TimerEvent& event){
         cmd.v_right = 0;
     }
     else if (is_safety_stop.data == false && is_safety_slow.data == true){
-        cmd.v_left = 0.75 * (linear_x - (angular_z * 0.57/ 2)) * drive/2;
-        cmd.v_right = 0.75 * (linear_x + (angular_z * 0.57/ 2)) * drive/2;
+        cmd.v_left = -0.75 * (linear_x - (angular_z * 0.57/ 2)) * drive;
+        cmd.v_right = 0.75 * (linear_x + (angular_z * 0.57/ 2)) * drive;
     }
     else {
-        cmd.v_left = (linear_x - (angular_z * 0.57/ 2)) * drive;
+        cmd.v_left = -(linear_x - (angular_z * 0.57/ 2)) * drive;
         cmd.v_right = (linear_x + (angular_z * 0.57/ 2)) * drive;
     }
    
