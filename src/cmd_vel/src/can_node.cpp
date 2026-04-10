@@ -522,7 +522,7 @@ void CntBytes(const ros::TimerEvent &event)
     cnt_send = 0;
 }
 
-void TransmitSTM(ros::Publishthetaer& odom_pub, ros::Time& lasttime)
+void TransmitSTM(ros::Publisher& odom_pub, ros::Time& lasttime)
 {
     publish_yaw(yaw_angle);
     // ROS_INFO("yaw_angle = %f", yaw_angle);

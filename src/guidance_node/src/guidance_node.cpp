@@ -252,18 +252,21 @@ void ControlVel(const ros::TimerEvent& event){
     utils::cmd_vel cmd;
     tranfer_wp();
 
-    if (is_safety_stop.data == true && is_safety_slow.data == true){
-        cmd.v_left = 0;
-        cmd.v_right = 0;
-    }
-    else if (is_safety_stop.data == false && is_safety_slow.data == true){
-        cmd.v_left = -0.75 * (linear_x - (angular_z * 0.57/ 2)) * drive;
-        cmd.v_right = 0.75 * (linear_x + (angular_z * 0.57/ 2)) * drive;
-    }
-    else {
-        cmd.v_left = -(linear_x - (angular_z * 0.57/ 2)) * drive;
-        cmd.v_right = (linear_x + (angular_z * 0.57/ 2)) * drive;
-    }
+    // if (is_safety_stop.data == true && is_safety_slow.data == true){
+    //     cmd.v_left = 0;
+    //     cmd.v_right = 0;
+    // }
+    // else if (is_safety_stop.data == false && is_safety_slow.data == true){
+    //     cmd.v_left = -0.75 * (linear_x - (angular_z * 0.57/ 2)) * drive;
+    //     cmd.v_right = 0.75 * (linear_x + (angular_z * 0.57/ 2)) * drive;
+    // }
+    // else {
+    //     cmd.v_left = -(linear_x - (angular_z * 0.57/ 2)) * drive;
+    //     cmd.v_right = (linear_x + (angular_z * 0.57/ 2)) * drive;
+    // }
+
+    cmd.v_left = -(linear_x - (angular_z * 0.57/ 2)) * drive;
+    cmd.v_right = (linear_x + (angular_z * 0.57/ 2)) * drive;
    
     // ROS_INFO("v_left = %.2f, v_right = %.2f, ANGULAR = %.2f", cmd.v_left, cmd.v_right, angular_z);
     if (!is_home){
