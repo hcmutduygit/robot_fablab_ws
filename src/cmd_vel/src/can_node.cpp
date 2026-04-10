@@ -11,6 +11,7 @@
 #include <iomanip>
 #include <fstream>
 #include <sensor_msgs/Imu.h>
+#include <geometry_msgs/PoseWithCovarianceStamped.h>
 #include <tf/transform_datatypes.h> // add this line
 #define PI 3.14159265358979323846
 
@@ -22,6 +23,7 @@ float x = 0;
 float y = 0;
 float wheel_yaw = 0;
 float yaw = 0;
+float theta_yaw = 0; // Biến mới để lưu góc yaw từ AMCL
 std::mutex wheel_odom_mutex; 
 float yaw_offset = 0;
 float yaw_prev = 0.0;
@@ -142,6 +144,22 @@ void CallBackVel(const utils::cmd_vel::ConstPtr &cmd_vel)
         send_vel(can);
     }
     // send_vel(can);
+}
+
+void CallBackAmclPose(const geometry_msgs::PoseWithCovarianceStamped::ConstPtr& msg)
+{
+    double orientation_x = msg->pose.pose.orientation.x;
+    double orientation_y = msg->pose.pose.orientation.y;
+    double orientation_z = msg->pose.pose.orientation.z;
+    double orientation_w = msg->pose.pose.orientation.w;
+
+    tf::Quaternion q(orientation_x, orientation_y, orientation_z, orientation_w);
+    double roll, pitch, amcl_yaw;
+    tf::Matrix3x3(q).getRPY(roll, pitch, amcl_yaw);
+    
+    // Lưu giá trị yaw (radian) vào biến toàn cục
+    theta_yaw = amcl_yaw * 180 / PI; 
+    // ROS_INFO("Received theta_yaw: %f", theta_yaw);
 }
 
 
@@ -448,7 +466,7 @@ void saveDataToCSV(int imu_packages, int odom_packages, int send_packages)
         if (!file_exists) {
             csv_file << "Timestamp,IMU_Packages_per_sec,Odom_Packages_per_sec,Send_Packages_per_sec,"
                      << "Yaw_Angle,Left_Velocity_mps,Right_Velocity_mps,"
-                     << "qx,qy,qz,qw,x,y,quaternion_yaw,Left_Velocity_LOS,Right_Velocity_LOS\n";
+                     << "x,y,quaternion_yaw,Left_Velocity_LOS,Right_Velocity_LOS,theta_yaw\n";
         }
         
         // Ghi dữ liệu
@@ -457,22 +475,19 @@ void saveDataToCSV(int imu_packages, int odom_packages, int send_packages)
                  << odom_packages << "," 
                  << send_packages << ","
                  << std::fixed << std::setprecision(2) << yaw_angle << ","
-                 << std::setprecision(4) << left_mps << ","
-                 << std::setprecision(4) << right_mps << ","
-                 << std::setprecision(4) << qx << ","
-                 << std::setprecision(4) << qy << ","
-                 << std::setprecision(4) << qz << ","
-                 << std::setprecision(4) << qw << ","
+                 << std::setprecision(4) << left_mps/20 << ","
+                 << std::setprecision(4) << right_mps/20 << ","
                  << std::setprecision(4) << x << ","
                  << std::setprecision(4) << y << ","
                  << std::setprecision(4) << quaternion_yaw << ","
                  << std::setprecision(4) << v_left/20 << ","
-                 << std::setprecision(4) << v_right/20 << "\n";
+                 << std::setprecision(4) << v_right/20 << ","
+                 << std::setprecision(4) << theta_yaw << "\n";
         csv_file.close();
         
-        ROS_INFO("Data saved: IMU=%d, Odom=%d, Send=%d, Yaw=%.2f, Left=%.4f m/s, Right=%.4f m/s, qx=%.4f, qy=%.4f, qz=%.4f, qw=%.4f, x=%.4f, y=%.4f, quat_yaw=%lf", 
+        ROS_INFO("Data saved: IMU=%d, Odom=%d, Send=%d, Yaw=%.2f, Left=%.4f m/s, Right=%.4f m/s, x=%.4f, y=%.4f, quat_yaw=%lf, theta_yaw=%.4f", 
                  imu_packages, odom_packages, send_packages, yaw_angle, 
-                 left_mps, right_mps, qx, qy, qz, qw, x, y, quaternion_yaw);
+                 left_mps, right_mps, x, y, quaternion_yaw, theta_yaw);
     } else {
         ROS_ERROR("Cannot open CSV file: %s", csv_file_path.c_str());
     }
@@ -507,7 +522,7 @@ void CntBytes(const ros::TimerEvent &event)
     cnt_send = 0;
 }
 
-void TransmitSTM(ros::Publisher& odom_pub, ros::Time& lasttime)
+void TransmitSTM(ros::Publishthetaer& odom_pub, ros::Time& lasttime)
 {
     publish_yaw(yaw_angle);
     // ROS_INFO("yaw_angle = %f", yaw_angle);
@@ -530,6 +545,7 @@ int main(int argc, char **argv)
     ros::Time lasttime = ros::Time::now();
     pub = nh.advertise<utils::pose_robot>("pose_robot", 10);
     pub_vel_stm = nh.advertise<utils::cmd_vel>("Guidance", 10);
+    ros::Subscriber amcl_sub = nh.subscribe("amcl_pose", 10, CallBackAmclPose); // Thêm subscriber cho amcl_pose
 
     can.open();
     can.start_receive_loop([&](uint16_t can_id, const std::vector<uint8_t>& data) {
