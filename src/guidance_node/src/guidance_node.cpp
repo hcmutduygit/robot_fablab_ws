@@ -21,7 +21,7 @@ enum State{
 };
 
 PID pid_controller;
-double warning_distance_ = 0.75;
+double warning_distance_ = 0.7;
 double danger_distance_ = 0.6;
 State prev_state_ = FREE;
 bool is_home = false;
@@ -156,13 +156,19 @@ void tranfer_wp() {
 
 void CallBackScan(const sensor_msgs::LaserScan::ConstPtr& msg){
     State state_ = FREE;
+    double min_range = 999;
 
     for (const auto &range : msg->ranges)
     {
-        if (!std::isinf(range) && 0.5 < range && range <= warning_distance_)
+        // if (!std::isinf(range) && range <= min_range){
+        //     min_range = range;
+        // }
+
+        if (!std::isinf(range) && 0.4 <= range && range <= warning_distance_)
         {
             state_ = State::WARNING;
-            if (0.5 < range && range <= danger_distance_)
+            
+            if (range <= danger_distance_)
             {
                 state_ = State::DANGER;
                 break;
@@ -191,6 +197,8 @@ void CallBackScan(const sensor_msgs::LaserScan::ConstPtr& msg){
 
         prev_state_ = state_;
     }
+    if (state_ == State::FREE){std::cout << "yes" << "\n";}
+    ROS_INFO("Current state: %d, min range: %f", state_, min_range);
 }
 
 void CallBackPose(const geometry_msgs::PoseWithCovarianceStamped::ConstPtr& msg){
@@ -252,21 +260,21 @@ void ControlVel(const ros::TimerEvent& event){
     utils::cmd_vel cmd;
     tranfer_wp();
 
-    // if (is_safety_stop.data == true && is_safety_slow.data == true){
-    //     cmd.v_left = 0;
-    //     cmd.v_right = 0;
-    // }
-    // else if (is_safety_stop.data == false && is_safety_slow.data == true){
-    //     cmd.v_left = -0.75 * (linear_x - (angular_z * 0.57/ 2)) * drive;
-    //     cmd.v_right = 0.75 * (linear_x + (angular_z * 0.57/ 2)) * drive;
-    // }
-    // else {
-    //     cmd.v_left = -(linear_x - (angular_z * 0.57/ 2)) * drive;
-    //     cmd.v_right = (linear_x + (angular_z * 0.57/ 2)) * drive;
-    // }
+    if (is_safety_stop.data == true && is_safety_slow.data == true){
+        cmd.v_left = 0;
+        cmd.v_right = 0;
+    }
+    else if (is_safety_stop.data == false && is_safety_slow.data == true){
+        cmd.v_left = -0.75 * (linear_x - (angular_z * 0.57/ 2)) * drive;
+        cmd.v_right = 0.75 * (linear_x + (angular_z * 0.57/ 2)) * drive;
+    }
+    else {
+        cmd.v_left = -(linear_x - (angular_z * 0.57/ 2)) * drive;
+        cmd.v_right = (linear_x + (angular_z * 0.57/ 2)) * drive;
+    }
 
-    cmd.v_left = -(linear_x - (angular_z * 0.57/ 2)) * drive;
-    cmd.v_right = (linear_x + (angular_z * 0.57/ 2)) * drive;
+    // cmd.v_left = -(linear_x - (angular_z * 0.57/ 2)) * drive;
+    // cmd.v_right = (linear_x + (angular_z * 0.57/ 2)) * drive;
    
     // ROS_INFO("v_left = %.2f, v_right = %.2f, ANGULAR = %.2f", cmd.v_left, cmd.v_right, angular_z);
     if (!is_home){
