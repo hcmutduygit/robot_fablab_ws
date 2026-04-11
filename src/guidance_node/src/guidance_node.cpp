@@ -157,6 +157,8 @@ void tranfer_wp() {
 void CallBackScan(const sensor_msgs::LaserScan::ConstPtr& msg){
     State state_ = FREE;
     double min_range = 999;
+    int danger_count = 0;
+    int warning_count = 0;
 
     for (const auto &range : msg->ranges)
     {
@@ -164,17 +166,31 @@ void CallBackScan(const sensor_msgs::LaserScan::ConstPtr& msg){
         //     min_range = range;
         // }
 
-        if (!std::isinf(range) && 0.4 <= range && range <= warning_distance_)
-        {
-            state_ = State::WARNING;
-            
-            if (range <= danger_distance_)
-            {
-                state_ = State::DANGER;
-                break;
-            }
+    //     if (!std::isinf(range) && 0.5 <= range && range <= warning_distance_)
+    //     {
+    //         warning_count++;
+    //         if (range <= danger_distance_)
+    //         {
+    //             danger_count++;
+    //         }
+    //     }
+    //     if (warning_count >= 10){
+    //             state_ = State::WARNING;
+    //         }
+    //     if (danger_count == 10){
+    //             state_ = State::DANGER;
+    //             break;
+    //     }
+        if (!std::isinf(range) && 0.5 <= range && range <= danger_distance_){
+            danger_count++;
+        }
+        if (danger_count == 10){
+            state_ = State::DANGER;
+            break;
         }
     }
+
+
 
     if (state_ != prev_state_)
     {
