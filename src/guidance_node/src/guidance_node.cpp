@@ -1,89 +1,123 @@
-#include <guidance.h>
-#include <gazebo_msgs/ModelStates.h>
+#include <ros/ros.h>
+#include <std_msgs/Bool.h>
 #include <geometry_msgs/Twist.h>
 #include <geometry_msgs/PoseWithCovarianceStamped.h>
-#include <nav_msgs/Odometry.h>
+#include <sensor_msgs/LaserScan.h>
 #include <tf/tf.h>
-#include <algorithm> 
 #include <math.h>
-#include <string>
-#include <cstdlib>
 #include <vector>
+#include <string>
 #include <sstream>
-#include <utility>
-#include "guidance.h"
+#include <cstdlib>
 #include "pid.h"
+#include "utils/waypoints.h"
+#include "utils/cmd_vel.h"
 
-enum State{
-  FREE = 0,
-  WARNING,
-  DANGER
+#define PI 3.14159265358979323846
+
+enum State {
+    FREE = 0,
+    WARNING,
+    DANGER
 };
 
+// ===== PID controller =====
 PID pid_controller;
+
+// ===== Robot / Control variables =====
+double x = 0.0, y = 0.0, theta = 0.0;
+double linear_x = 0.0, angular_z = 0.0, filtered_angular_z = 0.0;
+double target_angle = 0.0, heading_error = 0.0;
+
+// ===== Waypoints =====
+std::vector<std::pair<double,double>> wp;
+size_t cnt = 0;
+bool has_published_arrival = false;
+bool is_home = false;
+
+// ===== Safety / Laser =====
 double warning_distance_ = 0.7;
 double danger_distance_ = 0.6;
 State prev_state_ = FREE;
-bool is_home = false;
-
 std_msgs::Bool is_safety_stop;
 std_msgs::Bool is_safety_slow;
 
-double low_pass_filter(double pre_value, double new_value, double alpha = 0.2){
-    return alpha * new_value + (1 - alpha) * pre_value;
-}
+// ===== Control parameters =====
+double LINEAR_SPEED = 0.3;
+double MAX_LINEAR_SPEED = 0.5;
+double ANGULAR_SPEED = 0.5;
+double MAX_ANGULAR_SPEED = 1.0;
+double KD = 0.5;
+double GOAL_RADIUS = 0.2;
+double min_speed = 0.05;
+int direct = 1;
+double drive = 1.0;
+double cycle = 0.05;
 
-float get_heading (double x1, double y1, double x2, double y2){
-    return atan2( y2 - y1, x2 - x1);
-}
+// ===== LOS / cross track =====
+double alpha_k = 0.0;
+double s_k_1 = 0.0;
+double cross_track = 0.0;
+double long_track = 0.0;
+double delta = 0.0;
+double delta_min = 0.1, delta_max = 1.0;
+double perc_dist = 0.0;
+double dist_to_goal = 0.0;
 
+// ===== ROS publishers/subscribers =====
+ros::Publisher pub;
+ros::Subscriber sub_scan;
+ros::Subscriber sub_amcl;
+ros::Subscriber sub_wp;
+ros::Timer loopControl;
+
+// ===== Helper functions =====
 double normalize_angle(double angle) {
     angle = fmod(angle + PI, 2.0 * PI);
-    if (angle < 0)
-        angle += 2.0 * PI;
+    if (angle < 0) angle += 2.0 * PI;
     return angle - PI;
 }
 
-double limit(double value, double min_val, double max_val)
-{
+double limit(double value, double min_val, double max_val) {
     if (value < min_val) return min_val;
     else if (value > max_val) return max_val;
     else return value;
 }
 
+double low_pass_filter(double pre_value, double new_value, double alpha = 0.2) {
+    return alpha * new_value + (1 - alpha) * pre_value;
+}
+
+float get_heading(double x1, double y1, double x2, double y2) {
+    return atan2(y2 - y1, x2 - x1);
+}
+
+// ===== LOS control =====
 void control_los(float goal_x, float goal_y, float previous_x, float previous_y) {
     alpha_k = get_heading(previous_x, previous_y, goal_x, goal_y);
-    s_k_1 = (goal_x - previous_x) * cos(alpha_k) + (goal_y - previous_y) * sin(alpha_k); 
-
+    s_k_1 = (goal_x - previous_x) * cos(alpha_k) + (goal_y - previous_y) * sin(alpha_k);
     cross_track = (-(x - previous_x) * sin(alpha_k) + (y - previous_y) * cos(alpha_k)) * direct;
     long_track = (x - previous_x) * cos(alpha_k) + (y - previous_y) * sin(alpha_k);
     delta = (delta_max - delta_min) * exp(-0.7 * pow(cross_track, 2)) + delta_min;
 
-    target_heading = normalize_angle(alpha_k + atan(-cross_track/delta));
-    heading_error  = normalize_angle(target_heading - theta);
-
-    // ROS_INFO("CrossTrack = %.2f, LongTrack = %.2f, HeadingDesire = %.2f, HeadingErr = %.2f, Theta = %.2f",cross_track, long_track,target_heading,heading_error,theta);
-
+    target_angle = normalize_angle(alpha_k + atan(-cross_track/delta));
+    heading_error = normalize_angle(target_angle - theta);
     filtered_angular_z = pid_controller.pid(heading_error, KD, ANGULAR_SPEED);
-    // filtered_angular_z = limit(filtered_angular_z, -MAX_ANGULAR_SPEED, ANGULAR_SPEED);
-    // std::cout << "filtered_angular_z = " << filtered_angular_z << "\n";
     filtered_angular_z = limit(filtered_angular_z, -MAX_ANGULAR_SPEED, MAX_ANGULAR_SPEED);
 
-    dist_to_goal = abs(s_k_1 - long_track);
-    perc_dist = abs(s_k_1 - long_track)/s_k_1;
+    dist_to_goal = fabs(s_k_1 - long_track);
+    perc_dist = fabs(s_k_1 - long_track) / s_k_1;
 
-    if (abs(heading_error) > 0.1){
-        // linear_x = MAX_LINEAR_SPEED/2;
-        linear_x = limit(MAX_LINEAR_SPEED * exp(-3 * abs(heading_error)), min_speed, MAX_LINEAR_SPEED);
-    }
-    else {
-        linear_x = limit(LINEAR_SPEED*perc_dist, min_speed, MAX_LINEAR_SPEED);
-    }
+    if (fabs(heading_error) > 0.1)
+        linear_x = limit(MAX_LINEAR_SPEED * exp(-3 * fabs(heading_error)), min_speed, MAX_LINEAR_SPEED);
+    else
+        linear_x = limit(LINEAR_SPEED * perc_dist, min_speed, MAX_LINEAR_SPEED);
+
     filtered_angular_z = low_pass_filter(angular_z, filtered_angular_z);
-    // filtered_angular_z = low_pass_filter(filtered_angular_z, angular_z);
     angular_z = filtered_angular_z;
 }
 
+// ===== Angle control =====
 void angle_control() {
     heading_error = normalize_angle(target_angle - theta);
     filtered_angular_z = pid_controller.pid(heading_error, KD, ANGULAR_SPEED);
@@ -92,252 +126,97 @@ void angle_control() {
     angular_z = filtered_angular_z;
 }
 
+// ===== Waypoint transfer =====
 void tranfer_wp() {
-    ROS_INFO_THROTTLE(2, "=== tranfer_wp DEBUG === wp.size=%zu, cnt=%d, robot=(%.2f, %.2f)", wp.size(), cnt, x, y);
-    
     if (wp.size() == 0) {
-        ROS_WARN_THROTTLE(5, "No waypoints received yet!");
         linear_x = 0.0;
         angular_z = 0.0;
         return;
     }
-    
-    if (wp.size() == 1) {
-        ROS_WARN_THROTTLE(5, "Only 1 waypoint! Need at least 2 for navigation. Current wp[0]=(%.2f, %.2f)", 
-                         wp[0].first, wp[0].second);
-        linear_x = 0.0;
-        angular_z = 0.0;
-        return;
-    }
-    
-    if (cnt + 1 >= (wp.size())) {
-        // ROS_INFO_THROTTLE(2, "Reached final waypoint #%d - Stopping Robot", cnt);
+
+    if (cnt + 1 >= wp.size()) {
         linear_x = 0.0;
         angular_z = 0.0;
         is_home = true;
-    }
-    else {
-        // ROS_INFO_THROTTLE(2, "Moving to waypoint #%d: (%.2f, %.2f) from wp[%d]=(%.2f, %.2f)", 
-        //                  cnt+1, wp[cnt+1].first, wp[cnt+1].second, 
-        //                  cnt, wp[cnt].first, wp[cnt].second);
+    } else {
         control_los(wp[cnt+1].first, wp[cnt+1].second, wp[cnt].first, wp[cnt].second);
     }
 
-    if (dist_to_goal <= GOAL_RADIUS) {
-        // ROS_INFO("Reached waypoint #%d: (%.2f, %.2f) ✓✓✓", cnt+1, wp[cnt+1].first, wp[cnt+1].second);
-        cnt +=1;
-        
-        // Neu da den waypoint cuoi cung
-        if (cnt + 1 >= wp.size()) {
-            // Chi publish MQTT 1 lan duy nhat
-            if (!has_published_arrival) {
-                ROS_WARN("========================================");
-                ROS_WARN("✓✓✓ REACHED FINAL DESTINATION ✓✓✓");
-                ROS_WARN("Publishing arrival status to MQTT...");
-                ROS_WARN("========================================");
-                
-                // Goi Python script de publish MQTT arrival
-                std::string script_path = "python /home/nvidia/robot_fablab_ws/src/MQTT/publish_arrival.py";
-                int result = system(script_path.c_str());
-                
-                if (result == 0) {
-                    ROS_WARN("Successfully published arrival status to MQTT");
-                } else {
-                    ROS_ERROR("Failed to publish arrival status (exit code: %d)", result);
-                }
-                
-                // Danh dau da publish de khong spam
-                has_published_arrival = true;
-                
-                ROS_WARN("========================================");
-                ROS_WARN("🔄 Robot stopped - Ready for new waypoints!");
-                ROS_WARN("Current position: (%.3f, %.3f)", x, y);
-                ROS_WARN("========================================");
-            }
-            
-            // Dung robot
-            linear_x = 0.0;
-            angular_z = 0.0;
-        }
-    }
+    if (dist_to_goal <= GOAL_RADIUS) cnt += 1;
 }
 
-void CallBackScan(const sensor_msgs::LaserScan::ConstPtr& msg){
+// ===== Laser callback =====
+void CallBackScan(const sensor_msgs::LaserScan::ConstPtr& msg) {
     State state_ = FREE;
-    double min_range = 999;
     int danger_count = 0;
-    int warning_count = 0;
 
-    for (const auto &range : msg->ranges)
-    {
-        // if (!std::isinf(range) && range <= min_range){
-        //     min_range = range;
-        // }
-
-    //     if (!std::isinf(range) && 0.5 <= range && range <= warning_distance_)
-    //     {
-    //         warning_count++;
-    //         if (range <= danger_distance_)
-    //         {
-    //             danger_count++;
-    //         }
-    //     }
-    //     if (warning_count >= 10){
-    //             state_ = State::WARNING;
-    //         }
-    //     if (danger_count == 10){
-    //             state_ = State::DANGER;
-    //             break;
-    //     }
-        if (!std::isinf(range) && 0.5 <= range && range <= danger_distance_){
-            danger_count++;
-        }
-        if (danger_count == 30){
-            state_ = State::DANGER;
+    for (const auto &range : msg->ranges) {
+        if (!std::isinf(range) && 0.5 <= range && range <= danger_distance_) danger_count++;
+        if (danger_count >= 30) {
+            state_ = DANGER;
             break;
         }
     }
 
-    // if (state_ != prev_state_)
-    // {
-    //     if (state_ == State::WARNING)
-    //     {
-    //         is_safety_stop.data = false;
-    //         is_safety_slow.data = true;
-
-    //     }
-    //     else if (state_ == State::DANGER)
-    //     {
-    //         is_safety_stop.data = true;
-    //         is_safety_slow.data = false;
-    //     }
-    //     else if (state_ == State::FREE)
-    //     {
-    //         is_safety_stop.data = false;
-    //         is_safety_slow.data = false;
-    //     }
-
-    //     prev_state_ = state_;
-    // }
-
-     if (state_ != prev_state_)
-    {      
-        if (state_ == State::DANGER)
-        {
-            is_safety_stop.data = true;
-        }
-        else if (state_ == State::FREE)
-        {
-            is_safety_stop.data = false;
-        }
-
+    if (state_ != prev_state_) {
+        is_safety_stop.data = (state_ == DANGER);
         prev_state_ = state_;
     }
-
-    // if (state_ == State::FREE){std::cout << "yes" << "\n";}
-    // ROS_INFO("Current state: %d, min range: %f", state_, min_range);
 }
 
-void CallBackPose(const geometry_msgs::PoseWithCovarianceStamped::ConstPtr& msg){
+// ===== Pose callback =====
+void CallBackPose(const geometry_msgs::PoseWithCovarianceStamped::ConstPtr& msg) {
     x = msg->pose.pose.position.x;
     y = msg->pose.pose.position.y;
-    double orientation_x = msg->pose.pose.orientation.x;
-    double orientation_y = msg->pose.pose.orientation.y;
-    double orientation_z = msg->pose.pose.orientation.z;
-    double orientation_w = msg->pose.pose.orientation.w;
 
-    tf::Quaternion q(orientation_x, orientation_y, orientation_z, orientation_w);
-    double roll, pitch, amcl_yaw;
-    tf::Matrix3x3(q).getRPY(roll, pitch, amcl_yaw);
-    theta = amcl_yaw;
+    tf::Quaternion q(msg->pose.pose.orientation.x, msg->pose.pose.orientation.y,
+                     msg->pose.pose.orientation.z, msg->pose.pose.orientation.w);
+    double roll, pitch;
+    tf::Matrix3x3(q).getRPY(roll, pitch, theta);
 }
 
+// ===== Waypoints callback =====
 void CallBackWp(const utils::waypoints::ConstPtr& msg) {
-    // Kiem tra neu da hoan thanh mission truoc do (da den waypoint cuoi) 
-    // thi reset tat ca de bat dau mission moi
     if (has_published_arrival && wp.size() > 0) {
-        ROS_WARN("========================================");
-        ROS_WARN("🆕 NEW MISSION DETECTED - Resetting all waypoints!");
-        ROS_WARN("========================================");
-        wp.clear();
-        cnt = 0;
-        has_published_arrival = false;
-        linear_x = 0.0;
-        angular_z = 0.0;
+        wp.clear(); cnt = 0; has_published_arrival = false; linear_x = 0; angular_z = 0;
     }
-    
-    // Neu day la waypoint dau tien cua mission moi, them vi tri hien tai lam diem xuat phat
-    if (wp.size() == 0) {
-        double current_x = x;
-        double current_y = y;
-        wp.push_back({current_x, current_y});
-        ROS_WARN("✓✓✓ Added STARTING position as wp[0]: (%.3f, %.3f) ✓✓✓", current_x, current_y);
-        
-        // Reset flag khi bat dau mission moi
-        cnt = 0;
-        has_published_arrival = false;
-        is_home = false;
-    }
-    
+    if (wp.size() == 0) wp.push_back({x, y});  // starting position
     wp.push_back({msg->direction_x, msg->direction_y});
-    ROS_INFO("✓ Received waypoint #%zu: (%.3f, %.3f)", wp.size()-1, msg->direction_x, msg->direction_y);
-    
-    // In ra tat ca cac waypoint hien tai
-    ROS_INFO("    Total waypoints: %zu", wp.size());
-    for (size_t i = 0; i < wp.size(); i++) {
-        if (i == 0) {
-            ROS_INFO("      wp[%zu] = (%.3f, %.3f) <- STARTING POSITION", i, wp[i].first, wp[i].second);
-        } else {
-            ROS_INFO("      wp[%zu] = (%.3f, %.3f) <- GOAL", i, wp[i].first, wp[i].second);
-        }
-    }
 }
 
-void ControlVel(const ros::TimerEvent& event){
+// ===== Control loop =====
+void ControlVel(const ros::TimerEvent&) {
     utils::cmd_vel cmd;
 
-    // ======= Chế độ kiểm thử quay PD động qua ROS param =======
     static bool test_pd = false;
     static double initial_theta = 0.0;
     static double prev_angle_deg = 0.0;
     double test_angle_deg = 0.0;
+
     ros::NodeHandle nh_priv("~");
     bool has_param = nh_priv.getParam("test_angle_deg", test_angle_deg);
-
-    // Nếu param tồn tại và thay đổi thì bắt đầu quay thử
-    if (has_param && test_angle_deg != prev_angle_deg) {
-        test_pd = true;
-        initial_theta = theta;
-        prev_angle_deg = test_angle_deg;
-    }
+    if (has_param && test_angle_deg != prev_angle_deg) { test_pd = true; initial_theta = theta; prev_angle_deg = test_angle_deg; }
 
     if (has_param && test_pd) {
-        target_angle = initial_theta + test_angle_deg * M_PI / 180.0;
+        target_angle = initial_theta + test_angle_deg * PI / 180.0;
         angle_control();
-        linear_x = 0.0; // Không tiến, chỉ quay
-        ROS_INFO("PD TEST: Target=%.2f°, Theta=%.2f°, Error=%.2f°", target_angle*180/M_PI, theta*180/M_PI, heading_error*180/M_PI);
-        if (fabs(normalize_angle(target_angle - theta)) < 0.5 * M_PI / 180.0) { // nhỏ hơn 0.5 độ
-            test_pd = false;
-            ROS_INFO("Đã quay đủ góc kiểm thử PD!");
-        }
+        linear_x = 0.0;
+        if (fabs(normalize_angle(target_angle - theta)) < 0.5 * PI / 180.0) test_pd = false;
     } else {
         tranfer_wp();
     }
 
-    cmd.v_left = -(linear_x - (angular_z * 0.57/ 2)) * drive;
-    cmd.v_right = (linear_x + (angular_z * 0.57/ 2)) * drive;
-   
-    // ROS_INFO("v_left = %.2f, v_right = %.2f, ANGULAR = %.2f", cmd.v_left, cmd.v_right, angular_z);
-    if (!is_home){
-        pub.publish(cmd);
-    }
+    cmd.v_left = -(linear_x - angular_z * 0.57/2) * drive;
+    cmd.v_right = (linear_x + angular_z * 0.57/2) * drive;
+    if (!is_home) pub.publish(cmd);
 }
 
+// ===== Main =====
+int main(int argc, char** argv) {
+    ros::init(argc, argv, "Guidance_node");
+    ros::NodeHandle nh, arg_nh("~");
 
-int main(int argc, char **argv){
-    ros::init(argc,argv,"Guidance_node");
-    
-    ros::NodeHandle arg_nh("~");
+    // Load parameters
     arg_nh.getParam("linear_speed", LINEAR_SPEED);
     arg_nh.getParam("angular_speed", ANGULAR_SPEED);
     arg_nh.getParam("goal_radius", GOAL_RADIUS);
@@ -350,88 +229,14 @@ int main(int argc, char **argv){
     arg_nh.getParam("direct", direct);
     arg_nh.getParam("target_angle", target_angle);
 
-
-
-    ROS_INFO("Linear_speed_max = %.2f, Angular_speed_max= %.2f, goal_radius= %.2f. KD = %.2f",MAX_LINEAR_SPEED,MAX_ANGULAR_SPEED,GOAL_RADIUS,KD);
-    ros::NodeHandle nh;
-
     pub = nh.advertise<utils::cmd_vel>("Cmd_vel", 10);
     sub_scan = nh.subscribe("scan", 10, CallBackScan);
-    sub_amcl = nh.subscribe("amcl_pose", 10, CallBackPose); 
+    sub_amcl = nh.subscribe("amcl_pose", 10, CallBackPose);
+    sub_wp = nh.subscribe("waypoints", 100, CallBackWp);
 
-    // ========================================================================
-    // CHON CHE DO DOC WAYPOINTS
-    // ========================================================================
-    // waypoint_mode = 0: Doc tu PARAM (cach cu)
-    // waypoint_mode = 1: Doc tu TOPIC (cach moi - MQTT)
-    int waypoint_mode = 1; // Mac dinh dung topic
-    arg_nh.getParam("waypoint_mode", waypoint_mode);
-
-    if (waypoint_mode == 0) {
-        // ========================================================================
-        // TRUONG HOP 1: Doc waypoints tu LAUNCH FILE PARAMS - Cach cu
-        // ========================================================================
-        ROS_WARN("=== WAYPOINT MODE: Reading from LAUNCH FILE PARAMS ===");
-        
-        std::string waypoints_x_str, waypoints_y_str;
-        if (arg_nh.getParam("waypoints_x", waypoints_x_str) && arg_nh.getParam("waypoints_y", waypoints_y_str)) {
-            
-            // THEM DIEM XUAT PHAT (vi tri hien tai cua robot) - GIONG NHU FILE CU
-            double current_x = x;
-            double current_y = y;
-            wp.push_back({current_x, current_y});
-            ROS_WARN("✓ Added STARTING position as wp[0]: (%.3f, %.3f)", current_x, current_y);
-            
-            std::vector<double> waypoints_x_temp;
-            std::vector<double> waypoints_y_temp;
-            
-            std::stringstream ss_x(waypoints_x_str);
-            std::stringstream ss_y(waypoints_y_str);
-            std::string segment;
-
-            while(std::getline(ss_x, segment, ',')) {
-                waypoints_x_temp.push_back(std::stod(segment));
-            }
-
-            while(std::getline(ss_y, segment, ',')) {
-                waypoints_y_temp.push_back(std::stod(segment));
-            }
-
-            if (waypoints_x_temp.size() == waypoints_y_temp.size()) {
-                for (size_t i = 0; i < waypoints_x_temp.size(); ++i) {
-                    wp.push_back({waypoints_x_temp[i], waypoints_y_temp[i]});
-                    // ROS_INFO("Loaded waypoint #%zu from param: (%.3f, %.3f)", wp.size()-1, waypoints_x_temp[i], waypoints_y_temp[i]);
-                }
-            }
-            
-            ROS_WARN("Total waypoints loaded: %zu (including starting position)", wp.size());
-        } else {
-            ROS_WARN("waypoint_mode=0 but no waypoints_x/waypoints_y params found!");
-        }
-    } 
-    else if (waypoint_mode == 1) {
-        // ========================================================================
-        // TRUONG HOP 2: Doc waypoints tu TOPIC (MQTT) - Cach moi
-        // ========================================================================
-        ROS_WARN("=== WAYPOINT MODE: Reading from TOPIC (MQTT) ===");
-        
-        std::string waypoints_topic = "waypoints";
-        arg_nh.getParam("waypoints_topic", waypoints_topic);
-        sub_wp = nh.subscribe(waypoints_topic, 100, CallBackWp);
-        ROS_INFO("Subscribed to waypoints topic: %s", waypoints_topic.c_str());
-        ROS_INFO("Waiting for waypoints from topic...");
-    }
-    else {
-        ROS_ERROR("Invalid waypoint_mode=%d! Use 0 (param) or 1 (topic)", waypoint_mode);
-    }
-    
-    // ========================================================================
-    // Start control loop
-    // ========================================================================
     loopControl = nh.createTimer(ros::Duration(cycle), ControlVel);
-    
+
     ROS_INFO("=== Guidance node ready ===");
     ros::spin();
     return 0;
-
 }
