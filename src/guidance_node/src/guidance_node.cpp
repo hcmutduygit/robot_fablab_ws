@@ -169,7 +169,7 @@ int main(int argc, char **argv) {
 
     sub_scan = nh.subscribe("scan", 10, CallBackScan);
     sub_amcl = nh.subscribe("amcl_pose", 10, CallBackPose);
-    ros::Subscriber rotate_angle_sub = nh.subscribe("rotate_angle", 10, rotateAngleCallback);
+    ros::Subscriber rotate_angle_sub = nh.subscribe("/robot/rotate", 10, rotateAngleCallback);
 
     ros::spin();
     return 0;
