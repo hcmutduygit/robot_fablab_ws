@@ -13,7 +13,6 @@
 #include <utility>
 #include "guidance.h"
 #include "pid.h"
-#include <std_msgs/Float32.h>
 
 enum State{
   FREE = 0,
@@ -26,13 +25,6 @@ double warning_distance_ = 0.7;
 double danger_distance_ = 0.6;
 State prev_state_ = FREE;
 bool is_home = false;
-
-// Biến chuyển chế độ test PD góc bám
-bool test_pd_angle_mode = true;
-// Callback nhận góc từ MQTT (robot/xoay)
-void xoayCallback(const std_msgs::Float32::ConstPtr& msg) {
-    target_angle = msg->data;
-}
 
 std_msgs::Bool is_safety_stop;
 std_msgs::Bool is_safety_slow;
@@ -303,17 +295,35 @@ void CallBackWp(const utils::waypoints::ConstPtr& msg) {
 
 void ControlVel(const ros::TimerEvent& event){
     utils::cmd_vel cmd;
-    if (test_pd_angle_mode) {
-        // Test PD góc bám: chỉ điều khiển góc, không chạy LOS
-        linear_x = 0.0; // hoặc cho phép chỉnh tốc độ nếu muốn
-        angle_control();
-    } else {
-        tranfer_wp();
-    }
+    tranfer_wp();
+    // angle_control();
+
+    // if (is_safety_stop.data == true && is_safety_slow.data == true){
+    //     cmd.v_left = 0;
+    //     cmd.v_right = 0;
+    // }
+    // else if (is_safety_stop.data == false && is_safety_slow.data == true){
+    //     cmd.v_left = -0.75 * (linear_x - (angular_z * 0.57/ 2)) * drive;
+    //     cmd.v_right = 0.75 * (linear_x + (angular_z * 0.57/ 2)) * drive;
+    // }
+    // else {
+    //     cmd.v_left = -(linear_x - (angular_z * 0.57/ 2)) * drive;
+    //     cmd.v_right = (linear_x + (angular_z * 0.57/ 2)) * drive;
+    // }
+
+    // if (is_safety_stop.data == true){
+    //     cmd.v_left = 0;
+    //     cmd.v_right = 0;
+    // }
+    // else {
+    //     cmd.v_left = -(linear_x - (angular_z * 0.57/ 2)) * drive;
+    //     cmd.v_right = (linear_x + (angular_z * 0.57/ 2)) * drive;
+    // }
 
     cmd.v_left = -(linear_x - (angular_z * 0.57/ 2)) * drive;
     cmd.v_right = (linear_x + (angular_z * 0.57/ 2)) * drive;
-
+   
+    // ROS_INFO("v_left = %.2f, v_right = %.2f, ANGULAR = %.2f", cmd.v_left, cmd.v_right, angular_z);
     if (!is_home){
         pub.publish(cmd);
     }
@@ -322,6 +332,7 @@ void ControlVel(const ros::TimerEvent& event){
 
 int main(int argc, char **argv){
     ros::init(argc,argv,"Guidance_node");
+    
     ros::NodeHandle arg_nh("~");
     arg_nh.getParam("linear_speed", LINEAR_SPEED);
     arg_nh.getParam("angular_speed", ANGULAR_SPEED);
@@ -335,22 +346,14 @@ int main(int argc, char **argv){
     arg_nh.getParam("direct", direct);
     arg_nh.getParam("target_angle", target_angle);
 
-    // Đọc chế độ test PD góc bám từ launch file (nếu có)
-    arg_nh.param("test_pd_angle_mode", test_pd_angle_mode, false);
+
 
     ROS_INFO("Linear_speed_max = %.2f, Angular_speed_max= %.2f, goal_radius= %.2f. KD = %.2f",MAX_LINEAR_SPEED,MAX_ANGULAR_SPEED,GOAL_RADIUS,KD);
     ros::NodeHandle nh;
 
     pub = nh.advertise<utils::cmd_vel>("Cmd_vel", 10);
     sub_scan = nh.subscribe("scan", 10, CallBackScan);
-    sub_amcl = nh.subscribe("amcl_pose", 10, CallBackPose);
-
-    // Đăng ký subscriber cho chế độ test PD góc bám
-    ros::Subscriber sub_xoay;
-    if (test_pd_angle_mode) {
-        sub_xoay = nh.subscribe("robot/xoay", 10, xoayCallback);
-        ROS_WARN("[TEST_PD_ANGLE_MODE] Đang chạy chế độ test PD góc bám qua topic robot/xoay!");
-    }
+    sub_amcl = nh.subscribe("amcl_pose", 10, CallBackPose); 
 
     // ========================================================================
     // CHON CHE DO DOC WAYPOINTS
@@ -360,31 +363,71 @@ int main(int argc, char **argv){
     int waypoint_mode = 1; // Mac dinh dung topic
     arg_nh.getParam("waypoint_mode", waypoint_mode);
 
-    if (!test_pd_angle_mode) {
-        if (waypoint_mode == 0) {
-            // ...existing code...
-            std::string waypoints_x_str, waypoints_y_str;
-            if (arg_nh.getParam("waypoints_x", waypoints_x_str) && arg_nh.getParam("waypoints_y", waypoints_y_str)) {
-                // ...existing code...
-            }
-        } else if (waypoint_mode == 1) {
-            // ...existing code...
-            std::string waypoints_topic = "waypoints";
-            arg_nh.getParam("waypoints_topic", waypoints_topic);
-            sub_wp = nh.subscribe(waypoints_topic, 100, CallBackWp);
-            ROS_INFO("Subscribed to waypoints topic: %s", waypoints_topic.c_str());
-            ROS_INFO("Waiting for waypoints from topic...");
-        } else {
-            ROS_ERROR("Invalid waypoint_mode=%d! Use 0 (param) or 1 (topic)", waypoint_mode);
-        }
-    }
+    if (waypoint_mode == 0) {
+        // ========================================================================
+        // TRUONG HOP 1: Doc waypoints tu LAUNCH FILE PARAMS - Cach cu
+        // ========================================================================
+        ROS_WARN("=== WAYPOINT MODE: Reading from LAUNCH FILE PARAMS ===");
+        
+        std::string waypoints_x_str, waypoints_y_str;
+        if (arg_nh.getParam("waypoints_x", waypoints_x_str) && arg_nh.getParam("waypoints_y", waypoints_y_str)) {
+            
+            // THEM DIEM XUAT PHAT (vi tri hien tai cua robot) - GIONG NHU FILE CU
+            double current_x = x;
+            double current_y = y;
+            wp.push_back({current_x, current_y});
+            ROS_WARN("✓ Added STARTING position as wp[0]: (%.3f, %.3f)", current_x, current_y);
+            
+            std::vector<double> waypoints_x_temp;
+            std::vector<double> waypoints_y_temp;
+            
+            std::stringstream ss_x(waypoints_x_str);
+            std::stringstream ss_y(waypoints_y_str);
+            std::string segment;
 
+            while(std::getline(ss_x, segment, ',')) {
+                waypoints_x_temp.push_back(std::stod(segment));
+            }
+
+            while(std::getline(ss_y, segment, ',')) {
+                waypoints_y_temp.push_back(std::stod(segment));
+            }
+
+            if (waypoints_x_temp.size() == waypoints_y_temp.size()) {
+                for (size_t i = 0; i < waypoints_x_temp.size(); ++i) {
+                    wp.push_back({waypoints_x_temp[i], waypoints_y_temp[i]});
+                    // ROS_INFO("Loaded waypoint #%zu from param: (%.3f, %.3f)", wp.size()-1, waypoints_x_temp[i], waypoints_y_temp[i]);
+                }
+            }
+            
+            ROS_WARN("Total waypoints loaded: %zu (including starting position)", wp.size());
+        } else {
+            ROS_WARN("waypoint_mode=0 but no waypoints_x/waypoints_y params found!");
+        }
+    } 
+    else if (waypoint_mode == 1) {
+        // ========================================================================
+        // TRUONG HOP 2: Doc waypoints tu TOPIC (MQTT) - Cach moi
+        // ========================================================================
+        ROS_WARN("=== WAYPOINT MODE: Reading from TOPIC (MQTT) ===");
+        
+        std::string waypoints_topic = "waypoints";
+        arg_nh.getParam("waypoints_topic", waypoints_topic);
+        sub_wp = nh.subscribe(waypoints_topic, 100, CallBackWp);
+        ROS_INFO("Subscribed to waypoints topic: %s", waypoints_topic.c_str());
+        ROS_INFO("Waiting for waypoints from topic...");
+    }
+    else {
+        ROS_ERROR("Invalid waypoint_mode=%d! Use 0 (param) or 1 (topic)", waypoint_mode);
+    }
+    
     // ========================================================================
     // Start control loop
     // ========================================================================
     loopControl = nh.createTimer(ros::Duration(cycle), ControlVel);
-
+    
     ROS_INFO("=== Guidance node ready ===");
     ros::spin();
     return 0;
+
 }
