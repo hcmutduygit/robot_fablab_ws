@@ -14,6 +14,9 @@
 // using namespace utils;
 #define PI 3.14159265358979323846
 
+// Chế độ test PD góc bám
+extern bool test_pd_angle_mode;
+
 double x = 0.0;
 double y = 0.0;
 double roll = 0.0;
