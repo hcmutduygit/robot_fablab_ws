@@ -201,13 +201,17 @@ void ControlVel(const ros::TimerEvent&) {
         target_angle = initial_theta + test_angle_deg * PI / 180.0;
         angle_control();
         linear_x = 0.0;
+        ROS_INFO("[PD TEST] ĐÃ GỬI: %.2f°, Góc mục tiêu: %.2f°, Theta hiện tại: %.2f°, Sai số: %.2f°", test_angle_deg, target_angle*180/PI, theta*180/PI, heading_error*180/PI);
         if (fabs(normalize_angle(target_angle - theta)) < 0.5 * PI / 180.0) test_pd = false;
     } else {
         tranfer_wp();
     }
 
-    cmd.v_left = -(linear_x - angular_z * 0.57/2) * drive;
-    cmd.v_right = (linear_x + angular_z * 0.57/2) * drive;
+        cmd.v_left = -(linear_x - (angular_z * 0.57 / 2)) * drive;
+        cmd.v_right = (linear_x + (angular_z * 0.57 / 2)) * drive;
+
+        ROS_INFO("[PD TEST] angular_z=%.2f, v_left=%.2f, v_right=%.2f", angular_z, cmd.v_left, cmd.v_right);
+
     if (!is_home) pub.publish(cmd);
 }
 
