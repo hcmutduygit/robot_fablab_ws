@@ -1,3 +1,12 @@
+#include <std_msgs/Float64.h>
+// Callback nhận góc từ topic /rotate_angle
+void rotateAngleCallback(const std_msgs::Float64::ConstPtr& msg) {
+    // Cho phép nhập góc bằng độ, tự động chuyển sang radian
+    double target_angle_deg = msg->data;
+    double target_angle_rad = target_angle_deg * PI / 180.0;
+    ROS_WARN("[RotateAngle] Nhận lệnh xoay tới góc %.2f độ (%.2f rad)", target_angle_deg, target_angle_rad);
+    rotate_to_angle(target_angle_rad);
+}
 #include <guidance.h>
 #include <gazebo_msgs/ModelStates.h>
 #include <geometry_msgs/Twist.h>
@@ -417,7 +426,29 @@ int main(int argc, char **argv){
     loopControl = nh.createTimer(ros::Duration(cycle), ControlVel);
     
     ROS_INFO("=== Guidance node ready ===");
+    // Đăng ký subscriber cho topic /rotate_angle
+    ros::Subscriber rotate_angle_sub = nh.subscribe("rotate_angle", 10, rotateAngleCallback);
+
     ros::spin();
+    // === Hàm xoay robot đến góc mong muốn ===
+    void rotate_to_angle(double target_angle) {
+        ros::Rate rate(50); // 50 Hz
+        double error;
+        do {
+            error = normalize_angle(target_angle - theta);
+            double angular_cmd = pid_controller.pid(error, KD, ANGULAR_SPEED);
+            angular_cmd = limit(angular_cmd, -MAX_ANGULAR_SPEED, MAX_ANGULAR_SPEED);
+
+            utils::cmd_vel cmd;
+            cmd.v_left = -(0.0 - (angular_cmd * 0.57 / 2)) * drive;
+            cmd.v_right = (0.0 + (angular_cmd * 0.57 / 2)) * drive;
+            pub.publish(cmd);
+
+            ROS_INFO("Target: %.2f, Current: %.2f, Error: %.2f", target_angle, theta, error);
+            rate.sleep();
+            ros::spinOnce();
+        } while (fabs(error) > 0.01); // Sai số nhỏ hơn 0.01 rad thì dừng
+    }
     return 0;
 
 }
