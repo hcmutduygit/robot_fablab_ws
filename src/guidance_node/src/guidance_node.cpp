@@ -1,3 +1,7 @@
+#include <fstream>
+#include <ctime>
+std::ofstream log_file;
+bool log_file_initialized = false;
 #include <guidance.h>
 #include <gazebo_msgs/ModelStates.h>
 #include <geometry_msgs/Twist.h>
@@ -13,6 +17,7 @@
 #include <utility>
 #include "guidance.h"
 #include "pid.h"
+#include <std_msgs/Float32.h>
 
 enum State{
   FREE = 0,
@@ -25,6 +30,13 @@ double warning_distance_ = 0.7;
 double danger_distance_ = 0.6;
 State prev_state_ = FREE;
 bool is_home = false;
+
+// Biến chuyển chế độ test PD góc bám
+bool test_pd_angle_mode = true;
+// Callback nhận góc từ MQTT (robot/xoay)
+void xoayCallback(const std_msgs::Float32::ConstPtr& msg) {
+    target_angle = msg->data;
+}
 
 std_msgs::Bool is_safety_stop;
 std_msgs::Bool is_safety_slow;
@@ -54,6 +66,19 @@ double limit(double value, double min_val, double max_val)
 void control_los(float goal_x, float goal_y, float previous_x, float previous_y) {
     alpha_k = get_heading(previous_x, previous_y, goal_x, goal_y);
     s_k_1 = (goal_x - previous_x) * cos(alpha_k) + (goal_y - previous_y) * sin(alpha_k); 
+    // === GHI LOG PHỤC VỤ TUNING PD ===
+    if (!log_file_initialized) {
+        // Tạo tên file log theo thời gian thực
+        std::time_t t = std::time(nullptr);
+        char buf[100];
+        std::strftime(buf, sizeof(buf), "pd_log_%Y%m%d_%H%M%S.csv", std::localtime(&t));
+        log_file.open(buf);
+        log_file << "timestamp,x,y,theta,target_heading,heading_error,linear_x,angular_z\n";
+        log_file_initialized = true;
+    }
+    // Lấy thời gian hiện tại (giây)
+    double now = ros::Time::now().toSec();
+    log_file << now << "," << x << "," << y << "," << theta << "," << target_heading << "," << heading_error << "," << linear_x << "," << angular_z << std::endl;
 
     cross_track = (-(x - previous_x) * sin(alpha_k) + (y - previous_y) * cos(alpha_k)) * direct;
     long_track = (x - previous_x) * cos(alpha_k) + (y - previous_y) * sin(alpha_k);
@@ -79,6 +104,22 @@ void control_los(float goal_x, float goal_y, float previous_x, float previous_y)
     else {
         linear_x = limit(LINEAR_SPEED*perc_dist, min_speed, MAX_LINEAR_SPEED);
     }
+
+    // === RÀNG BUỘC KẾT HỢP VẬN TỐC DỰA TRÊN ĐỘ CONG QUỸ ĐẠO ===
+    // Giả sử L = 0.57 (khoảng cách giữa 2 bánh xe, có thể thay đổi nếu cần)
+    double L = 0.57;
+    double vmax_wheel = MAX_LINEAR_SPEED; // hoặc đặt riêng nếu có biến khác
+    // Độ cong quỹ đạo kappa = |omega| / |v| (tránh chia 0)
+    double abs_linear_x = std::max(1e-6, fabs(linear_x));
+    double abs_angular_z = fabs(filtered_angular_z);
+    double kappa = abs_angular_z / abs_linear_x;
+    // Tính vận tốc tuyến tính cực đại theo ràng buộc độ cong
+    double v_max_curve = vmax_wheel / (1.0 + 2.0 * L * kappa);
+    // Giới hạn lại vận tốc tuyến tính nếu cần
+    if (fabs(linear_x) > v_max_curve) {
+        linear_x = (linear_x > 0 ? 1 : -1) * v_max_curve;
+    }
+
     filtered_angular_z = low_pass_filter(angular_z, filtered_angular_z);
     // filtered_angular_z = low_pass_filter(filtered_angular_z, angular_z);
     angular_z = filtered_angular_z;
@@ -332,7 +373,6 @@ void ControlVel(const ros::TimerEvent& event){
 
 int main(int argc, char **argv){
     ros::init(argc,argv,"Guidance_node");
-    
     ros::NodeHandle arg_nh("~");
     arg_nh.getParam("linear_speed", LINEAR_SPEED);
     arg_nh.getParam("angular_speed", ANGULAR_SPEED);
@@ -353,7 +393,14 @@ int main(int argc, char **argv){
 
     pub = nh.advertise<utils::cmd_vel>("Cmd_vel", 10);
     sub_scan = nh.subscribe("scan", 10, CallBackScan);
-    sub_amcl = nh.subscribe("amcl_pose", 10, CallBackPose); 
+    sub_amcl = nh.subscribe("amcl_pose", 10, CallBackPose);
+
+    // Đăng ký subscriber cho chế độ test PD góc bám
+    ros::Subscriber sub_xoay;
+    if (test_pd_angle_mode) {
+        sub_xoay = nh.subscribe("robot/xoay", 10, xoayCallback);
+        ROS_WARN("[TEST_PD_ANGLE_MODE] Đang chạy chế độ test PD góc bám qua topic robot/xoay!");
+    }
 
     // ========================================================================
     // CHON CHE DO DOC WAYPOINTS
