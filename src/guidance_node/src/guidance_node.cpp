@@ -118,6 +118,14 @@ void control_los(float goal_x, float goal_y, float previous_x, float previous_y)
     ROS_INFO("[LOS] linear_x=%.4f, angular_z=%.4f, kappa=%.4f, v_limit=%.4f", linear_x, angular_z, kappa, v_limit);
 }
 
+void angle_control() {
+    heading_error = normalize_angle(target_angle - theta);
+    filtered_angular_z = pid_controller.pid(heading_error, KD, ANGULAR_SPEED);
+    filtered_angular_z = limit(filtered_angular_z, -MAX_ANGULAR_SPEED, MAX_ANGULAR_SPEED);
+    filtered_angular_z = low_pass_filter(angular_z, filtered_angular_z);
+    angular_z = filtered_angular_z;
+}
+
 void tranfer_wp() {
     ROS_INFO_THROTTLE(2, "=== tranfer_wp DEBUG === wp.size=%zu, cnt=%d, robot=(%.2f, %.2f)", wp.size(), cnt, x, y);
     
@@ -354,6 +362,7 @@ void ControlVel(const ros::TimerEvent& event){
 
     // --- Bình thường ---
     tranfer_wp();
+    // angle_control();
 
     // if (is_safety_stop.data == true && is_safety_slow.data == true){
     //     cmd.v_left = 0;
@@ -368,6 +377,7 @@ void ControlVel(const ros::TimerEvent& event){
     //     cmd.v_right = (linear_x + (angular_z * 0.57/ 2)) * drive;
     // }
 
+<<<<<<< HEAD
 
     // === RÀNG BUỘC VẬN TỐC TUYẾN TÍNH THEO ĐỘ CONG QUỸ ĐẠO ===
     // L là khoảng cách giữa 2 bánh xe, ở đây lấy L = 0.57 (giống hệ số trong công thức tính v_left/v_right)
@@ -396,9 +406,19 @@ void ControlVel(const ros::TimerEvent& event){
         cmd.v_left = -(linear_x - (angular_z * L / 2)) * drive;
         cmd.v_right = (linear_x + (angular_z * L / 2)) * drive;
     }
+=======
+    // if (is_safety_stop.data == true){
+    //     cmd.v_left = 0;
+    //     cmd.v_right = 0;
+    // }
+    // else {
+    //     cmd.v_left = -(linear_x - (angular_z * 0.57/ 2)) * drive;
+    //     cmd.v_right = (linear_x + (angular_z * 0.57/ 2)) * drive;
+    // }
+>>>>>>> 2c29701213929ae1a3fb3939ceb9c726d01f59f0
 
-    // cmd.v_left = -(linear_x - (angular_z * 0.57/ 2)) * drive;
-    // cmd.v_right = (linear_x + (angular_z * 0.57/ 2)) * drive;
+    cmd.v_left = -(linear_x - (angular_z * 0.57/ 2)) * drive;
+    cmd.v_right = (linear_x + (angular_z * 0.57/ 2)) * drive;
    
     // ROS_INFO("v_left = %.2f, v_right = %.2f, ANGULAR = %.2f", cmd.v_left, cmd.v_right, angular_z);
     if (!is_home){
@@ -421,6 +441,7 @@ int main(int argc, char **argv){
     arg_nh.getParam("drive", drive);
     arg_nh.getParam("min_speed_linear", min_speed);
     arg_nh.getParam("direct", direct);
+    arg_nh.getParam("target_angle", target_angle);
 
     // --- Thêm chế độ test PID hướng ---
     arg_nh.param("test_pid_heading_mode", test_pid_heading_mode, false);

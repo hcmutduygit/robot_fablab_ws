@@ -34,9 +34,10 @@ double delta_max = 0.8;
 double delta_min = 0.5;
 double target_heading;
 double heading_error = 0.0;
+double target_angle = 0.0;
 
 double angular_z = 0.0;
-double linear_x = 0.0;
+double linear_x = 0.4;
 double dist_to_goal = 0.0;
 double perc_dist = 0.0; 
 double LINEAR_SPEED;
