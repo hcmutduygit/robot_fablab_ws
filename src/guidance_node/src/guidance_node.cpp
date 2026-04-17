@@ -33,9 +33,10 @@ bool is_home = false;
 
 // Biến chuyển chế độ test PD góc bám
 bool test_pd_angle_mode = true;
-// Callback nhận góc từ MQTT (robot/xoay)
+// Callback nhận góc từ MQTT (robot/xoay), nhận bằng độ và tự động chuyển sang radian
 void xoayCallback(const std_msgs::Float32::ConstPtr& msg) {
-    target_angle = msg->data;
+    target_angle = msg->data * M_PI / 180.0;
+    ROS_INFO("[TEST_PD_ANGLE_MODE] Đã nhận góc %.2f độ (%.2f rad)", msg->data, target_angle);
 }
 
 std_msgs::Bool is_safety_stop;
