@@ -101,6 +101,7 @@ void control_los(float goal_x, float goal_y, float previous_x, float previous_y)
         v = (v > 0) ? v_limit : -v_limit;
     }
     linear_x = v;
+    ROS_INFO("[LOS] linear_x=%.4f, angular_z=%.4f, kappa=%.4f, v_limit=%.4f", linear_x, angular_z, kappa, v_limit);
 }
 
 void tranfer_wp() {
