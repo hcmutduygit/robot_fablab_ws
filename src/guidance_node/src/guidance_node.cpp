@@ -302,13 +302,33 @@ void ControlVel(const ros::TimerEvent& event){
     //     cmd.v_right = (linear_x + (angular_z * 0.57/ 2)) * drive;
     // }
 
+
+    // === RÀNG BUỘC VẬN TỐC TUYẾN TÍNH THEO ĐỘ CONG QUỸ ĐẠO ===
+    // L là khoảng cách giữa 2 bánh xe, ở đây lấy L = 0.57 (giống hệ số trong công thức tính v_left/v_right)
+    const double L = 0.57;
+    double v_max = MAX_LINEAR_SPEED;
+    double v = linear_x;
+    double omega = angular_z;
+    double kappa = 0.0;
+    if (fabs(v) > 1e-6) {
+        kappa = omega / fabs(v);
+    } else {
+        kappa = 0.0;
+    }
+    double v_limit = v_max / (1.0 + (L/2.0)*fabs(kappa));
+    if (fabs(v) > v_limit) {
+        v = (v > 0) ? v_limit : -v_limit;
+    }
+    // Cập nhật lại linear_x để đảm bảo các phần khác dùng đúng giá trị đã ràng buộc
+    linear_x = v;
+
     if (is_safety_stop.data == true){
         cmd.v_left = 0;
         cmd.v_right = 0;
     }
     else {
-        cmd.v_left = -(linear_x - (angular_z * 0.57/ 2)) * drive;
-        cmd.v_right = (linear_x + (angular_z * 0.57/ 2)) * drive;
+        cmd.v_left = -(linear_x - (angular_z * L / 2)) * drive;
+        cmd.v_right = (linear_x + (angular_z * L / 2)) * drive;
     }
 
     // cmd.v_left = -(linear_x - (angular_z * 0.57/ 2)) * drive;
