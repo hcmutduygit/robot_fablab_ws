@@ -52,6 +52,7 @@ double limit(double value, double min_val, double max_val)
 }
 
 void control_los(float goal_x, float goal_y, float previous_x, float previous_y) {
+        ROS_INFO("[LOS] linear_x=%.4f, angular_z=%.4f, kappa=%.4f, v_limit=%.4f", linear_x, angular_z, kappa, v_limit);
     alpha_k = get_heading(previous_x, previous_y, goal_x, goal_y);
     s_k_1 = (goal_x - previous_x) * cos(alpha_k) + (goal_y - previous_y) * sin(alpha_k); 
 
@@ -82,6 +83,24 @@ void control_los(float goal_x, float goal_y, float previous_x, float previous_y)
     filtered_angular_z = low_pass_filter(angular_z, filtered_angular_z);
     // filtered_angular_z = low_pass_filter(filtered_angular_z, angular_z);
     angular_z = filtered_angular_z;
+
+    // === RÀNG BUỘC VẬN TỐC TUYẾN TÍNH THEO ĐỘ CONG QUỸ ĐẠO ===
+    // L là khoảng cách giữa 2 bánh xe, ở đây lấy L = 0.57 (giống hệ số trong công thức tính v_left/v_right)
+    const double L = 0.57;
+    double v_max = MAX_LINEAR_SPEED;
+    double v = linear_x;
+    double omega = angular_z;
+    double kappa = 0.0;
+    if (fabs(v) > 1e-6) {
+        kappa = omega / fabs(v);
+    } else {
+        kappa = 0.0;
+    }
+    double v_limit = v_max / (1.0 + (L/2.0)*fabs(kappa));
+    if (fabs(v) > v_limit) {
+        v = (v > 0) ? v_limit : -v_limit;
+    }
+    linear_x = v;
 }
 
 void tranfer_wp() {
