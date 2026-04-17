@@ -14,6 +14,12 @@
 // using namespace utils;
 #define PI 3.14159265358979323846
 
+// --- PID heading test ---
+extern double desired_angle;
+extern bool has_new_angle;
+extern bool test_pid_heading_mode;
+extern std::ofstream csv_file;
+
 double x = 0.0;
 double y = 0.0;
 double roll = 0.0;
@@ -60,4 +66,5 @@ ros::Subscriber sub_wp;
 ros::Publisher pub;
 ros::Subscriber sub_amcl;
 ros::Publisher zones_pub;
+#include <fstream>
 #endif

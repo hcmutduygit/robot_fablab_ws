@@ -14,6 +14,9 @@
 #include "guidance.h"
 #include "pid.h"
 
+#include <std_msgs/Float32.h>
+#include <fstream>
+
 enum State{
   FREE = 0,
   WARNING,
@@ -25,6 +28,17 @@ double warning_distance_ = 0.7;
 double danger_distance_ = 0.6;
 State prev_state_ = FREE;
 bool is_home = false;
+
+// --- PID heading test ---
+double desired_angle = 0.0;
+bool has_new_angle = false;
+bool test_pid_heading_mode = false; // true: test PID hướng, false: chạy LOS bình thường
+std::ofstream csv_file;
+
+void CallBackXoay(const std_msgs::Float32::ConstPtr& msg) {
+    desired_angle = msg->data;
+    has_new_angle = true;
+}
 
 std_msgs::Bool is_safety_stop;
 std_msgs::Bool is_safety_slow;
@@ -307,6 +321,38 @@ void CallBackWp(const utils::waypoints::ConstPtr& msg) {
 
 void ControlVel(const ros::TimerEvent& event){
     utils::cmd_vel cmd;
+
+    if (test_pid_heading_mode && has_new_angle) {
+        // --- PID heading test mode ---
+        double error = normalize_angle(desired_angle - theta);
+        double angular_cmd = pid_controller.pid(error, KD, ANGULAR_SPEED);
+        double angular_cmd_limited = limit(angular_cmd, -MAX_ANGULAR_SPEED, MAX_ANGULAR_SPEED);
+        double current_time = ros::Time::now().toSec();
+
+        // Xuất vận tốc góc, không chạy tuyến tính
+        linear_x = 0.0;
+        angular_z = angular_cmd_limited;
+
+        // Ghi log đáp ứng ra CSV
+        if (!csv_file.is_open()) {
+            csv_file.open("/tmp/pid_heading_response.csv", std::ios::app);
+            csv_file << "time,desired_angle,current_angle,error,angular_cmd\n";
+        }
+        csv_file << current_time << "," << desired_angle << "," << theta << "," << error << "," << angular_cmd_limited << "\n";
+
+        // Xuất ra động cơ
+        const double L = 0.57;
+        cmd.v_left = -(linear_x - (angular_z * L / 2)) * drive;
+        cmd.v_right = (linear_x + (angular_z * L / 2)) * drive;
+        pub.publish(cmd);
+
+        // Nếu muốn giữ liên tục đến khi đạt, thì không reset has_new_angle
+        // Nếu chỉ test đáp ứng 1 lần, thì reset:
+        has_new_angle = false;
+        return;
+    }
+
+    // --- Bình thường ---
     tranfer_wp();
 
     // if (is_safety_stop.data == true && is_safety_slow.data == true){
@@ -376,6 +422,9 @@ int main(int argc, char **argv){
     arg_nh.getParam("min_speed_linear", min_speed);
     arg_nh.getParam("direct", direct);
 
+    // --- Thêm chế độ test PID hướng ---
+    arg_nh.param("test_pid_heading_mode", test_pid_heading_mode, false);
+
 
 
     ROS_INFO("Linear_speed_max = %.2f, Angular_speed_max= %.2f, goal_radius= %.2f. KD = %.2f",MAX_LINEAR_SPEED,MAX_ANGULAR_SPEED,GOAL_RADIUS,KD);
@@ -384,6 +433,9 @@ int main(int argc, char **argv){
     pub = nh.advertise<utils::cmd_vel>("Cmd_vel", 10);
     sub_scan = nh.subscribe("scan", 10, CallBackScan);
     sub_amcl = nh.subscribe("amcl_pose", 10, CallBackPose); 
+
+    // Subscriber cho góc mong muốn
+    ros::Subscriber sub_xoay = nh.subscribe("robot/xoay", 10, CallBackXoay);
 
     // ========================================================================
     // CHON CHE DO DOC WAYPOINTS
@@ -457,6 +509,13 @@ int main(int argc, char **argv){
     loopControl = nh.createTimer(ros::Duration(cycle), ControlVel);
     
     ROS_INFO("=== Guidance node ready ===");
+
+    if (test_pid_heading_mode) {
+        ROS_WARN("[PID HEADING TEST] Đang ở chế độ test PID hướng bằng góc mong muốn từ topic robot/xoay!");
+        ROS_WARN("Hãy publish std_msgs/Float32 lên topic robot/xoay để kiểm tra đáp ứng.");
+        ROS_WARN("Log đáp ứng sẽ được ghi ra /tmp/pid_heading_response.csv");
+    }
+
     ros::spin();
     return 0;
 
