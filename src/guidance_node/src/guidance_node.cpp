@@ -59,8 +59,16 @@ void control_los(float goal_x, float goal_y, float previous_x, float previous_y)
     long_track = (x - previous_x) * cos(alpha_k) + (y - previous_y) * sin(alpha_k);
     delta = (delta_max - delta_min) * exp(-0.7 * pow(cross_track, 2)) + delta_min;
 
-    target_heading = normalize_angle(alpha_k + atan(-cross_track/delta));
-    heading_error  = normalize_angle(target_heading - theta);
+        // === Low-pass filter cho target_heading ===
+        static double prev_target_heading = 0.0;
+        double target_heading_raw = normalize_angle(alpha_k + atan(-cross_track/delta));
+        // Áp dụng bộ lọc thông thấp (alpha = 0.2, có thể chỉnh lại)
+        double alpha = 0.8;
+        double target_heading = low_pass_filter(prev_target_heading, target_heading_raw, alpha);
+        target_heading = normalize_angle(target_heading);
+        prev_target_heading = target_heading;
+
+        heading_error  = normalize_angle(target_heading - theta);
 
     // ROS_INFO("CrossTrack = %.2f, LongTrack = %.2f, HeadingDesire = %.2f, HeadingErr = %.2f, Theta = %.2f",cross_track, long_track,target_heading,heading_error,theta);
 
@@ -99,7 +107,6 @@ void control_los(float goal_x, float goal_y, float previous_x, float previous_y)
     if (fabs(v) > v_limit) {
         v = (v > 0) ? v_limit : -v_limit;
         ROS_INFO("[LOS] linear_x=%.4f, angular_z=%.4f, kappa=%.4f, v_limit=%.4f", linear_x, angular_z, kappa, v_limit);
-
     }
     linear_x = v;
 }
