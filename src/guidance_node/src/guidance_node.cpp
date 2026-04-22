@@ -57,7 +57,7 @@ void control_los(float goal_x, float goal_y, float previous_x, float previous_y)
 
     cross_track = (-(x - previous_x) * sin(alpha_k) + (y - previous_y) * cos(alpha_k)) * direct;
     long_track = (x - previous_x) * cos(alpha_k) + (y - previous_y) * sin(alpha_k);
-    delta = (delta_max - delta_min) * exp(-0.7 * pow(cross_track, 2)) + delta_min;
+    delta = (delta_max - delta_min) * exp(-0.7 * fabs(cross_track)) + delta_min;
 
         // === Low-pass filter cho target_heading ===
         static double prev_target_heading = 0.0;
