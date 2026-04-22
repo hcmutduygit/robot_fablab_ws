@@ -572,7 +572,7 @@ int main(int argc, char **argv)
 
     sub = nh.subscribe("Cmd_vel", 10, CallBackVel);
     // amcl_sub = nh.subscribe("amcl_pose", 10, CallBackAMCL);
-    cnt_byte = nh.createTimer(ros::Duration(10), CntBytes);
+    cnt_byte = nh.createTimer(ros::Duration(0.5), CntBytes);
     
     // Master request 
     loopControl = nh.createTimer(

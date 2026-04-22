@@ -217,7 +217,6 @@ void CallBackWp(const utils::waypoints::ConstPtr& msg) {
         ROS_WARN("✓✓✓ Added STARTING position as wp[0]: (%.3f, %.3f) ✓✓✓", current_x, current_y);
         
         // Reset flag khi bat dau mission moi
-        cnt = 0;
         has_published_arrival = false;
         is_home = false;
     }
