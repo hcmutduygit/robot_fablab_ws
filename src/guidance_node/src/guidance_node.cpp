@@ -111,16 +111,30 @@ void control_los(float goal_x, float goal_y, float previous_x, float previous_y)
     linear_x = v;
 }
 
+// Hàm tính adaptive acceptance radius tại waypoint k
+double calc_adaptive_radius(size_t k, const std::vector<std::pair<double, double>>& wp, double L) {
+    // Nếu không đủ waypoint để tính, trả về bán kính tối thiểu
+    if (k == 0 || k + 1 >= wp.size()) return 1.5 * L;
+    // Tính góc của đoạn trước và sau
+    double alpha_k = atan2(wp[k+1].second - wp[k].second, wp[k+1].first - wp[k].first);
+    double alpha_km1 = atan2(wp[k].second - wp[k-1].second, wp[k].first - wp[k-1].first);
+    double delta_alpha = normalize_angle(alpha_k - alpha_km1);
+    return (3.0 * fabs(delta_alpha) + 1.5) * L;
+}
+
 void tranfer_wp() {
     ROS_INFO_THROTTLE(2, "=== tranfer_wp DEBUG === wp.size=%zu, cnt=%d, robot=(%.2f, %.2f)", wp.size(), cnt, x, y);
-    
+
+    // L là khoảng cách giữa 2 bánh xe, đã có trong control_los và các hàm khác
+    const double L = 0.57;
+
     if (wp.size() == 0) {
         ROS_WARN_THROTTLE(5, "No waypoints received yet!");
         linear_x = 0.0;
         angular_z = 0.0;
         return;
     }
-    
+
     if (wp.size() == 1) {
         ROS_WARN_THROTTLE(5, "Only 1 waypoint! Need at least 2 for navigation. Current wp[0]=(%.2f, %.2f)", 
                          wp[0].first, wp[0].second);
@@ -128,7 +142,7 @@ void tranfer_wp() {
         angular_z = 0.0;
         return;
     }
-    
+
     if (cnt + 1 >= (wp.size())) {
         // ROS_INFO_THROTTLE(2, "Reached final waypoint #%d - Stopping Robot", cnt);
         linear_x = 0.0;
@@ -142,10 +156,14 @@ void tranfer_wp() {
         control_los(wp[cnt+1].first, wp[cnt+1].second, wp[cnt].first, wp[cnt].second);
     }
 
-    if (dist_to_goal <= GOAL_RADIUS) {
+    // === Adaptive acceptance radius ===
+    double adaptive_radius = calc_adaptive_radius(cnt, wp, L);
+    // ROS_INFO_THROTTLE(2, "[Adaptive Radius] cnt=%d, R_k=%.3f", cnt, adaptive_radius);
+
+    if (dist_to_goal <= adaptive_radius) {
         // ROS_INFO("Reached waypoint #%d: (%.2f, %.2f) ✓✓✓", cnt+1, wp[cnt+1].first, wp[cnt+1].second);
         cnt +=1;
-        
+
         // Neu da den waypoint cuoi cung
         if (cnt + 1 >= wp.size()) {
             // Chi publish MQTT 1 lan duy nhat
@@ -154,26 +172,26 @@ void tranfer_wp() {
                 ROS_WARN("✓✓✓ REACHED FINAL DESTINATION ✓✓✓");
                 ROS_WARN("Publishing arrival status to MQTT...");
                 ROS_WARN("========================================");
-                
+
                 // Goi Python script de publish MQTT arrival
                 std::string script_path = "python /home/nvidia/robot_fablab_ws/src/MQTT/publish_arrival.py";
                 int result = system(script_path.c_str());
-                
+
                 if (result == 0) {
                     ROS_WARN("Successfully published arrival status to MQTT");
                 } else {
                     ROS_ERROR("Failed to publish arrival status (exit code: %d)", result);
                 }
-                
+
                 // Danh dau da publish de khong spam
                 has_published_arrival = true;
-                
+
                 ROS_WARN("========================================");
                 ROS_WARN("🔄 Robot stopped - Ready for new waypoints!");
                 ROS_WARN("Current position: (%.3f, %.3f)", x, y);
                 ROS_WARN("========================================");
             }
-            
+
             // Dung robot
             linear_x = 0.0;
             angular_z = 0.0;
