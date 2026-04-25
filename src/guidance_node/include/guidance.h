@@ -24,7 +24,7 @@ double s_k_1 = 0.0;
 double cross_track = 0.0;
 double long_track = 0.0;
 double delta = 0.0;
-double delta_max = 0.8;
+double delta_max = 1;
 double delta_min = 0.5;
 double target_heading;
 double heading_error = 0.0;
