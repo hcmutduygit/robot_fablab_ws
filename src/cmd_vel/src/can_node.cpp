@@ -496,7 +496,7 @@ void saveDataToCSV(int imu_packages, int odom_packages, int send_packages)
 void CntBytes(const ros::TimerEvent &event)
 {
     // ROS_WARN("Receive IMU Packages = %d Pkg/s", cnt_receive_imu);
-    // ROS_WARN("Receive Odom Packages = %d Pkg/s", cnt_receive_odom);
+    ROS_WARN("Receive Odom Packages = %d Pkg/s", cnt_receive_odom);
     // ROS_WARN("Send Packages = %d Pkg/s", cnt_send);
     
     // Lưu dữ liệu vào CSV trước khi reset
@@ -572,7 +572,7 @@ int main(int argc, char **argv)
 
     sub = nh.subscribe("Cmd_vel", 10, CallBackVel);
     // amcl_sub = nh.subscribe("amcl_pose", 10, CallBackAMCL);
-    cnt_byte = nh.createTimer(ros::Duration(0.5), CntBytes);
+    cnt_byte = nh.createTimer(ros::Duration(5), CntBytes);
     
     // Master request 
     loopControl = nh.createTimer(
