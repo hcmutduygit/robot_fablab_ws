@@ -117,7 +117,7 @@ double calc_adaptive_radius(size_t k, const std::vector<std::pair<double, double
     if (k == 0 || k + 1 >= wp.size()) return 1.5 * L;
     // Tính góc của đoạn trước và sau
     double alpha_k = atan2(wp[k+1].second - wp[k].second, wp[k+1].first - wp[k].first);
-    double alpha_km1 = atan2(wp[k].secondgit  - wp[k-1].second, wp[k].first - wp[k-1].first);
+    double alpha_km1 = atan2(wp[k].second  - wp[k-1].second, wp[k].first - wp[k-1].first);
     double delta_alpha = normalize_angle(alpha_k - alpha_km1);
     return (3.0 * fabs(delta_alpha) + 1.5) * L;
 }
