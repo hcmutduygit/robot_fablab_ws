@@ -281,6 +281,12 @@ void ControlVel(const ros::TimerEvent& event){
     // Cập nhật lại linear_x để đảm bảo các phần khác dùng đúng giá trị đã ràng buộc
     linear_x = v;
 
+    // Không publish tốc độ nếu đang chờ delay LOS
+    if (waiting_for_los) {
+        // Không publish bất kỳ vận tốc nào
+        return;
+    }
+
     if (is_safety_stop.data == true){
         cmd.v_left = 0;
         cmd.v_right = 0;
@@ -290,10 +296,6 @@ void ControlVel(const ros::TimerEvent& event){
         cmd.v_right = (linear_x + (angular_z * L / 2)) * drive;
     }
 
-    // cmd.v_left = -(linear_x - (angular_z * 0.57/ 2)) * drive;
-    // cmd.v_right = (linear_x + (angular_z * 0.57/ 2)) * drive;
-   
-    // ROS_INFO("v_left = %.2f, v_right = %.2f, ANGULAR = %.2f", cmd.v_left, cmd.v_right, angular_z);
     if (!is_home){
         pub.publish(cmd);
     }
