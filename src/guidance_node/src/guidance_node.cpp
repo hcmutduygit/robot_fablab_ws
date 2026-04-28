@@ -151,7 +151,7 @@ void tranfer_wp() {
         }
     } else {
         // Đã hết delay, thực thi LOS bình thường
-        if (cnt + 1 >= (wp.size())) {
+        if (cnt + 1 >= (wp.size()) && !waiting_for_los) {
             // ROS_INFO_THROTTLE(2, "Reached final waypoint #%d - Stopping Robot", cnt);
             linear_x = 0.0;
             angular_z = 0.0;
