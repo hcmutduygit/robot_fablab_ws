@@ -136,66 +136,60 @@ void tranfer_wp() {
         return;
     }
     
-    if (cnt + 1 >= (wp.size())) {
-        // ROS_INFO_THROTTLE(2, "Reached final waypoint #%d - Stopping Robot", cnt);
-        linear_x = 0.0;
-        angular_z = 0.0;
-        is_home = true;
-    }
-
-    else {
-        // Chờ đủ 5 giây sau khi nhận waypoint mới mới thực thi LOS
-        if (waiting_for_los) {
-            ros::Duration elapsed = ros::Time::now() - last_wp_time;
-            if (elapsed.toSec() >= LOS_DELAY) {
-                waiting_for_los = false;
-                ROS_WARN("[LOS] Đã chờ đủ 5s, bắt đầu thực thi LOS!");
-                control_los(wp[cnt+1].first, wp[cnt+1].second, wp[cnt].first, wp[cnt].second);
-            } else {
-                linear_x = 0.0;
-                angular_z = 0.0;
-                ROS_INFO_THROTTLE(1, "[LOS] Đang chờ %.1fs trước khi bắt đầu di chuyển...", LOS_DELAY - elapsed.toSec());
-            }
-        } else {
+    if (waiting_for_los) {
+        ros::Duration elapsed = ros::Time::now() - last_wp_time;
+        if (elapsed.toSec() >= LOS_DELAY) {
+            waiting_for_los = false;
+            ROS_WARN("[LOS] Đã chờ đủ 5s, bắt đầu thực thi LOS!");
+            // Sau khi hết delay, bắt đầu thực thi LOS
             control_los(wp[cnt+1].first, wp[cnt+1].second, wp[cnt].first, wp[cnt].second);
-        }
-    }
-
-    if (dist_to_goal <= GOAL_RADIUS) {
-        // ROS_INFO("Reached waypoint #%d: (%.2f, %.2f) ✓✓✓", cnt+1, wp[cnt+1].first, wp[cnt+1].second);
-        cnt +=1;
-        
-        // Neu da den waypoint cuoi cung
-        if (cnt + 1 >= wp.size()) {
-            // Chi publish MQTT 1 lan duy nhat
-            if (!has_published_arrival) {
-                ROS_WARN("========================================");
-                ROS_WARN("✓✓✓ REACHED FINAL DESTINATION ✓✓✓");
-                ROS_WARN("Publishing arrival status to MQTT...");
-                ROS_WARN("========================================");
-                
-                // Goi Python script de publish MQTT arrival
-                std::string script_path = "python /home/nvidia/robot_fablab_ws/src/MQTT/publish_arrival.py";
-                int result = system(script_path.c_str());
-                
-                if (result == 0) {
-                    ROS_WARN("Successfully published arrival status to MQTT");
-                } else {
-                    ROS_ERROR("Failed to publish arrival status (exit code: %d)", result);
-                }
-                
-                // Danh dau da publish de khong spam
-                has_published_arrival = true;
-                
-                ROS_WARN("========================================");
-                ROS_WARN("🔄 Robot stopped - Ready for new waypoints!");
-                ROS_WARN("Current position: (%.3f, %.3f)", x, y);
-                ROS_WARN("========================================");
-            }
-            
-            // Dung robot
+        } else {
             linear_x = 0.0;
             angular_z = 0.0;
+            ROS_INFO_THROTTLE(1, "[LOS] Đang chờ %.1fs trước khi bắt đầu di chuyển...", LOS_DELAY - elapsed.toSec());
+            return;
+        }
+    } else {
+        // Đã hết delay, thực thi LOS bình thường
+        if (cnt + 1 >= (wp.size())) {
+            // ROS_INFO_THROTTLE(2, "Reached final waypoint #%d - Stopping Robot", cnt);
+            linear_x = 0.0;
+            angular_z = 0.0;
+            is_home = true;
+        } else {
+            control_los(wp[cnt+1].first, wp[cnt+1].second, wp[cnt].first, wp[cnt].second);
+            // Chỉ kiểm tra goal khi đã hết delay
+            if (dist_to_goal <= GOAL_RADIUS) {
+                // ROS_INFO("Reached waypoint #%d: (%.2f, %.2f) ✓✓✓", cnt+1, wp[cnt+1].first, wp[cnt+1].second);
+                cnt +=1;
+                // Neu da den waypoint cuoi cung
+                if (cnt + 1 >= wp.size()) {
+                    // Chi publish MQTT 1 lan duy nhat
+                    if (!has_published_arrival) {
+                        ROS_WARN("========================================");
+                        ROS_WARN("✓✓✓ REACHED FINAL DESTINATION ✓✓✓");
+                        ROS_WARN("Publishing arrival status to MQTT...");
+                        ROS_WARN("========================================");
+                        // Goi Python script de publish MQTT arrival
+                        std::string script_path = "python /home/nvidia/robot_fablab_ws/src/MQTT/publish_arrival.py";
+                        int result = system(script_path.c_str());
+                        if (result == 0) {
+                            ROS_WARN("Successfully published arrival status to MQTT");
+                        } else {
+                            ROS_ERROR("Failed to publish arrival status (exit code: %d)", result);
+                        }
+                        // Danh dau da publish de khong spam
+                        has_published_arrival = true;
+                        ROS_WARN("========================================");
+                        ROS_WARN("🔄 Robot stopped - Ready for new waypoints!");
+                        ROS_WARN("Current position: (%.3f, %.3f)", x, y);
+                        ROS_WARN("========================================");
+                    }
+                    // Dung robot
+                    linear_x = 0.0;
+                    angular_z = 0.0;
+                }
+            }
         }
     }
 }
