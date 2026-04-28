@@ -282,9 +282,8 @@ void ControlVel(const ros::TimerEvent& event){
     linear_x = v;
 
     // Không publish tốc độ nếu đang chờ delay LOS
-    if (waiting_for_los) {
-        // Không publish bất kỳ vận tốc nào
-        return;
+    if (!waiting_for_los) {
+        pub.publish(cmd);
     }
 
     if (is_safety_stop.data == true){
