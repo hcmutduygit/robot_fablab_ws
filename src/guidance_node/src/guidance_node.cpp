@@ -281,9 +281,11 @@ void ControlVel(const ros::TimerEvent& event){
     // Cập nhật lại linear_x để đảm bảo các phần khác dùng đúng giá trị đã ràng buộc
     linear_x = v;
 
-    // Không publish tốc độ nếu đang chờ delay LOS
-    if (!waiting_for_los) {
-        pub.publish(cmd);
+    // Không publish tốc độ nếu đang chờ delay LOS (5s đầu sau khi nhận waypoint)
+    if (waiting_for_los) {
+        // Vẫn tính toán LOS, cập nhật linear_x, angular_z nhưng không xuất ra tốc độ
+        // Đảm bảo không publish bất kỳ vận tốc nào ra ngoài
+        return;
     }
 
     if (is_safety_stop.data == true){
