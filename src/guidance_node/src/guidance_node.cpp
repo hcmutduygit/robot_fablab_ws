@@ -14,6 +14,8 @@
 #include "guidance.h"
 #include "pid.h"
 
+#include <ros/ros.h>
+
 enum State{
   FREE = 0,
   WARNING,
@@ -25,6 +27,11 @@ double warning_distance_ = 0.7;
 double danger_distance_ = 0.6;
 State prev_state_ = FREE;
 bool is_home = false;
+
+// === Thêm biến cho delay LOS ===
+ros::Time last_wp_time;
+bool waiting_for_los = false;
+const double LOS_DELAY = 5.0; // 5 giây
 
 std_msgs::Bool is_safety_stop;
 std_msgs::Bool is_safety_slow;
@@ -135,11 +142,23 @@ void tranfer_wp() {
         angular_z = 0.0;
         is_home = true;
     }
+
     else {
-        // ROS_INFO_THROTTLE(2, "Moving to waypoint #%d: (%.2f, %.2f) from wp[%d]=(%.2f, %.2f)", 
-        //                  cnt+1, wp[cnt+1].first, wp[cnt+1].second, 
-        //                  cnt, wp[cnt].first, wp[cnt].second);
-        control_los(wp[cnt+1].first, wp[cnt+1].second, wp[cnt].first, wp[cnt].second);
+        // Chờ đủ 5 giây sau khi nhận waypoint mới mới thực thi LOS
+        if (waiting_for_los) {
+            ros::Duration elapsed = ros::Time::now() - last_wp_time;
+            if (elapsed.toSec() >= LOS_DELAY) {
+                waiting_for_los = false;
+                ROS_WARN("[LOS] Đã chờ đủ 5s, bắt đầu thực thi LOS!");
+                control_los(wp[cnt+1].first, wp[cnt+1].second, wp[cnt].first, wp[cnt].second);
+            } else {
+                linear_x = 0.0;
+                angular_z = 0.0;
+                ROS_INFO_THROTTLE(1, "[LOS] Đang chờ %.1fs trước khi bắt đầu di chuyển...", LOS_DELAY - elapsed.toSec());
+            }
+        } else {
+            control_los(wp[cnt+1].first, wp[cnt+1].second, wp[cnt].first, wp[cnt].second);
+        }
     }
 
     if (dist_to_goal <= GOAL_RADIUS) {
@@ -233,6 +252,10 @@ void CallBackWp(const utils::waypoints::ConstPtr& msg) {
             ROS_INFO("      wp[%zu] = (%.3f, %.3f) <- GOAL", i, wp[i].first, wp[i].second);
         }
     }
+
+    // === Đánh dấu thời điểm nhận waypoint mới và bật cờ chờ LOS ===
+    last_wp_time = ros::Time::now();
+    waiting_for_los = true;
 }
 
 void ControlVel(const ros::TimerEvent& event){
