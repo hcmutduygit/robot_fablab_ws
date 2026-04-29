@@ -21,7 +21,7 @@
     <!-- Load map (yaml file, không dùng .pbstream) -->
     <!-- <arg name="map_file" default="$(find robot_fablab)/maps/map_inside_fablab.yaml" /> -->
     <!-- <arg name="map_file" default="$(find robot_fablab)/maps/new_map2.yaml" /> -->
-    <arg name="map_file" default="$(find robot_fablab)/maps/new_map2.yaml" />
+    <arg name="map_file" default="$(find robot_fablab)/maps/B2_map.yaml" />
     <node name="map_server" pkg="map_server" type="map_server" args="$(arg map_file)" />
 
     <group if="$(arg can_enabled)">
@@ -106,12 +106,12 @@
 
     <group if="$(arg guidance_enabled)">
         <node pkg = "guidance_node" type = "guidance_node" name = "Guidance" output = "screen">
-            <param name="linear_speed" value="0.9"/>
+            <param name="linear_speed" value="0.8"/>
             <param name="angular_speed" value="1"/>
-            <param name="goal_radius" value="1.3"/>
+            <param name="goal_radius" value="0.8"/>
             <param name="cycle" value="0.1"/>
             <param name="angular_speed_max" value="0.8"/>
-            <param name="linear_speed_max" value="0.9"/>
+            <param name="linear_speed_max" value="0.8"/>
             <param name="KD" value="0.7"/>
             <param name="drive" value="1"/>
             <param name="direct" value="1"/>

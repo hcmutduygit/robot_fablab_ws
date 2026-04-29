@@ -160,7 +160,7 @@ void tranfer_wp() {
     double adaptive_radius = calc_adaptive_radius(cnt, wp, L);
     // ROS_INFO_THROTTLE(2, "[Adaptive Radius] cnt=%d, R_k=%.3f", cnt, adaptive_radius);
 
-    if (dist_to_goal <= adaptive_radius) {
+    if (dist_to_goal <= GOAL_RADIUS) {
         // ROS_INFO("Reached waypoint #%d: (%.2f, %.2f) ✓✓✓", cnt+1, wp[cnt+1].first, wp[cnt+1].second);
         cnt +=1;
 
