@@ -31,7 +31,7 @@ bool is_home = false;
 // === Thêm biến cho delay LOS ===
 ros::Time last_wp_time;
 bool waiting_for_los = false;
-const double LOS_DELAY = 5.0; // 5 giây
+const double LOS_DELAY = 10.0; // 5 giây
 
 std_msgs::Bool is_safety_stop;
 std_msgs::Bool is_safety_slow;
@@ -138,11 +138,12 @@ void tranfer_wp() {
     
     if (waiting_for_los) {
         ros::Duration elapsed = ros::Time::now() - last_wp_time;
-        if (elapsed.toSec() >= LOS_DELAY) {
+
+        if (elapsed.toSec() >= 10.0) {
             waiting_for_los = false;
             ROS_WARN("[LOS] Đã chờ đủ 5s, bắt đầu thực thi LOS!");
             // Sau khi hết delay, bắt đầu thực thi LOS
-            control_los(wp[cnt+1].first, wp[cnt+1].second, wp[cnt].first, wp[cnt].second);
+            // control_los(wp[cnt+1].first, wp[cnt+1].second, wp[cnt].first, wp[cnt].second);
         } else {
             linear_x = 0.0;
             angular_z = 0.0;
@@ -276,10 +277,11 @@ void ControlVel(const ros::TimerEvent& event){
     linear_x = v;
 
     // Không publish tốc độ nếu đang chờ delay LOS (5s đầu sau khi nhận waypoint)
-    if (waiting_for_los) {
+    if (!waiting_for_los) {
+         pub.publish(cmd);
         // Vẫn tính toán LOS, cập nhật linear_x, angular_z nhưng không xuất ra tốc độ
         // Đảm bảo không publish bất kỳ vận tốc nào ra ngoài
-        return;
+     
     }
 
     if (is_safety_stop.data == true){
