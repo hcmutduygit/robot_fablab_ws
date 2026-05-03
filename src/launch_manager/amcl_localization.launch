@@ -108,7 +108,9 @@
         <node pkg = "guidance_node" type = "guidance_node" name = "Guidance" output = "screen">
             <param name="linear_speed" value="0.8"/>
             <param name="angular_speed" value="1"/>
-            <param name="goal_radius" value="0.5"/>
+            <param name="goal_radius" value="0.8"/>
+            <!-- Bán kính chỉ áp cho waypoint đích cuối; waypoint giữa dùng goal_radius -->
+            <param name="goal_radius_goal" value="0.3"/>
             <param name="cycle" value="0.1"/>
             <param name="angular_speed_max" value="0.5"/>
             <param name="linear_speed_max" value="0.8"/>
@@ -126,7 +128,7 @@
             <!-- Toilet nu khoa Hoa <param name="waypoints_x" value="0.0839265684349, 11.063455044, 12.7462350141, 16.0562803583, 22.2976415284,  24.7464449317, 24.729907139,  23.0243540792, 22.4718292685, 18.2379016332, 12.7797560431, 11.4664644751, 0.083926568" />
             <param name="waypoints_y" value="-0.101854491926, -0.023951564646, -2.21879094585,  -2.5126816757, -1.86494556111, -0.19952437696,  3.70779846032,  4.18944491958, -1.48177186042, -2.14574148894, -2.4399416164, 0.170298291153, -0.10185449" /> -->
         </node>
-    </group>git pull
+    </group>
 </launch>
 
 <!-- -0.17011034488677979
