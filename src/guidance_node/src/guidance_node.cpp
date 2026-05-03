@@ -117,7 +117,7 @@ double calc_adaptive_radius(size_t k, const std::vector<std::pair<double, double
     if (k == 0 || k + 1 >= wp.size()) return 1.5 * L;
     // Tính góc của đoạn trước và sau
     double alpha_k = atan2(wp[k+1].second - wp[k].second, wp[k+1].first - wp[k].first);
-    double alpha_km1 = atan2(wp[k].second - wp[k-1].second, wp[k].first - wp[k-1].first);
+    double alpha_km1 = atan2(wp[k].second  - wp[k-1].second, wp[k].first - wp[k-1].first);
     double delta_alpha = normalize_angle(alpha_k - alpha_km1);
     return (3.0 * fabs(delta_alpha) + 1.5) * L;
 }
@@ -160,7 +160,7 @@ void tranfer_wp() {
     double adaptive_radius = calc_adaptive_radius(cnt, wp, L);
     // ROS_INFO_THROTTLE(2, "[Adaptive Radius] cnt=%d, R_k=%.3f", cnt, adaptive_radius);
 
-    if (dist_to_goal <= adaptive_radius) {
+    if (dist_to_goal <= GOAL_RADIUS) {
         // ROS_INFO("Reached waypoint #%d: (%.2f, %.2f) ✓✓✓", cnt+1, wp[cnt+1].first, wp[cnt+1].second);
         cnt +=1;
 

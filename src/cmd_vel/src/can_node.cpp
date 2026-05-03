@@ -485,9 +485,9 @@ void saveDataToCSV(int imu_packages, int odom_packages, int send_packages)
                  << std::setprecision(4) << theta_yaw << "\n";
         csv_file.close();
         
-        ROS_INFO("Data saved: IMU=%d, Odom=%d, Send=%d, Yaw=%.2f, Left=%.4f m/s, Right=%.4f m/s, x=%.4f, y=%.4f, quat_yaw=%lf, theta_yaw=%.4f", 
-                 imu_packages, odom_packages, send_packages, yaw_angle, 
-                 left_mps, right_mps, x, y, quaternion_yaw, theta_yaw);
+        // ROS_INFO("Data saved: IMU=%d, Odom=%d, Send=%d, Yaw=%.2f, Left=%.4f m/s, Right=%.4f m/s, x=%.4f, y=%.4f, quat_yaw=%lf, theta_yaw=%.4f", 
+        //          imu_packages, odom_packages, send_packages, yaw_angle, 
+        //          left_mps, right_mps, x, y, quaternion_yaw, theta_yaw);
     } else {
         ROS_ERROR("Cannot open CSV file: %s", csv_file_path.c_str());
     }
@@ -495,9 +495,9 @@ void saveDataToCSV(int imu_packages, int odom_packages, int send_packages)
 
 void CntBytes(const ros::TimerEvent &event)
 {
-    ROS_WARN("Receive IMU Packages = %d Pkg/s", cnt_receive_imu);
-    ROS_WARN("Receive Odom Packages = %d Pkg/s", cnt_receive_odom);
-    ROS_WARN("Send Packages = %d Pkg/s", cnt_send);
+    // ROS_WARN("Receive IMU Packages = %d Pkg/s", cnt_receive_imu);
+    // ROS_WARN("Receive Odom Packages = %d Pkg/s", cnt_receive_odom);
+    // ROS_WARN("Send Packages = %d Pkg/s", cnt_send);
     
     // Lưu dữ liệu vào CSV trước khi reset
     saveDataToCSV(cnt_receive_imu, cnt_receive_odom, cnt_send);
