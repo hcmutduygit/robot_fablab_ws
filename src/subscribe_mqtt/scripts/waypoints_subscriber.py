@@ -28,6 +28,8 @@ def on_message(mosq, obj, msg):
                     wp = waypoints()
                     wp.direction_x = point["x"]
                     wp.direction_y = point["y"]
+                    loc = point.get("location") or point.get("name") or ""
+                    wp.location = str(loc) if loc else ""
                     pub.publish(wp)
                     rospy.loginfo("=== Published waypoint: x=%.2f, y=%.2f ===", wp.direction_x, wp.direction_y)
         
@@ -36,6 +38,8 @@ def on_message(mosq, obj, msg):
             wp = waypoints()
             wp.direction_x = data["x"]
             wp.direction_y = data["y"]
+            loc = data.get("location") or data.get("name") or ""
+            wp.location = str(loc) if loc else ""
             pub.publish(wp)
             rospy.loginfo("=== Published waypoint: x=%.2f, y=%.2f ===", wp.direction_x, wp.direction_y)
 

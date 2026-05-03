@@ -36,6 +36,7 @@ double perc_dist = 0.0;
 double LINEAR_SPEED;
 double ANGULAR_SPEED;
 double GOAL_RADIUS;
+double GOAL_RADIUS_HOME;
 double MAX_LINEAR_SPEED, min_speed ;
 double MAX_ANGULAR_SPEED;
 float cycle;
@@ -46,6 +47,7 @@ int cnt = 0;
 int drive, direct;
 float theta;
 std::vector<std::pair<double, double>> wp;
+std::vector<bool> wp_is_home;
 bool has_published_arrival = false;  // Flag de tranh spam MQTT arrival
 
 
