@@ -109,6 +109,8 @@
             <param name="linear_speed" value="0.8"/>
             <param name="angular_speed" value="1"/>
             <param name="goal_radius" value="0.8"/>
+            <!-- Bán kính chỉ áp cho waypoint đích cuối; waypoint giữa dùng goal_radius -->
+            <param name="goal_radius_goal" value="0.4"/>
             <param name="cycle" value="0.1"/>
             <param name="angular_speed_max" value="0.8"/>
             <param name="linear_speed_max" value="0.8"/>

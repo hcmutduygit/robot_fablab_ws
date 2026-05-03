@@ -160,7 +160,13 @@ void tranfer_wp() {
     double adaptive_radius = calc_adaptive_radius(cnt, wp, L);
     // ROS_INFO_THROTTLE(2, "[Adaptive Radius] cnt=%d, R_k=%.3f", cnt, adaptive_radius);
 
-    if (dist_to_goal <= GOAL_RADIUS) {
+    // waypoint thường: GOAL_RADIUS; chỉ đoạn vào đích cuối: GOAL_RADIUS_GOAL
+    const bool approaching_final_goal =
+        wp.size() >= 2 && (static_cast<size_t>(cnt + 1) == wp.size() - 1);
+    const double goal_radius_eff =
+        approaching_final_goal ? GOAL_RADIUS_GOAL : GOAL_RADIUS;
+
+    if (dist_to_goal <= goal_radius_eff) {
         // ROS_INFO("Reached waypoint #%d: (%.2f, %.2f) ✓✓✓", cnt+1, wp[cnt+1].first, wp[cnt+1].second);
         cnt +=1;
 
@@ -302,6 +308,8 @@ int main(int argc, char **argv){
     arg_nh.getParam("linear_speed", LINEAR_SPEED);
     arg_nh.getParam("angular_speed", ANGULAR_SPEED);
     arg_nh.getParam("goal_radius", GOAL_RADIUS);
+    if (!arg_nh.getParam("goal_radius_goal", GOAL_RADIUS_GOAL))
+        GOAL_RADIUS_GOAL = GOAL_RADIUS;
     arg_nh.getParam("cycle", cycle);
     arg_nh.getParam("linear_speed_max", MAX_LINEAR_SPEED);
     arg_nh.getParam("angular_speed_max", MAX_ANGULAR_SPEED);
@@ -312,7 +320,8 @@ int main(int argc, char **argv){
 
 
 
-    ROS_INFO("Linear_speed_max = %.2f, Angular_speed_max= %.2f, goal_radius= %.2f. KD = %.2f",MAX_LINEAR_SPEED,MAX_ANGULAR_SPEED,GOAL_RADIUS,KD);
+    ROS_INFO("Linear_speed_max = %.2f, Angular_speed_max= %.2f, goal_radius= %.2f, goal_radius_goal= %.2f. KD = %.2f",
+             MAX_LINEAR_SPEED, MAX_ANGULAR_SPEED, GOAL_RADIUS, GOAL_RADIUS_GOAL, KD);
     ros::NodeHandle nh;
 
     pub = nh.advertise<utils::cmd_vel>("Cmd_vel", 10);

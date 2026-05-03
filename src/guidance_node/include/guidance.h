@@ -36,7 +36,7 @@ double perc_dist = 0.0;
 double LINEAR_SPEED;
 double ANGULAR_SPEED;
 double GOAL_RADIUS;
-double GOAL_RADIUS_HOME;
+double GOAL_RADIUS_GOAL;
 double MAX_LINEAR_SPEED, min_speed ;
 double MAX_ANGULAR_SPEED;
 float cycle;
