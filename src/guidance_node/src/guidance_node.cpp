@@ -125,6 +125,7 @@ void tranfer_wp() {
         return;
     }
 
+<<<<<<< HEAD
     if (wait_before_los) {
         if (ros::Time::now() < los_wait_until) {
             linear_x = 0.0;
@@ -135,6 +136,10 @@ void tranfer_wp() {
     }
 
     if (cnt + 1 >= wp.size()) {
+=======
+    if (cnt + 1 >= (wp.size())) {
+        // ROS_INFO_THROTTLE(2, "Reached final waypoint #%d - Stopping Robot", cnt);
+>>>>>>> 2abc993c554c7536b44e3d903e7d9e152375bdfd
         linear_x = 0.0;
         angular_z = 0.0;
         is_home = true;
@@ -184,16 +189,43 @@ void CallBackWp(const utils::waypoints::ConstPtr& msg) {
         cnt = 0;
         has_published_arrival = false;
     }
+<<<<<<< HEAD
 
     if (wp.empty()) {
         wp.push_back({x, y});
+=======
+    
+    // Neu day la waypoint dau tien cua mission moi, them vi tri hien tai lam diem xuat phat
+    if (wp.size() == 0) {
+        double current_x = x;
+        double current_y = y;
+        wp.push_back({current_x, current_y});
+        ROS_WARN("✓✓✓ Added STARTING position as wp[0]: (%.3f, %.3f) ✓✓✓", current_x, current_y);
+        
+        // Reset flag khi bat dau mission moi
+        has_published_arrival = false;
+        is_home = false;
+>>>>>>> 2abc993c554c7536b44e3d903e7d9e152375bdfd
     }
 
     wp.push_back({msg->direction_x, msg->direction_y});
+<<<<<<< HEAD
 
     if (wp.size() == 2) {
         wait_before_los = true;
         los_wait_until = ros::Time::now() + ros::Duration(LOS_WAIT_SECONDS);
+=======
+    ROS_INFO("✓ Received waypoint #%zu: (%.3f, %.3f)", wp.size()-1, msg->direction_x, msg->direction_y);
+    
+    // In ra tat ca cac waypoint hien tai
+    ROS_INFO("    Total waypoints: %zu", wp.size());
+    for (size_t i = 0; i < wp.size(); i++) {
+        if (i == 0) {
+            ROS_INFO("      wp[%zu] = (%.3f, %.3f) <- STARTING POSITION", i, wp[i].first, wp[i].second);
+        } else {
+            ROS_INFO("      wp[%zu] = (%.3f, %.3f) <- GOAL", i, wp[i].first, wp[i].second);
+        }
+>>>>>>> 2abc993c554c7536b44e3d903e7d9e152375bdfd
     }
 }
 
@@ -212,11 +244,21 @@ void ControlVel(const ros::TimerEvent&){
         cmd.v_right = (linear_x + (angular_z * L / 2)) * drive;
     }
 
+<<<<<<< HEAD
     if (is_home || (wait_before_los && ros::Time::now() < los_wait_until)) {
         return;
     }
 
     pub.publish(cmd);
+=======
+    // cmd.v_left = -(linear_x - (angular_z * 0.57/ 2)) * drive;
+    // cmd.v_right = (linear_x + (angular_z * 0.57/ 2)) * drive;
+   
+    // ROS_INFO("v_left = %.2f, v_right = %.2f, ANGULAR = %.2f", cmd.v_left, cmd.v_right, angular_z);
+    if (!is_home){
+        pub.publish(cmd);
+    }
+>>>>>>> 2abc993c554c7536b44e3d903e7d9e152375bdfd
 }
 
 int main(int argc, char **argv){
