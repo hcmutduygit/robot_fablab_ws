@@ -20,8 +20,8 @@
 
     <!-- Load map (yaml file, không dùng .pbstream) -->
     <!-- <arg name="map_file" default="$(find robot_fablab)/maps/map_inside_fablab.yaml" /> -->
-    <!-- <arg name="map_file" default="$(find robot_fablab)/maps/new_map2.yaml" /> -->
-    <arg name="map_file" default="$(find robot_fablab)/maps/B2_map.yaml" />
+    <arg name="map_file" default="$(find robot_fablab)/maps/new_map2.yaml" />
+    <!-- <arg name="map_file" default="$(find robot_fablab)/maps/B2_map.yaml" /> -->
     <node name="map_server" pkg="map_server" type="map_server" args="$(arg map_file)" />
 
     <group if="$(arg can_enabled)">
@@ -106,7 +106,7 @@
 
     <group if="$(arg guidance_enabled)">
         <node pkg = "guidance_node" type = "guidance_node" name = "Guidance" output = "screen">
-            <param name="linear_speed" value="0.8"/>
+            <param name="linear_speed" value="1.0"/>
             <param name="angular_speed" value="1"/>
             <param name="goal_radius" value="0.8"/>
             <!-- Bán kính chỉ áp cho waypoint đích cuối; waypoint giữa dùng goal_radius -->

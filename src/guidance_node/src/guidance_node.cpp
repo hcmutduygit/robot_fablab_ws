@@ -21,10 +21,19 @@ enum State{
 };
 
 PID pid_controller;
+
 double warning_distance_ = 0.7;
 double danger_distance_ = 0.6;
 State prev_state_ = FREE;
 bool is_home = false;
+
+// ================= FIX VARIABLES =================
+bool wait_before_los = false;
+ros::Time los_wait_until;
+double LOS_WAIT_SECONDS = 2.0;
+// ===============================================
+
+// ⚠️ KHÔNG khai báo lại wp, cnt, has_published_arrival ở đây
 
 std_msgs::Bool is_safety_stop;
 std_msgs::Bool is_safety_slow;
@@ -34,110 +43,83 @@ double low_pass_filter(double pre_value, double new_value, double alpha = 0.2){
 }
 
 float get_heading (double x1, double y1, double x2, double y2){
-    return atan2( y2 - y1, x2 - x1);
+    return atan2(y2 - y1, x2 - x1);
 }
 
 double normalize_angle(double angle) {
     angle = fmod(angle + PI, 2.0 * PI);
-    if (angle < 0)
-        angle += 2.0 * PI;
+    if (angle < 0) angle += 2.0 * PI;
     return angle - PI;
 }
 
-double limit(double value, double min_val, double max_val)
-{
-    if (value < min_val) return min_val;
-    else if (value > max_val) return max_val;
-    else return value;
+double limit(double value, double min_val, double max_val){
+    return std::max(min_val, std::min(value, max_val));
 }
 
 void control_los(float goal_x, float goal_y, float previous_x, float previous_y) {
-    alpha_k = get_heading(previous_x, previous_y, goal_x, goal_y);
-    s_k_1 = (goal_x - previous_x) * cos(alpha_k) + (goal_y - previous_y) * sin(alpha_k); 
 
-    cross_track = (-(x - previous_x) * sin(alpha_k) + (y - previous_y) * cos(alpha_k)) * direct;
-    long_track = (x - previous_x) * cos(alpha_k) + (y - previous_y) * sin(alpha_k);
+    alpha_k = get_heading(previous_x, previous_y, goal_x, goal_y);
+
+    s_k_1 = (goal_x - previous_x) * cos(alpha_k) + 
+            (goal_y - previous_y) * sin(alpha_k);
+
+    cross_track = (-(x - previous_x) * sin(alpha_k) + 
+                   (y - previous_y) * cos(alpha_k)) * direct;
+
+    long_track = (x - previous_x) * cos(alpha_k) + 
+                 (y - previous_y) * sin(alpha_k);
+
     delta = (delta_max - delta_min) * exp(-0.7 * fabs(cross_track)) + delta_min;
 
-        // === Low-pass filter cho target_heading ===
-        static double prev_target_heading = 0.0;
-        double target_heading_raw = normalize_angle(alpha_k + atan(-cross_track/delta));
-        // Áp dụng bộ lọc thông thấp (alpha = 0.2, có thể chỉnh lại)
-        double alpha = 0.8;
-        double target_heading = low_pass_filter(prev_target_heading, target_heading_raw, alpha);
-        target_heading = normalize_angle(target_heading);
-        prev_target_heading = target_heading;
+    static double prev_target_heading = 0.0;
 
-        heading_error  = normalize_angle(target_heading - theta);
+    double target_heading_raw = normalize_angle(alpha_k + atan(-cross_track/delta));
+    double target_heading = low_pass_filter(prev_target_heading, target_heading_raw, 0.8);
 
-    // ROS_INFO("CrossTrack = %.2f, LongTrack = %.2f, HeadingDesire = %.2f, HeadingErr = %.2f, Theta = %.2f",cross_track, long_track,target_heading,heading_error,theta);
+    target_heading = normalize_angle(target_heading);
+    prev_target_heading = target_heading;
+
+    heading_error = normalize_angle(target_heading - theta);
 
     filtered_angular_z = pid_controller.pid(heading_error, KD, ANGULAR_SPEED);
-    // filtered_angular_z = limit(filtered_angular_z, -MAX_ANGULAR_SPEED, ANGULAR_SPEED);
-    // std::cout << "filtered_angular_z = " << filtered_angular_z << "\n";
     filtered_angular_z = limit(filtered_angular_z, -MAX_ANGULAR_SPEED, MAX_ANGULAR_SPEED);
 
-    dist_to_goal = abs(s_k_1 - long_track);
-    perc_dist = abs(s_k_1 - long_track)/s_k_1;
+    dist_to_goal = fabs(s_k_1 - long_track);
 
-    if (abs(heading_error) > 0.1){
-        // linear_x = MAX_LINEAR_SPEED/2;
-        linear_x = limit(MAX_LINEAR_SPEED * exp(-3 * abs(heading_error)), min_speed, MAX_LINEAR_SPEED);
+    // tránh chia 0
+    if (fabs(s_k_1) > 1e-6)
+        perc_dist = fabs(s_k_1 - long_track) / s_k_1;
+    else
+        perc_dist = 0.0;
+
+    if (fabs(heading_error) > 0.1){
+        linear_x = limit(MAX_LINEAR_SPEED * exp(-3 * fabs(heading_error)), min_speed, MAX_LINEAR_SPEED);
     }
     else {
-        linear_x = limit(LINEAR_SPEED*perc_dist, min_speed, MAX_LINEAR_SPEED);
+        linear_x = limit(LINEAR_SPEED * perc_dist, min_speed, MAX_LINEAR_SPEED);
     }
+
+    // FIX FILTER (đúng thứ tự)
     filtered_angular_z = low_pass_filter(angular_z, filtered_angular_z);
-    // filtered_angular_z = low_pass_filter(filtered_angular_z, angular_z);
     angular_z = filtered_angular_z;
 
-    // === RÀNG BUỘC VẬN TỐC TUYẾN TÍNH THEO ĐỘ CONG QUỸ ĐẠO ===
-    // L là khoảng cách giữa 2 bánh xe, ở đây lấy L = 0.57 (giống hệ số trong công thức tính v_left/v_right)
+    // CURVATURE LIMIT
     const double L = 0.57;
-    double v_max = MAX_LINEAR_SPEED;
     double v = linear_x;
     double omega = angular_z;
-    double kappa = 0.0;
-    if (fabs(v) > 1e-6) {
-        kappa = omega / fabs(v);
-    } else {
-        kappa = 0.0;
-    }
-    double v_limit = v_max / (1.0 + (L/2.0)*fabs(kappa));
+
+    double kappa = (fabs(v) > 1e-6) ? omega / fabs(v) : 0.0;
+    double v_limit = MAX_LINEAR_SPEED / (1.0 + (L/2.0) * fabs(kappa));
+
     if (fabs(v) > v_limit) {
         v = (v > 0) ? v_limit : -v_limit;
-        ROS_INFO("[LOS] linear_x=%.4f, angular_z=%.4f, kappa=%.4f, v_limit=%.4f", linear_x, angular_z, kappa, v_limit);
     }
     linear_x = v;
 }
 
-// Hàm tính adaptive acceptance radius tại waypoint k
-double calc_adaptive_radius(size_t k, const std::vector<std::pair<double, double>>& wp, double L) {
-    // Nếu không đủ waypoint để tính, trả về bán kính tối thiểu
-    if (k == 0 || k + 1 >= wp.size()) return 1.5 * L;
-    // Tính góc của đoạn trước và sau
-    double alpha_k = atan2(wp[k+1].second - wp[k].second, wp[k+1].first - wp[k].first);
-    double alpha_km1 = atan2(wp[k].second  - wp[k-1].second, wp[k].first - wp[k-1].first);
-    double delta_alpha = normalize_angle(alpha_k - alpha_km1);
-    return (3.0 * fabs(delta_alpha) + 1.5) * L;
-}
-
 void tranfer_wp() {
-    ROS_INFO_THROTTLE(2, "=== tranfer_wp DEBUG === wp.size=%zu, cnt=%d, robot=(%.2f, %.2f)", wp.size(), cnt, x, y);
 
-    // L là khoảng cách giữa 2 bánh xe, đã có trong control_los và các hàm khác
-    const double L = 0.57;
-
-    if (wp.size() == 0) {
-        ROS_WARN_THROTTLE(5, "No waypoints received yet!");
-        linear_x = 0.0;
-        angular_z = 0.0;
-        return;
-    }
-
-    if (wp.size() == 1) {
-        ROS_WARN_THROTTLE(5, "Only 1 waypoint! Need at least 2 for navigation. Current wp[0]=(%.2f, %.2f)", 
-                         wp[0].first, wp[0].second);
+    if (wp.size() < 2) {
         linear_x = 0.0;
         angular_z = 0.0;
         return;
@@ -145,72 +127,33 @@ void tranfer_wp() {
 
     if (wait_before_los) {
         if (ros::Time::now() < los_wait_until) {
-            const double remain_sec = (los_wait_until - ros::Time::now()).toSec();
-            ROS_WARN_THROTTLE(1, "New waypoint received, waiting %.1f seconds before LOS...", remain_sec);
             linear_x = 0.0;
             angular_z = 0.0;
             return;
         }
         wait_before_los = false;
-        ROS_INFO("LOS wait finished. Starting navigation now.");
     }
 
-    if (cnt + 1 >= (wp.size())) {
-        // ROS_INFO_THROTTLE(2, "Reached final waypoint #%d - Stopping Robot", cnt);
+    if (cnt + 1 >= wp.size()) {
         linear_x = 0.0;
         angular_z = 0.0;
         is_home = true;
-    }
-    else {
-        // ROS_INFO_THROTTLE(2, "Moving to waypoint #%d: (%.2f, %.2f) from wp[%d]=(%.2f, %.2f)", 
-        //                  cnt+1, wp[cnt+1].first, wp[cnt+1].second, 
-        //                  cnt, wp[cnt].first, wp[cnt].second);
-        control_los(wp[cnt+1].first, wp[cnt+1].second, wp[cnt].first, wp[cnt].second);
+        return;
     }
 
-    // === Adaptive acceptance radius ===
-    double adaptive_radius = calc_adaptive_radius(cnt, wp, L);
-    // ROS_INFO_THROTTLE(2, "[Adaptive Radius] cnt=%d, R_k=%.3f", cnt, adaptive_radius);
+    control_los(wp[cnt+1].first, wp[cnt+1].second,
+                wp[cnt].first, wp[cnt].second);
 
-    // waypoint thường: GOAL_RADIUS; chỉ đoạn vào đích cuối: GOAL_RADIUS_GOAL
-    const bool approaching_final_goal =
-        wp.size() >= 2 && (static_cast<size_t>(cnt + 1) == wp.size() - 1);
-    const double goal_radius_eff =
-        approaching_final_goal ? GOAL_RADIUS_GOAL : GOAL_RADIUS;
+    double goal_radius_eff = GOAL_RADIUS;
 
-    if (dist_to_goal <= goal_radius_eff) {
-        // ROS_INFO("Reached waypoint #%d: (%.2f, %.2f) ✓✓✓", cnt+1, wp[cnt+1].first, wp[cnt+1].second);
-        cnt +=1;
+    if (fabs(dist_to_goal) <= goal_radius_eff) {
+        cnt++;
 
-        // Neu da den waypoint cuoi cung
         if (cnt + 1 >= wp.size()) {
-            // Chi publish MQTT 1 lan duy nhat
             if (!has_published_arrival) {
-                ROS_WARN("========================================");
-                ROS_WARN("✓✓✓ REACHED FINAL DESTINATION ✓✓✓");
-                ROS_WARN("Publishing arrival status to MQTT...");
-                ROS_WARN("========================================");
-
-                // Goi Python script de publish MQTT arrival
-                std::string script_path = "python /home/nvidia/robot_fablab_ws/src/MQTT/publish_arrival.py";
-                int result = system(script_path.c_str());
-
-                if (result == 0) {
-                    ROS_WARN("Successfully published arrival status to MQTT");
-                } else {
-                    ROS_ERROR("Failed to publish arrival status (exit code: %d)", result);
-                }
-
-                // Danh dau da publish de khong spam
+                system("python /home/nvidia/robot_fablab_ws/src/MQTT/publish_arrival.py");
                 has_published_arrival = true;
-
-                ROS_WARN("========================================");
-                ROS_WARN("🔄 Robot stopped - Ready for new waypoints!");
-                ROS_WARN("Current position: (%.3f, %.3f)", x, y);
-                ROS_WARN("========================================");
             }
-
-            // Dung robot
             linear_x = 0.0;
             angular_z = 0.0;
         }
@@ -218,120 +161,73 @@ void tranfer_wp() {
 }
 
 void CallBackPose(const geometry_msgs::PoseWithCovarianceStamped::ConstPtr& msg){
+
     x = msg->pose.pose.position.x;
     y = msg->pose.pose.position.y;
-    double orientation_x = msg->pose.pose.orientation.x;
-    double orientation_y = msg->pose.pose.orientation.y;
-    double orientation_z = msg->pose.pose.orientation.z;
-    double orientation_w = msg->pose.pose.orientation.w;
 
-    tf::Quaternion q(orientation_x, orientation_y, orientation_z, orientation_w);
-    double roll, pitch, amcl_yaw;
-    tf::Matrix3x3(q).getRPY(roll, pitch, amcl_yaw);
-    theta = amcl_yaw;
+    tf::Quaternion q(
+        msg->pose.pose.orientation.x,
+        msg->pose.pose.orientation.y,
+        msg->pose.pose.orientation.z,
+        msg->pose.pose.orientation.w
+    );
+
+    double roll, pitch, yaw;
+    tf::Matrix3x3(q).getRPY(roll, pitch, yaw);
+    theta = yaw;
 }
 
 void CallBackWp(const utils::waypoints::ConstPtr& msg) {
-    // Kiem tra neu da hoan thanh mission truoc do (da den waypoint cuoi) 
-    // thi reset tat ca de bat dau mission moi
+
     if (has_published_arrival && wp.size() > 0) {
-        ROS_WARN("========================================");
-        ROS_WARN("🆕 NEW MISSION DETECTED - Resetting all waypoints!");
-        ROS_WARN("========================================");
         wp.clear();
         cnt = 0;
         has_published_arrival = false;
-        linear_x = 0.0;
-        angular_z = 0.0;
     }
 
-    const bool is_new_mission_first_wp = (wp.size() == 0);
-    
-    // Neu day la waypoint dau tien cua mission moi, them vi tri hien tai lam diem xuat phat
-    if (wp.size() == 0) {
-        double current_x = x;
-        double current_y = y;
-        wp.push_back({current_x, current_y});
-        ROS_WARN("✓✓✓ Added STARTING position as wp[0]: (%.3f, %.3f) ✓✓✓", current_x, current_y);
-        
-        // Reset flag khi bat dau mission moi
-        has_published_arrival = false;
-        is_home = false;
+    if (wp.empty()) {
+        wp.push_back({x, y});
     }
-    
+
     wp.push_back({msg->direction_x, msg->direction_y});
-    ROS_INFO("✓ Received waypoint #%zu: (%.3f, %.3f)", wp.size()-1, msg->direction_x, msg->direction_y);
 
-    // Chi tam dung LOS 1 lan khi bat dau mission moi de nhuong quyen cho lenh MQTT (vd: robot/xoay)
-    if (is_new_mission_first_wp) {
+    if (wp.size() == 2) {
         wait_before_los = true;
         los_wait_until = ros::Time::now() + ros::Duration(LOS_WAIT_SECONDS);
-        ROS_WARN("Temporarily pausing LOS Cmd_vel publish for %.1f seconds (allowing MQTT rotate command).", LOS_WAIT_SECONDS);
-    }
-    
-    // In ra tat ca cac waypoint hien tai
-    ROS_INFO("    Total waypoints: %zu", wp.size());
-    for (size_t i = 0; i < wp.size(); i++) {
-        if (i == 0) {
-            ROS_INFO("      wp[%zu] = (%.3f, %.3f) <- STARTING POSITION", i, wp[i].first, wp[i].second);
-        } else {
-            ROS_INFO("      wp[%zu] = (%.3f, %.3f) <- GOAL", i, wp[i].first, wp[i].second);
-        }
     }
 }
 
-void ControlVel(const ros::TimerEvent& event){
+void ControlVel(const ros::TimerEvent&){
+
     utils::cmd_vel cmd;
     tranfer_wp();
 
-    // === RÀNG BUỘC VẬN TỐC TUYẾN TÍNH THEO ĐỘ CONG QUỸ ĐẠO ===
-    // L là khoảng cách giữa 2 bánh xe, ở đây lấy L = 0.57 (giống hệ số trong công thức tính v_left/v_right)
     const double L = 0.57;
-    double v_max = MAX_LINEAR_SPEED;
-    double v = linear_x;
-    double omega = angular_z;
-    double kappa = 0.0;
-    if (fabs(v) > 1e-6) {
-        kappa = omega / fabs(v);
-    } else {
-        kappa = 0.0;
-    }
-    double v_limit = v_max / (1.0 + (L/2.0)*fabs(kappa));
-    if (fabs(v) > v_limit) {
-        v = (v > 0) ? v_limit : -v_limit;
-    }
-    // Cập nhật lại linear_x để đảm bảo các phần khác dùng đúng giá trị đã ràng buộc
-    linear_x = v;
 
-    if (is_safety_stop.data == true){
+    if (is_safety_stop.data) {
         cmd.v_left = 0;
         cmd.v_right = 0;
-    }
-    else {
+    } else {
         cmd.v_left = -(linear_x - (angular_z * L / 2)) * drive;
         cmd.v_right = (linear_x + (angular_z * L / 2)) * drive;
     }
 
-    // cmd.v_left = -(linear_x - (angular_z * 0.57/ 2)) * drive;
-    // cmd.v_right = (linear_x + (angular_z * 0.57/ 2)) * drive;
-   
-    // ROS_INFO("v_left = %.2f, v_right = %.2f, ANGULAR = %.2f", cmd.v_left, cmd.v_right, angular_z);
     if (is_home || (wait_before_los && ros::Time::now() < los_wait_until)) {
         return;
     }
+
     pub.publish(cmd);
 }
 
-
 int main(int argc, char **argv){
+
     ros::init(argc,argv,"Guidance_node");
-    
+
     ros::NodeHandle arg_nh("~");
+
     arg_nh.getParam("linear_speed", LINEAR_SPEED);
     arg_nh.getParam("angular_speed", ANGULAR_SPEED);
     arg_nh.getParam("goal_radius", GOAL_RADIUS);
-    if (!arg_nh.getParam("goal_radius_goal", GOAL_RADIUS_GOAL))
-        GOAL_RADIUS_GOAL = GOAL_RADIUS;
     arg_nh.getParam("cycle", cycle);
     arg_nh.getParam("linear_speed_max", MAX_LINEAR_SPEED);
     arg_nh.getParam("angular_speed_max", MAX_ANGULAR_SPEED);
@@ -340,89 +236,17 @@ int main(int argc, char **argv){
     arg_nh.getParam("min_speed_linear", min_speed);
     arg_nh.getParam("direct", direct);
 
+    arg_nh.getParam("los_wait_seconds", LOS_WAIT_SECONDS);
 
-
-    ROS_INFO("Linear_speed_max = %.2f, Angular_speed_max= %.2f, goal_radius= %.2f, goal_radius_goal= %.2f. KD = %.2f",
-             MAX_LINEAR_SPEED, MAX_ANGULAR_SPEED, GOAL_RADIUS, GOAL_RADIUS_GOAL, KD);
     ros::NodeHandle nh;
 
     pub = nh.advertise<utils::cmd_vel>("Cmd_vel", 10);
-    // sub_scan = nh.subscribe("scan", 10, CallBackScan);
-    sub_amcl = nh.subscribe("amcl_pose", 10, CallBackPose); 
 
-    // ========================================================================
-    // CHON CHE DO DOC WAYPOINTS
-    // ========================================================================
-    // waypoint_mode = 0: Doc tu PARAM (cach cu)
-    // waypoint_mode = 1: Doc tu TOPIC (cach moi - MQTT)
-    int waypoint_mode = 1; // Mac dinh dung topic
-    arg_nh.getParam("waypoint_mode", waypoint_mode);
+    sub_amcl = nh.subscribe("amcl_pose", 10, CallBackPose);
+    sub_wp = nh.subscribe("waypoints", 100, CallBackWp);
 
-    if (waypoint_mode == 0) {
-        // ========================================================================
-        // TRUONG HOP 1: Doc waypoints tu LAUNCH FILE PARAMS - Cach cu
-        // ========================================================================
-        ROS_WARN("=== WAYPOINT MODE: Reading from LAUNCH FILE PARAMS ===");
-        
-        std::string waypoints_x_str, waypoints_y_str;
-        if (arg_nh.getParam("waypoints_x", waypoints_x_str) && arg_nh.getParam("waypoints_y", waypoints_y_str)) {
-            
-            // THEM DIEM XUAT PHAT (vi tri hien tai cua robot) - GIONG NHU FILE CU
-            double current_x = x;
-            double current_y = y;
-            wp.push_back({current_x, current_y});
-            ROS_WARN("✓ Added STARTING position as wp[0]: (%.3f, %.3f)", current_x, current_y);
-            
-            std::vector<double> waypoints_x_temp;
-            std::vector<double> waypoints_y_temp;
-            
-            std::stringstream ss_x(waypoints_x_str);
-            std::stringstream ss_y(waypoints_y_str);
-            std::string segment;
-
-            while(std::getline(ss_x, segment, ',')) {
-                waypoints_x_temp.push_back(std::stod(segment));
-            }
-
-            while(std::getline(ss_y, segment, ',')) {
-                waypoints_y_temp.push_back(std::stod(segment));
-            }
-
-            if (waypoints_x_temp.size() == waypoints_y_temp.size()) {
-                for (size_t i = 0; i < waypoints_x_temp.size(); ++i) {
-                    wp.push_back({waypoints_x_temp[i], waypoints_y_temp[i]});
-                    // ROS_INFO("Loaded waypoint #%zu from param: (%.3f, %.3f)", wp.size()-1, waypoints_x_temp[i], waypoints_y_temp[i]);
-                }
-            }
-            
-            ROS_WARN("Total waypoints loaded: %zu (including starting position)", wp.size());
-        } else {
-            ROS_WARN("waypoint_mode=0 but no waypoints_x/waypoints_y params found!");
-        }
-    } 
-    else if (waypoint_mode == 1) {
-        // ========================================================================
-        // TRUONG HOP 2: Doc waypoints tu TOPIC (MQTT) - Cach moi
-        // ========================================================================
-        ROS_WARN("=== WAYPOINT MODE: Reading from TOPIC (MQTT) ===");
-        
-        std::string waypoints_topic = "waypoints";
-        arg_nh.getParam("waypoints_topic", waypoints_topic);
-        sub_wp = nh.subscribe(waypoints_topic, 100, CallBackWp);
-        ROS_INFO("Subscribed to waypoints topic: %s", waypoints_topic.c_str());
-        ROS_INFO("Waiting for waypoints from topic...");
-    }
-    else {
-        ROS_ERROR("Invalid waypoint_mode=%d! Use 0 (param) or 1 (topic)", waypoint_mode);
-    }
-    
-    // ========================================================================
-    // Start control loop
-    // ========================================================================
     loopControl = nh.createTimer(ros::Duration(cycle), ControlVel);
-    
-    ROS_INFO("=== Guidance node ready ===");
+
     ros::spin();
     return 0;
-
 }
