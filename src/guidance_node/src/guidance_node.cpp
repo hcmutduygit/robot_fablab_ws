@@ -143,6 +143,18 @@ void tranfer_wp() {
         return;
     }
 
+    if (wait_before_los) {
+        if (ros::Time::now() < los_wait_until) {
+            const double remain_sec = (los_wait_until - ros::Time::now()).toSec();
+            ROS_WARN_THROTTLE(1, "New waypoint received, waiting %.1f seconds before LOS...", remain_sec);
+            linear_x = 0.0;
+            angular_z = 0.0;
+            return;
+        }
+        wait_before_los = false;
+        ROS_INFO("LOS wait finished. Starting navigation now.");
+    }
+
     if (cnt + 1 >= (wp.size())) {
         // ROS_INFO_THROTTLE(2, "Reached final waypoint #%d - Stopping Robot", cnt);
         linear_x = 0.0;
@@ -232,6 +244,8 @@ void CallBackWp(const utils::waypoints::ConstPtr& msg) {
         linear_x = 0.0;
         angular_z = 0.0;
     }
+
+    const bool is_new_mission_first_wp = (wp.size() == 0);
     
     // Neu day la waypoint dau tien cua mission moi, them vi tri hien tai lam diem xuat phat
     if (wp.size() == 0) {
@@ -247,6 +261,13 @@ void CallBackWp(const utils::waypoints::ConstPtr& msg) {
     
     wp.push_back({msg->direction_x, msg->direction_y});
     ROS_INFO("✓ Received waypoint #%zu: (%.3f, %.3f)", wp.size()-1, msg->direction_x, msg->direction_y);
+
+    // Chi tam dung LOS 1 lan khi bat dau mission moi de nhuong quyen cho lenh MQTT (vd: robot/xoay)
+    if (is_new_mission_first_wp) {
+        wait_before_los = true;
+        los_wait_until = ros::Time::now() + ros::Duration(LOS_WAIT_SECONDS);
+        ROS_WARN("Temporarily pausing LOS Cmd_vel publish for %.1f seconds (allowing MQTT rotate command).", LOS_WAIT_SECONDS);
+    }
     
     // In ra tat ca cac waypoint hien tai
     ROS_INFO("    Total waypoints: %zu", wp.size());
@@ -295,9 +316,10 @@ void ControlVel(const ros::TimerEvent& event){
     // cmd.v_right = (linear_x + (angular_z * 0.57/ 2)) * drive;
    
     // ROS_INFO("v_left = %.2f, v_right = %.2f, ANGULAR = %.2f", cmd.v_left, cmd.v_right, angular_z);
-    if (!is_home){
-        pub.publish(cmd);
+    if (is_home || (wait_before_los && ros::Time::now() < los_wait_until)) {
+        return;
     }
+    pub.publish(cmd);
 }
 
 
