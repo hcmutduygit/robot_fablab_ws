@@ -28,6 +28,8 @@ bool is_home = false;
 
 std_msgs::Bool is_safety_stop;
 std_msgs::Bool is_safety_slow;
+bool pause_after_new_wp = false;
+ros::Time pause_start_time;
 
 double low_pass_filter(double pre_value, double new_value, double alpha = 0.2){
     return alpha * new_value + (1 - alpha) * pre_value;
@@ -137,6 +139,9 @@ void tranfer_wp() {
 
     if (wp.size() == 1) {
         ROS_WARN_THROTTLE(5, "Only 1 waypoint! Need at least 2 for navigation. Current wp[0]=(%.2f, %.2f)", 
+        // Bắt đầu tạm dừng 10s khi nhận waypoint mới
+        pause_after_new_wp = true;
+        pause_start_time = ros::Time::now();
                          wp[0].first, wp[0].second);
         linear_x = 0.0;
         angular_z = 0.0;
@@ -295,8 +300,12 @@ void ControlVel(const ros::TimerEvent& event){
     // cmd.v_right = (linear_x + (angular_z * 0.57/ 2)) * drive;
    
     // ROS_INFO("v_left = %.2f, v_right = %.2f, ANGULAR = %.2f", cmd.v_left, cmd.v_right, angular_z);
-    if (!is_home){
+    bool is_pausing = pause_after_new_wp && (ros::Time::now() - pause_start_time).toSec() < 10.0;
+    if (!is_home && !is_pausing) {
         pub.publish(cmd);
+    }
+    if (pause_after_new_wp && (ros::Time::now() - pause_start_time).toSec() >= 10.0) {
+        pause_after_new_wp = false;
     }
 }
 
