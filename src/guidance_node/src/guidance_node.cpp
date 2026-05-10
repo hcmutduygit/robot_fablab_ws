@@ -15,20 +15,13 @@
 #include "guidance.h"
 #include "pid.h"
 
-enum State{
-  FREE = 0,
-  WARNING,
-  DANGER
-};
+
 
 PID pid_controller;
-double warning_distance_ = 0.7;
-double danger_distance_ = 0.6;
-State prev_state_ = FREE;
+
 bool is_home = false;
 
-std_msgs::Bool is_safety_stop;
-std_msgs::Bool is_safety_slow;
+
 
 double low_pass_filter(double pre_value, double new_value, double alpha = 0.2){
     return alpha * new_value + (1 - alpha) * pre_value;
@@ -283,14 +276,10 @@ void ControlVel(const ros::TimerEvent& event){
     // Cập nhật lại linear_x để đảm bảo các phần khác dùng đúng giá trị đã ràng buộc
     linear_x = v;
 
-    if (is_safety_stop.data == true){
-        cmd.v_left = 0;
-        cmd.v_right = 0;
-    }
-    else {
-        cmd.v_left = -(linear_x - (angular_z * L / 2)) * drive;
-        cmd.v_right = (linear_x + (angular_z * L / 2)) * drive;
-    }
+
+    cmd.v_left = -(linear_x - (angular_z * L / 2)) * drive;
+    cmd.v_right = (linear_x + (angular_z * L / 2)) * drive;
+
 
     // cmd.v_left = -(linear_x - (angular_z * 0.57/ 2)) * drive;
     // cmd.v_right = (linear_x + (angular_z * 0.57/ 2)) * drive;
