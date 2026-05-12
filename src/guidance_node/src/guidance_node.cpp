@@ -74,16 +74,26 @@ void control_los(float goal_x, float goal_y, float previous_x, float previous_y)
     dist_to_goal = abs(s_k_1 - long_track);
     perc_dist = abs(s_k_1 - long_track)/s_k_1;
 
-    // Ưu tiên tốc độ góc khi heading_error lớn
-    if (fabs(heading_error) > 0.5) {
-        // Nếu lệch lớn, dừng hẳn, chỉ quay tại chỗ
-        linear_x = 0.0;
-    } else if (fabs(heading_error) > 0.1) {
-        // Nếu lệch vừa, giảm vận tốc tuyến tính theo hàm mũ
-        linear_x = limit(MAX_LINEAR_SPEED * exp(-3 * fabs(heading_error)), min_speed, MAX_LINEAR_SPEED);
+    // Chỉ dừng lại xoay tại chỗ ở waypoint đầu tiên (bắt đầu hành trình)
+    extern int cnt; // cnt là chỉ số waypoint hiện tại
+    if (cnt == 0) {
+        if (fabs(heading_error) > 0.5) {
+            // Nếu lệch lớn, dừng hẳn, chỉ quay tại chỗ
+            linear_x = 0.0;
+        } else if (fabs(heading_error) > 0.1) {
+            // Nếu lệch vừa, giảm vận tốc tuyến tính theo hàm mũ
+            linear_x = limit(MAX_LINEAR_SPEED * exp(-3 * fabs(heading_error)), min_speed, MAX_LINEAR_SPEED);
+        } else {
+            // Nếu lệch nhỏ, đi nhanh về đích
+            linear_x = limit(LINEAR_SPEED * perc_dist, min_speed, MAX_LINEAR_SPEED);
+        }
     } else {
-        // Nếu lệch nhỏ, đi nhanh về đích
-        linear_x = limit(LINEAR_SPEED * perc_dist, min_speed, MAX_LINEAR_SPEED);
+        // Các waypoint sau: luôn vừa tiến vừa quay, không dừng lại xoay nữa
+        if (fabs(heading_error) > 0.1) {
+            linear_x = limit(MAX_LINEAR_SPEED * exp(-3 * fabs(heading_error)), min_speed, MAX_LINEAR_SPEED);
+        } else {
+            linear_x = limit(LINEAR_SPEED * perc_dist, min_speed, MAX_LINEAR_SPEED);
+        }
     }
     filtered_angular_z = low_pass_filter(angular_z, filtered_angular_z);
     // filtered_angular_z = low_pass_filter(filtered_angular_z, angular_z);
