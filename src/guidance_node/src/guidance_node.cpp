@@ -74,12 +74,16 @@ void control_los(float goal_x, float goal_y, float previous_x, float previous_y)
     dist_to_goal = abs(s_k_1 - long_track);
     perc_dist = abs(s_k_1 - long_track)/s_k_1;
 
-    if (abs(heading_error) > 0.1){
-        // linear_x = MAX_LINEAR_SPEED/2;
-        linear_x = limit(MAX_LINEAR_SPEED * exp(-3 * abs(heading_error)), min_speed, MAX_LINEAR_SPEED);
-    }
-    else {
-        linear_x = limit(LINEAR_SPEED*perc_dist, min_speed, MAX_LINEAR_SPEED);
+    // Ưu tiên tốc độ góc khi heading_error lớn
+    if (fabs(heading_error) > 0.5) {
+        // Nếu lệch lớn, dừng hẳn, chỉ quay tại chỗ
+        linear_x = 0.0;
+    } else if (fabs(heading_error) > 0.1) {
+        // Nếu lệch vừa, giảm vận tốc tuyến tính theo hàm mũ
+        linear_x = limit(MAX_LINEAR_SPEED * exp(-3 * fabs(heading_error)), min_speed, MAX_LINEAR_SPEED);
+    } else {
+        // Nếu lệch nhỏ, đi nhanh về đích
+        linear_x = limit(LINEAR_SPEED * perc_dist, min_speed, MAX_LINEAR_SPEED);
     }
     filtered_angular_z = low_pass_filter(angular_z, filtered_angular_z);
     // filtered_angular_z = low_pass_filter(filtered_angular_z, angular_z);
