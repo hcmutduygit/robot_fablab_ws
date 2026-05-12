@@ -89,7 +89,7 @@ void control_los(float goal_x, float goal_y, float previous_x, float previous_y)
         }
     } else {
         // Các waypoint sau: luôn vừa tiến vừa quay, không dừng lại xoay nữa
-        if (fabs(heading_error) > 0.1) {
+        if (fabs(heading_error) > 0.5) {
             linear_x = limit(MAX_LINEAR_SPEED * exp(-3 * fabs(heading_error)), min_speed, MAX_LINEAR_SPEED);
         } else {
             linear_x = limit(LINEAR_SPEED * perc_dist, min_speed, MAX_LINEAR_SPEED);
