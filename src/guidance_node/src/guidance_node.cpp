@@ -174,7 +174,8 @@ void tranfer_wp() {
     const double goal_radius_eff =
         approaching_final_goal ? GOAL_RADIUS_GOAL : GOAL_RADIUS;
 
-    if (dist_to_goal <= goal_radius_eff) {
+    // Chỉ tăng cnt khi đã chỉnh hướng đủ nhỏ ở waypoint đầu tiên
+    if (dist_to_goal <= goal_radius_eff && (cnt != 0 || fabs(heading_error) < 0.2)) {
         // ROS_INFO("Reached waypoint #%d: (%.2f, %.2f) ✓✓✓", cnt+1, wp[cnt+1].first, wp[cnt+1].second);
         cnt +=1;
 
